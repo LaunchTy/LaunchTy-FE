@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Exo } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/layout/Navbar'
+import Footer from '@/components/layout/Footer'
 
 const exo = Exo({ subsets: ['latin'], variable: '--font-exo' }) // Added Exo font
 
@@ -28,6 +29,7 @@ export default function RootLayout({
 					]}
 				/>
 				{children}
+				<Footer />
 			</body>
 		</html>
 	)
