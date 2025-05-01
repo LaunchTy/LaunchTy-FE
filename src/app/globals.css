@@ -24,4 +24,15 @@ body {
 			rgb(var(--background-end-rgb))
 		)
 		rgb(var(--background-start-rgb));
+
+	.glass-component-1 {
+		@apply bg-white/3 backdrop-blur-md border border-white/15;
+	}
+	.glass-component-2 {
+		@apply bg-white/5 backdrop-blur-sm border border-white/15;
+	}
+
+	.glass-component-3 {
+		@apply bg-white/15 backdrop-blur-sm border border-white/15;
+	}
 }
