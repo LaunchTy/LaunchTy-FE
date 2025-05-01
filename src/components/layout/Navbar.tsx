@@ -102,7 +102,7 @@ const Navbar = ({
 								/>
 							</svg>
 						</div>
-						<Button className="hidden lg:block bg-gradient-to-r from-[#C04AF1] to-[#279FE8] text-white px-4 sm:px-5 py-2 rounded-full shadow-[0_0_10px_rgba(192,74,241,0.6),0_0_20px_rgba(39,159,232,0.4)] hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 text-sm sm:text-md">
+						<Button className="hidden lg:block bg-gradient text-white px-4 sm:px-5 py-2 rounded-full shadow-[0_0_10px_rgba(192,74,241,0.6),0_0_20px_rgba(39,159,232,0.4)] hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 text-sm sm:text-md">
 							Connect Wallet
 						</Button>
 					</div>
@@ -155,7 +155,7 @@ const Navbar = ({
 									/>
 								</svg>
 							</div>
-							<Button className="bg-gradient-to-r from-[#C04AF1] to-[#279FE8] text-white px-4 sm:px-5 py-2 rounded-full shadow-[0_0_10px_rgba(192,74,241,0.6),0_0_20px_rgba(39,159,232,0.4)] hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 text-sm sm:text-md">
+							<Button className="bg-gradient text-white px-4 sm:px-5 py-2 rounded-full shadow-[0_0_10px_rgba(192,74,241,0.6),0_0_20px_rgba(39,159,232,0.4)] hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 text-sm sm:text-md">
 								Connect Wallet
 							</Button>
 						</div>
