@@ -14,6 +14,13 @@ const config: Config = {
 				"gradient-conic":
 					"conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
 			},
+			backgroundColor: {
+				"white/1": "rgba(255, 255, 255, 0.01)",
+				"white/2": "rgba(255, 255, 255, 0.02)",
+				"white/3": "rgba(255, 255, 255, 0.03)",
+				"white/4": "rgba(255, 255, 255, 0.04)",
+				"black/1": "rgba(0, 0, 0, 0.01)",
+			},
 			fontFamily: {
 				exo: ["var(--font-exo)", ...fontFamily.sans], // Added Exo font
 			},

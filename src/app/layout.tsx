@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Exo } from 'next/font/google'
 import './globals.css'
+import Navbar from '@/components/layout/Navbar'
 
 const exo = Exo({ subsets: ['latin'], variable: '--font-exo' }) // Added Exo font
 
@@ -19,6 +20,13 @@ export default function RootLayout({
 			<body
 				className={`${exo.variable}`} // Added Exo variable
 			>
+				<Navbar
+					navItems={[
+						{ name: 'About us', link: '/' },
+						{ name: 'Charity', link: '/about' },
+						{ name: 'Launchpad', link: '/about' },
+					]}
+				/>
 				{children}
 			</body>
 		</html>
