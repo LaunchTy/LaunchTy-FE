@@ -39,4 +39,7 @@ body {
 	.bg-gradient {
 		@apply bg-gradient-to-r from-[#C04AF1] to-[#279FE8];
 	}
+	.text-gradient {
+		@apply bg-gradient-to-r from-[#C04AF1] to-[#279FE8] text-transparent bg-clip-text;
+	}
 }
