@@ -119,7 +119,7 @@ const HeroSection = () => {
 							ease: 'easeOut',
 							repeat: Infinity,
 						}}
-						className=" md:h-1/9 md:w-1/9 lg:h-2/9 lg:w-2/9 xl:h-3/9 xl:w-3/9"
+						className=" md:h-[350px] md:w-[350px] lg:h-2/10 lg:w-2/10xl:h-3/10 xl:w-3/10 "
 					/>
 					<motion.img
 						src={Group2.src}
@@ -127,11 +127,11 @@ const HeroSection = () => {
 						// initial={{ opacity: 0, scale: 0.5, y: 50 }}
 						animate={{ opacity: 1, scale: 1, y: [0, -10, 0] }}
 						transition={{
-							duration: 2,
+							duration: 4,
 							ease: 'easeOut',
 							repeat: Infinity,
 						}}
-						className="md:h-1/7   md:w-1/7 lg:h-2/7 lg:w-2/7 xl:h-3/7 xl:w-3/7"
+						className="md:h-[400px] md:w-[400px] lg:h-2/7 lg:w-2/7 xl:h-3/7 xl:w-3/7"
 					/>
 					{/* <Image
 						className="absolute hover:animate-pulse"
