@@ -39,4 +39,11 @@ body {
 	.bg-gradient {
 		@apply bg-gradient-to-r from-[#C04AF1] to-[#279FE8];
 	}
+	.glass-component-2 {
+		@apply bg-[rgba(255,255,255,0.13)]
+			   backdrop-blur-md
+			   border border-white/15;
+	  }
+	  
+	  
 }

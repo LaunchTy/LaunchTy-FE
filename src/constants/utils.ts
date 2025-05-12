@@ -22,21 +22,45 @@ export const features = [
 		title: "Token Project Creation Tool",
 		description:
 			"Launchpad provides an easy-to-use tool that allows projects to create their own tokens, including details about the purpose, roadmap, and development stages. Founders can set parameters such as token quantity, sale duration, and distribution ratio, ensuring transparency and fairness for investors.",
+		image: "/Project.png",
+		logo: "/ProjectLogo.png",
+		price: "0.25",
+		raiseGoal: "500,000",
+		min: "100",
+		max: "10,000"
 	},
 	{
 		title: "Whitelist System",
 		description:
 			"The whitelist system enhances transparency and security for IDO projects, ensuring that participants can register and be approved before joining token sales. This reduces risks for investors and helps projects control who participates in their token sale.",
+		image: "/Project.png",
+		logo: "/ProjectLogo.png",
+		price: "0.15",
+		raiseGoal: "300,000",
+		min: "50",
+		max: "5,000"
 	},
 	{
 		title: "Charity Integration and Contribution Feature",
 		description:
 			"The platform not only focuses on token fundraising but also integrates a charity feature where users can contribute to registered charity organizations directly on the platform. Charities can register to receive donations from the community, creating a connection between investors and social causes.",
+		image: "/Project.png",
+		logo: "/ProjectLogo.png",
+		price: "0.10",
+		raiseGoal: "200,000",
+		min: "25",
+		max: "2,500"
 	},
 	{
 		title: "Reward & Partnership Program",
 		description:
 			"To encourage community engagement and build sustainable partnerships, the launchpad offers reward programs for early participants or strategic partners. These programs may include token rewards, special benefits for joining new projects, or perks for contributing to charitable initiatives.",
+		image: "/Project.png",
+		logo: "/ProjectLogo.png",
+		price: "0.20",
+		raiseGoal: "400,000",
+		min: "75",
+		max: "7,500"
 	},
 ];
 
