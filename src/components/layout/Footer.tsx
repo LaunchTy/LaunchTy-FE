@@ -2,7 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
 // import Particles from '@/app/components/UI/background/Particles'
-import Logo from '../../../public/Logo.png'
+import Logo from '@/public/Logo.png'
 import { FOOTER_LINKS } from '@/constants/utils'
 import AnimatedBlobs from '../UI/background/AnimatedBlobs'
 

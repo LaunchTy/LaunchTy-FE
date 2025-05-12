@@ -4,7 +4,7 @@ import { Menu, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import Logo from '../../../public/Logo.png'
+import Logo from '@/public/Logo.png'
 import { cn } from '@/lib/utils'
 import Button from '../UI/button/Button'
 
