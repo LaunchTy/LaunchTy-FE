@@ -1,13 +1,27 @@
+'use client'
 import React from 'react'
-import Image from 'next/image'
 
-const ExploreProject = () => {
+
+interface ExploreProjectProps {
+  title: string
+  backgroundImage: string
+  searchPlaceholder?: string
+}
+
+const ExploreProject = ({ 
+  title, 
+  backgroundImage, 
+  searchPlaceholder = "Search projects..." 
+}: ExploreProjectProps) => {
   return (
-    <div className="w-full relative min-h-[300px] bg-cover bg-center bg-no-repeat mt-44" style={{ backgroundImage: 'url("/Explore.svg")' }}>
+    <div 
+      className="w-full relative min-h-[300px] bg-cover bg-center bg-no-repeat mt-44" 
+      style={{ backgroundImage: `url("${backgroundImage}")` }}
+    >
       <div className="relative z-10 flex items-center justify-between px-16 py-32">
         {/* Left Side - Title */}
         <div className="flex-1">
-          <h1 className="text-4xl font-bold text-white pl-10">Explore Projects</h1>
+          <h1 className="text-4xl font-bold text-white pl-10">{title}</h1>
         </div>
 
         {/* Right Side - Search */}
@@ -16,7 +30,7 @@ const ExploreProject = () => {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search projects..."
+                placeholder={searchPlaceholder}
                 className="w-full px-6 py-4 rounded-full bg-[#1A1A1A]/80 backdrop-blur-sm border border-[#2A2A2A] text-white placeholder-gray-400 focus:outline-none focus:border-[#8132a2] transition-all duration-300"
               />
               <div className="absolute right-6 top-1/2 -translate-y-1/2">

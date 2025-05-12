@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
 	motion,
 	useScroll,
@@ -8,10 +8,16 @@ import {
 	useSpring,
 } from 'framer-motion'
 
-const NavBar = () => {
+export type NavBarProps = {
+	navItems: { id: string; label: string }[]
+	activeTab: string
+	onTabChange: (tabId: string) => void
+	className?: string
+}
+
+const NavBar = ({ navItems, activeTab, onTabChange, className = '' }: NavBarProps) => {
 	const sectionRef = useRef<HTMLElement>(null)
 	const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-	const [activeTab, setActiveTab] = useState('all')
 	const mouseX = useMotionValue(0)
 	const mouseY = useMotionValue(0)
 	const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 })
@@ -55,13 +61,6 @@ const NavBar = () => {
 		return () => window.removeEventListener('mousemove', handleMouseMove)
 	}, [mouseX, mouseY])
 
-	const navItems = [
-		{ id: 'all', label: 'All Projects' },
-		{ id: 'upcoming', label: 'Upcoming' },
-		{ id: 'ongoing', label: 'On Going' },
-		{ id: 'finished', label: 'Finished' },
-	]
-
 	useEffect(() => {
 		const activeIdx = navItems.findIndex(item => item.id === activeTab)
 		if (tabRefs.current[activeIdx]) {
@@ -71,12 +70,12 @@ const NavBar = () => {
 				width: node.offsetWidth,
 			})
 		}
-	}, [activeTab])
+	}, [activeTab, navItems])
 
 	return (
 		<section
 			ref={sectionRef}
-			className="p-20 font-exo relative overflow-hidden min-h-auto"
+			className={`p-20 font-exo relative overflow-hidden min-h-auto ${className}`}
 		>
 			<motion.div
 				className="absolute w-[400px] h-[400px] rounded-full bg-gradient-to-r from-purple-500/30 to-blue-500/30 blur-[80px] opacity-70 pointer-events-none z-10"
@@ -86,7 +85,7 @@ const NavBar = () => {
 					translateX: '-50%',
 					translateY: '-50%',
 				}}
-			/>						
+			/>
 
 			<div className="relative z-20 p-5 border border-gray-300 shadow-md glass-component-2 rounded-full" >
 				<div className="relative">
@@ -95,7 +94,7 @@ const NavBar = () => {
 							<button
 								key={item.id}
 								ref={el => { tabRefs.current[idx] = el; }}
-								onClick={() => setActiveTab(item.id)}
+								onClick={() => onTabChange(item.id)}
 								className={`px-6 py-3 rounded-lg transition-all duration-300 text-white text-xl font-bold bg-transparent ${
 									activeTab === item.id
 										? 'text-white'
