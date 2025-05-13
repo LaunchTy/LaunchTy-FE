@@ -26,7 +26,7 @@ const HeroSection = () => {
 	}
 
 	const handleSubmit = () => {
-		router.push('/lauchpad/explore-project')
+		router.push('/launchpad/explore-project')
 	}
 
 	// const [isTitleDone, setIsTitleDone] = useState(false)
