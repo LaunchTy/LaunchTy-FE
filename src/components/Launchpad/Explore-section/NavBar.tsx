@@ -37,12 +37,6 @@ const NavBar = ({
 		offset: ['start end', 'end start'],
 	})
 
-	const borderRadius = useTransform(
-		scrollYProgress,
-		[0, 0.2],
-		['0.375rem', '1rem']
-	)
-
 	const opacity = useTransform(scrollYProgress, [0, 0.2], [0, 1])
 
 	const scale = useTransform(scrollYProgress, [0, 0.2], [0.8, 1])
@@ -83,7 +77,7 @@ const NavBar = ({
 			className={`p-20 font-exo relative overflow-hidden min-h-auto ${className}`}
 		>
 			<motion.div
-				className="absolute w-[400px] h-[400px] rounded-full bg-gradient-to-r from-purple-500/30 to-blue-500/30 blur-[80px] opacity-70 pointer-events-none z-10"
+				className="absolute w-[400px] h-[400px] rounded-[40px] bg-gradient-to-r from-purple-500/30 to-blue-500/30 blur-[80px] opacity-70 pointer-events-none z-10"
 				style={{
 					x: smoothX,
 					y: smoothY,
@@ -92,7 +86,7 @@ const NavBar = ({
 				}}
 			/>
 
-			<div className="relative z-20 p-5 border border-gray-300 shadow-md glass-component-2 rounded-full">
+			<div className="relative z-20 p-5 border border-gray-300 shadow-md glass-component-2 rounded-[40px]" >
 				<div className="relative">
 					<nav className="flex items-center justify-center relative w-fit mx-auto">
 						{navItems.map((item, idx) => (
@@ -102,11 +96,10 @@ const NavBar = ({
 									tabRefs.current[idx] = el
 								}}
 								onClick={() => onTabChange(item.id)}
-								className={`px-6 py-3 rounded-lg transition-all duration-300 text-white text-xl font-bold bg-transparent ${
-									activeTab === item.id
-										? 'text-white'
-										: 'text-gray-400 hover:text-white'
-								} ${idx !== 0 ? 'ml-8' : ''}`}
+								className={`px-6 py-3 rounded-lg transition-all duration-300 text-white text-xl font-bold bg-transparent font-exo ${activeTab === item.id
+									? 'text-white'
+									: 'text-gray-400 hover:text-white'
+									} ${idx !== 0 ? 'ml-8' : ''}`}
 								style={{ background: 'none', position: 'relative' }}
 							>
 								{item.label}
