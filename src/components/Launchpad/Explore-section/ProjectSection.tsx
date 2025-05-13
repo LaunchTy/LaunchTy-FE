@@ -19,6 +19,7 @@ interface Project {
 	min: string
 	max: string
 	timeLeft?: string
+	endTime?: string
 }
 
 interface ProjectSectionProps {
@@ -38,6 +39,7 @@ const ProjectSection = ({
 	const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
 	const mouseX = useMotionValue(0)
 	const mouseY = useMotionValue(0)
+	const [countdowns, setCountdowns] = useState<{ [key: string]: string }>({})
 
 	const smoothX = useSpring(mouseX, { damping: 50, stiffness: 300 })
 	const smoothY = useSpring(mouseY, { damping: 50, stiffness: 300 })
@@ -55,8 +57,6 @@ const ProjectSection = ({
 
 	const opacity = useTransform(scrollYProgress, [0, 0.2], [0, 1])
 	const scale = useTransform(scrollYProgress, [0, 0.2], [0.8, 1])
-
-	const [timeLeft, setTimeLeft] = useState('12:00:04')
 
 	useEffect(() => {
 		const handleMouseMove = (e: MouseEvent) => {
@@ -80,28 +80,43 @@ const ProjectSection = ({
 	useEffect(() => {
 		if (!showCountdown) return
 
-		const end = new Date()
-		end.setHours(end.getHours() + countdownDuration)
-
-		const interval = setInterval(() => {
+		const calculateTimeLeft = (endTime: string) => {
+			const end = new Date(endTime)
 			const now = new Date()
 			const diff = end.getTime() - now.getTime()
-			if (diff <= 0) {
-				setTimeLeft('00:00:00')
-				clearInterval(interval)
-				return
-			}
-			const hours = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0')
-			const minutes = String(Math.floor((diff / (1000 * 60)) % 60)).padStart(
-				2,
-				'0'
-			)
-			const seconds = String(Math.floor((diff / 1000) % 60)).padStart(2, '0')
-			setTimeLeft(`${hours}:${minutes}:${seconds}`)
-		}, 1000)
+
+			if (diff <= 0) return '00:00:00'
+
+			const hours = Math.floor(diff / (1000 * 60 * 60))
+			const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+			const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+
+			return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+		}
+
+		const updateCountdowns = () => {
+			const newCountdowns: { [key: string]: string } = {}
+			projects.forEach(project => {
+				if (project.endTime) {
+					newCountdowns[project.id] = calculateTimeLeft(project.endTime)
+				} else {
+					// Fallback to countdownDuration if no endTime is provided
+					const end = new Date()
+					end.setHours(end.getHours() + countdownDuration)
+					newCountdowns[project.id] = calculateTimeLeft(end.toISOString())
+				}
+			})
+			setCountdowns(newCountdowns)
+		}
+
+		// Initial update
+		updateCountdowns()
+
+		// Update every second
+		const interval = setInterval(updateCountdowns, 1000)
 
 		return () => clearInterval(interval)
-	}, [showCountdown, countdownDuration])
+	}, [showCountdown, countdownDuration, projects])
 
 	return (
 		<section
@@ -151,7 +166,7 @@ const ProjectSection = ({
 								{showCountdown && (
 									<div className="shadow flex items-center justify-center pt-1">
 										<span className="font-mono font-bold text-red-500 tracking-widest text-2xl">
-											{project.timeLeft || timeLeft}
+											{countdowns[project.id] || '00:00:00'}
 										</span>
 									</div>
 								)}
