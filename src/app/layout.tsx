@@ -25,7 +25,7 @@ export default function RootLayout({
 					navItems={[
 						{ name: 'About us', link: '/' },
 						{ name: 'Charity', link: '/about' },
-						{ name: 'Launchpad', link: '/lauchpad/explore-project' },
+						{ name: 'Launchpad', link: '/about' },
 					]}
 				/>
 				{children}
