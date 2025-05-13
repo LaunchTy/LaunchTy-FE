@@ -15,7 +15,12 @@ export type NavBarProps = {
 	className?: string
 }
 
-const NavBar = ({ navItems, activeTab, onTabChange, className = '' }: NavBarProps) => {
+const NavBar = ({
+	navItems,
+	activeTab,
+	onTabChange,
+	className = '',
+}: NavBarProps) => {
 	const sectionRef = useRef<HTMLElement>(null)
 	const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
 	const mouseX = useMotionValue(0)
@@ -62,7 +67,7 @@ const NavBar = ({ navItems, activeTab, onTabChange, className = '' }: NavBarProp
 	}, [mouseX, mouseY])
 
 	useEffect(() => {
-		const activeIdx = navItems.findIndex(item => item.id === activeTab)
+		const activeIdx = navItems.findIndex((item) => item.id === activeTab)
 		if (tabRefs.current[activeIdx]) {
 			const node = tabRefs.current[activeIdx]
 			setUnderlineStyle({
@@ -87,13 +92,15 @@ const NavBar = ({ navItems, activeTab, onTabChange, className = '' }: NavBarProp
 				}}
 			/>
 
-			<div className="relative z-20 p-5 border border-gray-300 shadow-md glass-component-2 rounded-full" >
+			<div className="relative z-20 p-5 border border-gray-300 shadow-md glass-component-2 rounded-full">
 				<div className="relative">
 					<nav className="flex items-center justify-center relative w-fit mx-auto">
 						{navItems.map((item, idx) => (
 							<button
 								key={item.id}
-								ref={el => { tabRefs.current[idx] = el; }}
+								ref={(el) => {
+									tabRefs.current[idx] = el
+								}}
 								onClick={() => onTabChange(item.id)}
 								className={`px-6 py-3 rounded-lg transition-all duration-300 text-white text-xl font-bold bg-transparent ${
 									activeTab === item.id

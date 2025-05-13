@@ -28,11 +28,11 @@ interface ProjectSectionProps {
 	countdownDuration?: number // in hours
 }
 
-const ProjectSection = ({ 
-	projects, 
-	className = '', 
+const ProjectSection = ({
+	projects,
+	className = '',
 	showCountdown = true,
-	countdownDuration = 12 
+	countdownDuration = 12,
 }: ProjectSectionProps) => {
 	const sectionRef = useRef<HTMLElement>(null)
 	const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
@@ -92,7 +92,10 @@ const ProjectSection = ({
 				return
 			}
 			const hours = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0')
-			const minutes = String(Math.floor((diff / (1000 * 60)) % 60)).padStart(2, '0')
+			const minutes = String(Math.floor((diff / (1000 * 60)) % 60)).padStart(
+				2,
+				'0'
+			)
 			const seconds = String(Math.floor((diff / 1000) % 60)).padStart(2, '0')
 			setTimeLeft(`${hours}:${minutes}:${seconds}`)
 		}, 1000)
@@ -136,7 +139,7 @@ const ProjectSection = ({
 							className="p-5 border border-gray-300 shadow-md glass-component-1 h-[500px] flex flex-col"
 						>
 							{/* Image Section */}
-							<div className='relative w-full h-[240px] rounded-[3.2rem] bg-white '>
+							<div className="relative w-full h-[240px] rounded-[3.2rem] bg-white ">
 								<div className="relative w-full h-[200px] rounded-tr-xl rounded-tl-xl overflow-hidden">
 									<Image
 										src={project.image}
@@ -152,14 +155,19 @@ const ProjectSection = ({
 										</span>
 									</div>
 								)}
-							</div>	
+							</div>
 							{/* Project Name and Logo */}
 							<div className="flex items-start justify-between py-5 border-b">
 								<div className="flex flex-col w-3/4">
-									<h4 className="text-lg font-bold mb-1 truncate" title={project.title}>
+									<h4
+										className="text-lg font-bold mb-1 truncate"
+										title={project.title}
+									>
 										{project.title}
 									</h4>
-									<div className="text-sm text-gray-400">Price project token = 19999999 vDot</div>
+									<div className="text-sm text-gray-400">
+										Price project token = 19999999 vDot
+									</div>
 								</div>
 								<div className="relative w-12 h-12 rounded-full overflow-hidden">
 									<Image
@@ -184,8 +192,12 @@ const ProjectSection = ({
 								</div>
 								{/* Right column: values */}
 								<div className="flex flex-col gap-4 text-left pl-2">
-									<p className="text-sm text-gray-400 text-end">${project.price || '0.00'}</p>
-									<p className="text-sm text-gray-400 text-end">${project.raiseGoal || '0'}</p>
+									<p className="text-sm text-gray-400 text-end">
+										${project.price || '0.00'}
+									</p>
+									<p className="text-sm text-gray-400 text-end">
+										${project.raiseGoal || '0'}
+									</p>
 									<div className="flex justify-between text-sm">
 										<span>Max:</span>
 										<span className="text-gray-400">${project.max || '0'}</span>
