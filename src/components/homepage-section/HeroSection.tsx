@@ -1,9 +1,9 @@
 'use client'
 
 import Image from 'next/image'
-// import Logo from '../../../public/Logo.png'
-import Group1 from '../../../public/Group(1).png'
-import Group2 from '../../../public/Group(2).png'
+// import Logo from '@/public/Logo.png'
+import Group1 from '@/public/Group(1).png'
+import Group2 from '@/public/Group(2).png'
 // import SplitText from '../SplitText'
 import { motion } from 'framer-motion'
 // import { useState } from 'react'
@@ -69,7 +69,7 @@ const HeroSection = () => {
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ duration: 0.5, delay: 0.3 }}
 							className="text-white text-xl z-20"
-							// style={{ fontFamily: comfortaa.style.fontFamily }}
+						// style={{ fontFamily: comfortaa.style.fontFamily }}
 						>
 							An innovative fusion of an{' '}
 							<span className="text-gradient font-bold">IDO Launchpad </span>
