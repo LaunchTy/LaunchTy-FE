@@ -3,11 +3,11 @@ import React from 'react'
 import Button from '@/components/UI/button/Button'
 import { useEffect, useState, useRef } from 'react'
 import {
-    motion,
-    useScroll,
-    useTransform,
-    useMotionValue,
-    useSpring,
+	motion,
+	useScroll,
+	useTransform,
+	useMotionValue,
+	useSpring,
 } from 'framer-motion'
 import Image from 'next/image'
 interface Project {
@@ -42,22 +42,22 @@ const ProjectSection = ({
     const mouseY = useMotionValue(0)
     const [countdowns, setCountdowns] = useState<{ [key: string]: string }>({})
 
-    const smoothX = useSpring(mouseX, { damping: 50, stiffness: 300 })
-    const smoothY = useSpring(mouseY, { damping: 50, stiffness: 300 })
+	const smoothX = useSpring(mouseX, { damping: 50, stiffness: 300 })
+	const smoothY = useSpring(mouseY, { damping: 50, stiffness: 300 })
 
-    const { scrollYProgress } = useScroll({
-        target: sectionRef,
-        offset: ['start end', 'end start'],
-    })
+	const { scrollYProgress } = useScroll({
+		target: sectionRef,
+		offset: ['start end', 'end start'],
+	})
 
-    const borderRadius = useTransform(
-        scrollYProgress,
-        [0, 0.2],
-        ['0.375rem', '1rem']
-    )
+	const borderRadius = useTransform(
+		scrollYProgress,
+		[0, 0.2],
+		['0.375rem', '1rem']
+	)
 
-    const opacity = useTransform(scrollYProgress, [0, 0.2], [0, 1])
-    const scale = useTransform(scrollYProgress, [0, 0.2], [0.8, 1])
+	const opacity = useTransform(scrollYProgress, [0, 0.2], [0, 1])
+	const scale = useTransform(scrollYProgress, [0, 0.2], [0.8, 1])
 
     useEffect(() => {
         if (!showCountdown) return
@@ -110,19 +110,19 @@ const ProjectSection = ({
             const { clientX, clientY } = e
             const sectionRect = sectionRef.current?.getBoundingClientRect()
 
-            if (sectionRect) {
-                const x = clientX - sectionRect.left
-                const y = clientY - sectionRect.top
+			if (sectionRect) {
+				const x = clientX - sectionRect.left
+				const y = clientY - sectionRect.top
 
-                setMousePosition({ x, y })
-                mouseX.set(x)
-                mouseY.set(y)
-            }
-        }
+				setMousePosition({ x, y })
+				mouseX.set(x)
+				mouseY.set(y)
+			}
+		}
 
-        window.addEventListener('mousemove', handleMouseMove)
-        return () => window.removeEventListener('mousemove', handleMouseMove)
-    }, [mouseX, mouseY])
+		window.addEventListener('mousemove', handleMouseMove)
+		return () => window.removeEventListener('mousemove', handleMouseMove)
+	}, [mouseX, mouseY])
 
     return (
         <section

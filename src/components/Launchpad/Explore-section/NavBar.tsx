@@ -86,7 +86,7 @@ const NavBar = ({
 				}}
 			/>
 
-			<div className="relative z-20 p-5 border border-gray-300 shadow-md glass-component-2 rounded-[40px]" >
+			<div className="relative z-20 p-5 border border-gray-300 shadow-md glass-component-2 rounded-[40px]">
 				<div className="relative">
 					<nav className="flex items-center justify-center relative w-fit mx-auto">
 						{navItems.map((item, idx) => (
@@ -96,10 +96,11 @@ const NavBar = ({
 									tabRefs.current[idx] = el
 								}}
 								onClick={() => onTabChange(item.id)}
-								className={`px-6 py-3 rounded-lg transition-all duration-300 text-white text-xl font-bold bg-transparent font-exo ${activeTab === item.id
-									? 'text-white'
-									: 'text-gray-400 hover:text-white'
-									} ${idx !== 0 ? 'ml-8' : ''}`}
+								className={`px-6 py-3 rounded-lg transition-all duration-300 text-white text-xl font-bold bg-transparent font-exo ${
+									activeTab === item.id
+										? 'text-white'
+										: 'text-gray-400 hover:text-white'
+								} ${idx !== 0 ? 'ml-8' : ''}`}
 								style={{ background: 'none', position: 'relative' }}
 							>
 								{item.label}

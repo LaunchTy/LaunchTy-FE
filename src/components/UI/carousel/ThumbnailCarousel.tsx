@@ -14,9 +14,15 @@ interface Image {
 
 interface ImageCarouselProps {
 	projectImages?: Image[]
+	fullWidthBackground?: boolean
+	onImageChange?: (imageSrc: string) => void
 }
 
-const ThumbNailCarousel: React.FC<ImageCarouselProps> = ({ projectImages }) => {
+const ThumbNailCarousel: React.FC<ImageCarouselProps> = ({
+	projectImages,
+	fullWidthBackground = true,
+	onImageChange,
+}) => {
 	const [index, setIndex] = useState(0)
 	const ref = useRef<Splide>(null)
 
@@ -52,12 +58,21 @@ const ThumbNailCarousel: React.FC<ImageCarouselProps> = ({ projectImages }) => {
 		if (ref.current && ref.current.splide) {
 			const splideInstance = ref.current.splide
 
-			splideInstance.on('move', (newIndex: number) => {
+			const handleMove = (newIndex: number) => {
 				setIndex(newIndex)
-			})
+				if (onImageChange && images[newIndex]) {
+					onImageChange(images[newIndex].src)
+				}
+			}
+
+			splideInstance.on('move', handleMove)
+
+			if (onImageChange && images[0]) {
+				onImageChange(images[0].src)
+			}
 
 			return () => {
-				splideInstance.destroy()
+				splideInstance.off('move', handleMove)
 			}
 		}
 	}, [])
@@ -66,9 +81,12 @@ const ThumbNailCarousel: React.FC<ImageCarouselProps> = ({ projectImages }) => {
 		ref.current?.splide?.go(i)
 	}
 
+	// Export the current image for parent components
+	const currentImage = images[index]
+
 	return (
 		<div className="relative w-full z-0">
-			<div className="flex flex-col items-center">
+			<div className="flex flex-col items-center relative z-10">
 				<section
 					id="image-carousel"
 					className="relative w-full max-w-full mx-auto"
@@ -77,7 +95,7 @@ const ThumbNailCarousel: React.FC<ImageCarouselProps> = ({ projectImages }) => {
 					{/* Custom Arrows */}
 					<button
 						onClick={() => ref.current?.splide?.go('<')}
-						className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10  hover:scale-125  duration-300 rounded-full w-10 p-2  pr-1 "
+						className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 hover:scale-125 duration-300 rounded-full w-10 p-2 pr-1"
 					>
 						<Image
 							src={Vector}
@@ -89,11 +107,10 @@ const ThumbNailCarousel: React.FC<ImageCarouselProps> = ({ projectImages }) => {
 					</button>
 					<button
 						onClick={() => ref.current?.splide?.go('>')}
-						className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10  hover:scale-125 duration-300 rounded-full w-10 p-2  pl-3"
+						className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 hover:scale-125 duration-300 rounded-full w-10 p-2 pl-3"
 					>
 						<Image src={Vector} alt="Next" width={16} height={16} />
 					</button>
-
 					<Splide
 						options={{
 							type: 'loop',
@@ -105,8 +122,8 @@ const ThumbNailCarousel: React.FC<ImageCarouselProps> = ({ projectImages }) => {
 						}}
 						ref={ref}
 					>
-						{images.map((image, index) => (
-							<SplideSlide key={index}>
+						{images.map((image, i) => (
+							<SplideSlide key={i}>
 								<Image
 									src={image.src}
 									alt={image.alt}
@@ -121,7 +138,6 @@ const ThumbNailCarousel: React.FC<ImageCarouselProps> = ({ projectImages }) => {
 						))}
 					</Splide>
 				</section>
-
 				<ImageBarCarousel
 					image={images}
 					currentIndex={index}

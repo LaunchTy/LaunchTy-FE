@@ -9,10 +9,10 @@ import { useState } from 'react'; // Adjust the import path as necessary
 import Myproject from '@/public/MyProject.svg'; // Adjust the import path as necessary
 
 const navItems = [
-    { id: 'all', label: 'All Projects' },
-    { id: 'upcoming', label: 'Upcoming' },
-    { id: 'ongoing', label: 'On Going' },
-    { id: 'finished', label: 'Finished' },
+	{ id: 'all', label: 'All Projects' },
+	{ id: 'upcoming', label: 'Upcoming' },
+	{ id: 'ongoing', label: 'On Going' },
+	{ id: 'finished', label: 'Finished' },
 ]
 
 const projects = [
@@ -128,4 +128,4 @@ const MyProject = () => {
     );
 }
 
-export default MyProject;
+export default MyProject
