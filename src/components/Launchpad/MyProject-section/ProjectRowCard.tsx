@@ -1,4 +1,6 @@
 'use client'
+import React from 'react'
+import Button from '@/components/UI/button/Button'
 import { useEffect, useState, useRef } from 'react'
 import {
     motion,
@@ -8,22 +10,21 @@ import {
     useSpring,
 } from 'framer-motion'
 import Image from 'next/image'
-
 interface Project {
     id: string
     title: string
     image: string
-    logo: string
-    price: string
-    raiseGoal: string
-    min: string
-    max: string
-    timeLeft?: string
+    shortDescription: string
+    tokenSymbol: string
+    totalInvest: number
+    endsInDays?: number
+    endTime?: string // Optional end time for countdown
 }
 
 interface ProjectSectionProps {
     projects: Project[]
     className?: string
+    onEdit?: (projectId: string) => void
     showCountdown?: boolean
     countdownDuration?: number // in hours
 }
@@ -32,12 +33,14 @@ const ProjectSection = ({
     projects,
     className = '',
     showCountdown = true,
-    countdownDuration = 12
+    countdownDuration = 12, // in hours
+    onEdit,
 }: ProjectSectionProps) => {
     const sectionRef = useRef<HTMLElement>(null)
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const mouseX = useMotionValue(0)
     const mouseY = useMotionValue(0)
+    const [countdowns, setCountdowns] = useState<{ [key: string]: string }>({})
 
     const smoothX = useSpring(mouseX, { damping: 50, stiffness: 300 })
     const smoothY = useSpring(mouseY, { damping: 50, stiffness: 300 })
@@ -56,7 +59,51 @@ const ProjectSection = ({
     const opacity = useTransform(scrollYProgress, [0, 0.2], [0, 1])
     const scale = useTransform(scrollYProgress, [0, 0.2], [0.8, 1])
 
-    const [timeLeft, setTimeLeft] = useState('12:00:04')
+    useEffect(() => {
+        if (!showCountdown) return
+
+        const calculateTimeLeft = (endTime: string) => {
+            const end = new Date(endTime)
+            const now = new Date()
+            const diff = end.getTime() - now.getTime()
+
+            if (diff <= 0) return 'Ended'
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+
+            if (days >= 1) {
+                return `${days}d ${hours}h`
+            } else {
+                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+            }
+        }
+
+        const updateCountdowns = () => {
+            const newCountdowns: { [key: string]: string } = {}
+            projects.forEach(project => {
+                if (project.endTime) {
+                    newCountdowns[project.id] = calculateTimeLeft(project.endTime)
+                } else {
+                    // Fallback to countdownDuration if no endTime is provided
+                    const end = new Date()
+                    end.setHours(end.getHours() + countdownDuration)
+                    newCountdowns[project.id] = calculateTimeLeft(end.toISOString())
+                }
+            })
+            setCountdowns(newCountdowns)
+        }
+
+        // Initial update
+        updateCountdowns()
+
+        // Update every second
+        const interval = setInterval(updateCountdowns, 1000)
+
+        return () => clearInterval(interval)
+    }, [showCountdown, countdownDuration, projects])
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
@@ -77,34 +124,76 @@ const ProjectSection = ({
         return () => window.removeEventListener('mousemove', handleMouseMove)
     }, [mouseX, mouseY])
 
-    useEffect(() => {
-        if (!showCountdown) return
-
-        const end = new Date()
-        end.setHours(end.getHours() + countdownDuration)
-
-        const interval = setInterval(() => {
-            const now = new Date()
-            const diff = end.getTime() - now.getTime()
-            if (diff <= 0) {
-                setTimeLeft('00:00:00')
-                clearInterval(interval)
-                return
-            }
-            const hours = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0')
-            const minutes = String(Math.floor((diff / (1000 * 60)) % 60)).padStart(2, '0')
-            const seconds = String(Math.floor((diff / 1000) % 60)).padStart(2, '0')
-            setTimeLeft(`${hours}:${minutes}:${seconds}`)
-        }, 1000)
-
-        return () => clearInterval(interval)
-    }, [showCountdown, countdownDuration])
-
     return (
         <section
             ref={sectionRef}
-            className={`px-20 font-exo relative overflow-hidden min-h-auto ${className}`}
+            className={`px-20 py-12 font-exo relative overflow-hidden min-h-auto ${className}`}
         >
+            <div className="flex flex-col gap-6 z-20 relative">
+                {projects.map((project, index) => (
+                    <motion.div
+                        key={project.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, ease: 'easeOut' }}
+                        className="relative z-20 px-5 py-[7px] border border-gray-300 shadow-md glass-component-2 rounded-[40px] flex justify-between items-center flex-wrap"
+                    >
+                        {/* Project Image */}
+                        <div className="w-[60px] h-[60px] flex-shrink-0 rounded-full overflow-hidden">
+                            <Image
+                                src={project.image}
+                                alt={project.title}
+                                width={4000}
+                                height={4000}
+                                className="object-cover w-full h-full"
+                            />
+                        </div>
+
+                        {/* Project info */}
+                        {/* Cột 2: Tên + mô tả */}
+                        <div className="flex flex-col">
+                            <h2 className="text-lg font-semibold text-white">{project.title}</h2>
+                            <p className="text-white text-sm line-clamp-2">
+                                {project.shortDescription}
+                            </p>
+                        </div>
+
+                        {/* Cột 3: Token */}
+                        <div className="text-white text-sm">
+                            <span className="font-medium">Token:</span> {project.tokenSymbol}
+                        </div>
+
+                        {/* Cột 4: Total Invested */}
+                        <div className="text-white text-sm">
+                            <span className="font-medium">Total Invested:</span>{' '}
+                            {typeof project.totalInvest === 'number'
+                                ? project.totalInvest.toLocaleString()
+                                : '--'}{' '}
+                            {project.tokenSymbol}
+                        </div>
+
+                        {/* Cột 5: Ends In */}
+                        <div className="text-white text-sm">
+                            <span className="font-medium">Ends In:</span>{' '}
+                            {showCountdown && countdowns[project.id] ? countdowns[project.id] : '--'}
+                        </div>
+
+                        {/* Cột 6: Edit Button */}
+                        <div className="flex justify-end">
+                            {onEdit && (
+                                <Button
+                                    onClick={() => onEdit(project.id)}
+                                    className="font-bold bg-gradient text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300"
+                                >
+                                    Edit
+                                </Button>
+                            )}
+                        </div>
+                    </motion.div>
+                ))}
+            </div>
+
+            {/* Light effect */}
             <motion.div
                 className="absolute w-[400px] h-[400px] rounded-full bg-gradient-to-r from-purple-500/30 to-blue-500/30 blur-[80px] opacity-70 pointer-events-none z-10"
                 style={{
@@ -114,49 +203,7 @@ const ProjectSection = ({
                     translateY: '-50%',
                 }}
             />
-
-            <div className="w-full flex flex-row gap-10 z-20 relative overflow-x-auto pb-4">
-                {projects.map((project, index) => (
-                    <motion.div
-                        key={project.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{
-                            duration: 1,
-                            delay: index * 0.3,
-                            ease: 'easeOut',
-                        }}
-                        viewport={{ once: true, margin: '-200px' }}
-                        style={{
-                            borderRadius,
-                            opacity,
-                            scale,
-                        }}
-                        className="p-5 border border-gray-300 shadow-md glass-component-1 h-[500px] w-[350px] flex-shrink-0 flex flex-col"
-                    >
-                        <Image
-                            src={project.image}
-                            alt={project.title}
-                            width={320}
-                            height={180}
-                            className="object-cover rounded-lg mb-4"
-                        />
-                        <div className="flex items-center mb-2">
-                            <Image src={project.logo} alt="Logo" width={40} height={40} className="mr-2 rounded-full" />
-                            <h3 className="text-xl font-bold">{project.title}</h3>
-                        </div>
-                        <p className="text-sm">Price: ${project.price}</p>
-                        <p className="text-sm">Raise Goal: ${project.raiseGoal}</p>
-                        <p className="text-sm">Min: ${project.min}</p>
-                        <p className="text-sm">Max: ${project.max}</p>
-                        {showCountdown && (
-                            <p className="mt-auto text-md font-semibold text-red-500">Time Left: {timeLeft}</p>
-                        )}
-                    </motion.div>
-
-                ))}
-            </div>
-        </section>
+        </section >
     )
 }
 
