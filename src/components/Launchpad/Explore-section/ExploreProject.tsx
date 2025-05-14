@@ -4,7 +4,7 @@ import React from 'react'
 
 interface ExploreProjectProps {
 	title: string
-	backgroundImage: string | StaticImageData
+	backgroundImage: string | { src: string } // Supports both URL and imported image/SVG
 	searchPlaceholder?: string
 }
 
@@ -13,15 +13,19 @@ const ExploreProject = ({
 	backgroundImage,
 	searchPlaceholder = 'Search projects...',
 }: ExploreProjectProps) => {
+	// Handle imported images with `src` property
+	const resolvedBackgroundImage =
+		typeof backgroundImage === 'string' ? backgroundImage : backgroundImage.src
+
 	return (
 		<div
 			className="w-full relative min-h-[300px] bg-cover bg-center bg-no-repeat mt-44"
-			style={{ backgroundImage: `url("${backgroundImage}")` }}
+			style={{ backgroundImage: `url("${resolvedBackgroundImage}")` }}
 		>
 			<div className="relative z-10 flex items-center justify-between px-16 py-32">
 				{/* Left Side - Title */}
 				<div className="flex-1">
-					<h1 className="text-4xl font-bold text-white pl-10">{title}</h1>
+					<h1 className="text-[45px] font-bold text-white pl-10">{title}</h1>
 				</div>
 
 				{/* Right Side - Search */}
