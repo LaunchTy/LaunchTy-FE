@@ -4,8 +4,6 @@ import {
 	motion,
 	useScroll,
 	useTransform,
-	useMotionValue,
-	useSpring,
 } from 'framer-motion'
 import Image from 'next/image'
 
@@ -36,13 +34,7 @@ const ProjectSection = ({
 	countdownDuration = 12,
 }: ProjectSectionProps) => {
 	const sectionRef = useRef<HTMLElement>(null)
-	const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-	const mouseX = useMotionValue(0)
-	const mouseY = useMotionValue(0)
 	const [countdowns, setCountdowns] = useState<{ [key: string]: string }>({})
-
-	const smoothX = useSpring(mouseX, { damping: 50, stiffness: 300 })
-	const smoothY = useSpring(mouseY, { damping: 50, stiffness: 300 })
 
 	const { scrollYProgress } = useScroll({
 		target: sectionRef,
@@ -57,25 +49,6 @@ const ProjectSection = ({
 
 	const opacity = useTransform(scrollYProgress, [0, 0.2], [0, 1])
 	const scale = useTransform(scrollYProgress, [0, 0.2], [0.8, 1])
-
-	useEffect(() => {
-		const handleMouseMove = (e: MouseEvent) => {
-			const { clientX, clientY } = e
-			const sectionRect = sectionRef.current?.getBoundingClientRect()
-
-			if (sectionRect) {
-				const x = clientX - sectionRect.left
-				const y = clientY - sectionRect.top
-
-				setMousePosition({ x, y })
-				mouseX.set(x)
-				mouseY.set(y)
-			}
-		}
-
-		window.addEventListener('mousemove', handleMouseMove)
-		return () => window.removeEventListener('mousemove', handleMouseMove)
-	}, [mouseX, mouseY])
 
 	useEffect(() => {
 		if (!showCountdown) return
@@ -123,16 +96,6 @@ const ProjectSection = ({
 			ref={sectionRef}
 			className={`px-20 font-exo relative overflow-hidden min-h-auto ${className}`}
 		>
-			<motion.div
-				className="absolute w-[400px] h-[400px] rounded-full bg-gradient-to-r from-purple-500/30 to-blue-500/30 blur-[80px] opacity-70 pointer-events-none z-10"
-				style={{
-					x: smoothX,
-					y: smoothY,
-					translateX: '-50%',
-					translateY: '-50%',
-				}}
-			/>
-
 			<div className="w-full flex flex-col items-center justify-center gap-10 z-20 relative">
 				<div className="grid grid-cols-1 md:grid-cols-3 gap-10 w-full max-w-full">
 					{projects.map((project, index) => (

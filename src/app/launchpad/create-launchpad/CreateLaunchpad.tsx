@@ -543,7 +543,7 @@ const CreateLaunchpad = () => {
 										<Folder
 											color="#00d8ff"
 											size={0.8}
-											items={images.map((image, index) => (
+											items={images.map((image: string, index: number) => (
 												<div
 													key={`folder-image-${index}`}
 													className="w-full h-full flex items-center justify-center"
@@ -551,7 +551,7 @@ const CreateLaunchpad = () => {
 													<Image
 														key={`image-${index}`}
 														src={image}
-														alt={`Image ${index}`}
+														alt={`Image ${index + 1}`}
 														width={512}
 														height={512}
 														className="max-w-full max-h-full object-contain rounded"
@@ -623,7 +623,7 @@ const CreateLaunchpad = () => {
 
 							<div className="w-full ">
 								<ImageManager
-									images={images.map((base64, index) => ({
+									images={images.map((base64: string, index: number) => ({
 										id: index.toString(),
 										base64,
 										name: `Image ${index + 1}`,

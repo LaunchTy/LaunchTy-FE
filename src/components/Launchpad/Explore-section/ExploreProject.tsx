@@ -20,9 +20,12 @@ const ExploreProject = ({
 	return (
 		<div
 			className="w-full relative min-h-[300px] bg-cover bg-center bg-no-repeat mt-44"
-			style={{ backgroundImage: `url("${resolvedBackgroundImage}")` }}
+			style={{ 
+				backgroundImage: `url("${resolvedBackgroundImage}")`,
+				zIndex: 1
+			}}
 		>
-			<div className="relative z-10 flex items-center justify-between px-16 py-32">
+			<div className="relative z-30 flex items-center justify-between px-16 py-32">
 				{/* Left Side - Title */}
 				<div className="flex-1">
 					<h1 className="text-[45px] font-bold text-white pl-10">{title}</h1>
