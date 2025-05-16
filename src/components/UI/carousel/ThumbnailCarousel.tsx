@@ -53,6 +53,7 @@ const ThumbNailCarousel: React.FC<ImageCarouselProps> = ({
 	// Use provided project images or default to fallback images
 	const images =
 		projectImages && projectImages.length > 0 ? projectImages : defaultImages
+	// projectImages
 
 	useEffect(() => {
 		if (ref.current && ref.current.splide) {

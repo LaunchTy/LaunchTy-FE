@@ -9,8 +9,11 @@ import Image from 'next/image'
 import Folder from '@/components/UI/shared/Folder'
 import useLaunchpadStore from '@/store/launchpad/CreateLaunchpadStore'
 import ImageManager from '@/components/UI/shared/ImageManager'
+import { useRouter } from 'next/navigation'
 
 const CreateLaunchpad = () => {
+	const route = useRouter()
+
 	const {
 		projectTokenAddress,
 		setProjectTokenAddress,
@@ -83,6 +86,10 @@ const CreateLaunchpad = () => {
 		})
 	}
 
+	const onFinalStepCompleted = () => {
+		route.push('/launchpad/create-launchpad/preview')
+	}
+
 	return (
 		<div className="relative p-36 flex flex-col justify-center items-center font-exo">
 			<AnimatedBlobs count={4} />
@@ -118,6 +125,7 @@ const CreateLaunchpad = () => {
 					initialStep={1}
 					backButtonText="Previous"
 					nextButtonText="Next"
+					onFinalStepCompleted={onFinalStepCompleted}
 				>
 					{/* --------------------------------------Token Input And Token Validation----------------------------------------------------- */}
 					<Step>

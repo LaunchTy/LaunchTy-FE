@@ -5,7 +5,7 @@ interface ProjectHeaderProps {
 		id: number
 		name: string
 		description: string
-		image: string | StaticImageData
+		image: string
 		status: string
 	}
 }
