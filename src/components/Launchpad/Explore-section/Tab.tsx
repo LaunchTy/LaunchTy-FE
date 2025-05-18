@@ -47,9 +47,10 @@ const NavBar = ({ navItems, activeTab, onTabChange, className = '' }: NavBarProp
 	return (
 		<section
 			ref={sectionRef}
-			className={`p-20 font-exo relative overflow-hidden min-h-auto ${className}`}
+			className={`p-10 font-exo relative overflow-hidden min-h-auto ${className}`}
 		>
-			<div className="relative z-20 p-5 border border-gray-300 shadow-md glass-component-2 rounded-full" >
+
+			<div className="relative z-20 p-3 border border-gray-300 shadow-md glass-component-2 rounded-full" >
 				<div className="relative">
 					<nav className="flex items-center justify-center relative w-fit mx-auto">
 						{navItems.map((item, idx) => (
@@ -57,11 +58,10 @@ const NavBar = ({ navItems, activeTab, onTabChange, className = '' }: NavBarProp
 								key={item.id}
 								ref={el => { tabRefs.current[idx] = el; }}
 								onClick={() => onTabChange(item.id)}
-								className={`px-6 py-3 rounded-lg transition-all duration-300 text-white text-xl font-bold bg-transparent ${
-									activeTab === item.id
-										? 'text-white'
-										: 'text-gray-400 hover:text-white'
-								} ${idx !== 0 ? 'ml-8' : ''}`}
+								className={`px-6 py-3 rounded-lg transition-all duration-300 text-white text-xl font-bold bg-transparent ${activeTab === item.id
+									? 'text-white'
+									: 'text-gray-400 hover:text-white'
+									} ${idx !== 0 ? 'ml-8' : ''}`}
 								style={{ background: 'none', position: 'relative' }}
 							>
 								{item.label}

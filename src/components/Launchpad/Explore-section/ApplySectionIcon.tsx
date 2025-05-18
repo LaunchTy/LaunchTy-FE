@@ -1,16 +1,51 @@
 'use client'
 import { motion } from 'framer-motion'
 import Button from '@/components/UI/button/Button'
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
+import Group6 from '@/public/Group6.png'
+import Group15 from '@/public/Group15.png'
+import Image from 'next/image'
 
-const ApplySection = () => {
+const MotionImage = motion(Image) // wrap Image với motion
+
+const ApplySectionIcon = () => {
 	const sectionRef = useRef<HTMLElement>(null)
+
+	// animation nhấp nhô lên xuống: y chạy từ 0 -> 10 -> 0, lặp vô hạn, mượt mà
+	const floatTransition = {
+		y: {
+			repeat: Infinity,
+			repeatType: 'mirror',
+			duration: 2,
+			ease: 'easeInOut',
+		},
+	}
 
 	return (
 		<section
 			ref={sectionRef}
 			className="p-[100px] font-exo relative overflow-hidden"
 		>
+			<MotionImage
+				src={Group6}
+				alt="right-img"
+				width={80}
+				height={80}
+				className="absolute top-10 right-48 -translate-x-[300px] z-10"
+				initial={{ y: 0 }}
+				animate={{ y: 10 }}
+				transition={floatTransition}
+			/>
+			<MotionImage
+				src={Group15}
+				alt="left-img"
+				width={80}
+				height={80}
+				className="absolute top-10 left-[250px] z-10"
+				initial={{ y: 10 }}
+				animate={{ y: 0 }}
+				transition={floatTransition}
+			/>
 			<motion.div
 				initial={{ opacity: 0, y: 20 }}
 				whileInView={{ opacity: 1, y: 0 }}
@@ -40,4 +75,4 @@ const ApplySection = () => {
 	)
 }
 
-export default ApplySection
+export default ApplySectionIcon
