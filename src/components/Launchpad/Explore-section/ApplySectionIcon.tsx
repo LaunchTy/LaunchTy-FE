@@ -11,7 +11,6 @@ const MotionImage = motion(Image) // wrap Image với motion
 const ApplySectionIcon = () => {
 	const sectionRef = useRef<HTMLElement>(null)
 
-	// animation nhấp nhô lên xuống: y chạy từ 0 -> 10 -> 0, lặp vô hạn, mượt mà
 	const floatTransition = {
 		y: {
 			repeat: Infinity,
