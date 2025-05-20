@@ -105,7 +105,7 @@ const MyProject = () => {
 				onTabChange={setActiveTab}
 			/>
 			<ProjectRowCard
-				projects={visibleProjects}
+				projects={visibleProjects} // ✅ truyền đúng số lượng cần hiển thị
 				showCountdown={true}
 				countdownDuration={24}
 				className="custom-class"
