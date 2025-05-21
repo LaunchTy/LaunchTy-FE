@@ -1,10 +1,6 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
-import {
-	motion,
-	useScroll,
-	useTransform,
-} from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import Image from 'next/image'
 
 interface Project {
@@ -69,7 +65,7 @@ const ProjectSection = ({
 
 		const updateCountdowns = () => {
 			const newCountdowns: { [key: string]: string } = {}
-			projects.forEach(project => {
+			projects.forEach((project) => {
 				if (project.endTime) {
 					newCountdowns[project.id] = calculateTimeLeft(project.endTime)
 				} else {

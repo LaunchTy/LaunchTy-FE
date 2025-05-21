@@ -27,7 +27,7 @@ const projects = [
 		max: '1000',
 		timeLeft: '12:00:00',
 		status: 'ongoing',
-		endTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours from now
+		endTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
 	},
 	{
 		id: '2',
@@ -40,7 +40,7 @@ const projects = [
 		max: '1000',
 		timeLeft: '12:00:00',
 		status: 'upcoming',
-		endTime: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString() // 48 hours from now
+		endTime: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(), // 48 hours from now
 	},
 	{
 		id: '3',
@@ -53,7 +53,7 @@ const projects = [
 		max: '1000',
 		timeLeft: '12:00:00',
 		status: 'finished',
-		endTime: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() // 24 hours ago
+		endTime: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 24 hours ago
 	},
 	{
 		id: '4',
@@ -66,7 +66,7 @@ const projects = [
 		max: '1000',
 		timeLeft: '12:00:00',
 		status: 'ongoing',
-		endTime: new Date(Date.now() + 36 * 60 * 60 * 1000).toISOString() // 36 hours from now
+		endTime: new Date(Date.now() + 36 * 60 * 60 * 1000).toISOString(), // 36 hours from now
 	},
 	{
 		id: '5',
@@ -79,7 +79,7 @@ const projects = [
 		max: '1000',
 		timeLeft: '12:00:00',
 		status: 'upcoming',
-		endTime: new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString() // 72 hours from now
+		endTime: new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString(), // 72 hours from now
 	},
 	{
 		id: '6',
@@ -92,7 +92,7 @@ const projects = [
 		max: '1000',
 		timeLeft: '12:00:00',
 		status: 'ongoing',
-		endTime: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString() // 12 hours from now
+		endTime: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(), // 12 hours from now
 	},
 	{
 		id: '7',
@@ -105,7 +105,7 @@ const projects = [
 		max: '1000',
 		timeLeft: '12:00:00',
 		status: 'finished',
-		endTime: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString() // 12 hours ago
+		endTime: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), // 12 hours ago
 	},
 	{
 		id: '8',
@@ -118,7 +118,7 @@ const projects = [
 		max: '1000',
 		timeLeft: '12:00:00',
 		status: 'upcoming',
-		endTime: new Date(Date.now() + 60 * 60 * 1000).toISOString() // 1 hour from now
+		endTime: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour from now
 	},
 	{
 		id: '9',
@@ -131,7 +131,7 @@ const projects = [
 		max: '1000',
 		timeLeft: '12:00:00',
 		status: 'ongoing',
-		endTime: new Date(Date.now() + 18 * 60 * 60 * 1000).toISOString() // 18 hours from now
+		endTime: new Date(Date.now() + 18 * 60 * 60 * 1000).toISOString(), // 18 hours from now
 	},
 ]
 
@@ -153,12 +153,14 @@ const ExploreProjectPage = () => {
 		return () => window.removeEventListener('mousemove', handleMouseMove)
 	}, [mouseX, mouseY])
 
-	const filteredProjects = projects.filter(project => {
+	const filteredProjects = projects.filter((project) => {
 		if (activeTab === 'all') return true
 		return project.status === activeTab
 	})
 
-	const displayedProjects = showAll ? filteredProjects : filteredProjects.slice(0, 6)
+	const displayedProjects = showAll
+		? filteredProjects
+		: filteredProjects.slice(0, 6)
 	const hasMoreProjects = filteredProjects.length > 6
 
 	return (
@@ -170,7 +172,7 @@ const ExploreProjectPage = () => {
 					y: smoothY,
 					translateX: '-50%',
 					translateY: '-50%',
-					zIndex: 50
+					zIndex: 50,
 				}}
 			/>
 			<div className="relative z-20">
@@ -195,7 +197,7 @@ const ExploreProjectPage = () => {
 				/>
 				{hasMoreProjects && !showAll && (
 					<div className="flex justify-center my-10">
-						<Button 
+						<Button
 							className="bg-gradient text-white px-[5rem] py-3 rounded-full hover:opacity-90 transition-all duration-300"
 							onClick={() => setShowAll(true)}
 						>
