@@ -2,7 +2,7 @@
 
 import Button from '../UI/button/Button'
 import { charityDetail } from '../../constants/utils'
-import CharityCard from '../Charity/CharityCard'
+import CharityCard from '../charity/CharityCard'
 import AnimatedBlobs from '../UI/background/AnimatedBlobs'
 import { useAnimation, motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
