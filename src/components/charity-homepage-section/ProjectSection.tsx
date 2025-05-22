@@ -57,15 +57,15 @@ const ProjectSection = () => {
 			variants={containerVariants}
 			initial="hidden"
 			animate={isVisible ? 'visible' : 'hidden'}
-			className="p-20 font-exo relative overflow-hidden"
+			className="p-20 font-exo relative overflow-hidden  "
 		>
 			<AnimatedBlobs count={6} />
-			<div className="flex flex-col gap-10 px-5 py-12 xs:p-10 max-w-7xl mx-auto relative z-10">
+			<div className="flex flex-col gap-10 px-5 py-12 xs:p-10  mx-auto relative z-10 max-w-[1200px]">
 				<div className="flex justify-between">
 					<span className="text-[45px] font-bold">Latest project</span>
 					<Button className="bg-gradient w-36 h-12">More Project</Button>
 				</div>
-				<div className="max-w-[1300px]">
+				<div className="w-full">
 					<div className="grid grid-cols-1 gap-5 xs:grid-cols-2 md:grid-cols-3">
 						{charityDetail.slice(0, 6).map((charity) => (
 							<motion.div
