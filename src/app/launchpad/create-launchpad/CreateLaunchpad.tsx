@@ -7,11 +7,16 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Folder from '@/components/UI/shared/Folder'
-import useLaunchpadStore from '@/store/launchpad/CreateLaunchpadStore'
+import { useLaunchpadStore, LaunchpadData } from '@/store/launchpad/CreateLaunchpadStore'
 import ImageManager from '@/components/UI/shared/ImageManager'
 import { useRouter } from 'next/navigation'
 
-const CreateLaunchpad = () => {
+interface CreateLaunchpadProps {
+	isEditing?: boolean
+	id?: string
+}
+
+const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 	const route = useRouter()
 
 	const {
@@ -87,7 +92,12 @@ const CreateLaunchpad = () => {
 	}
 
 	const onFinalStepCompleted = () => {
-		route.push('/launchpad/create-launchpad/preview')
+		if (isEditing) {
+			// TODO: Call update API here
+			route.push(`/launchpad/${id}`)
+		} else {
+			route.push('/launchpad/create-launchpad/preview')
+		}
 	}
 
 	return (
