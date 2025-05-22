@@ -59,7 +59,7 @@ const ProjectSection = () => {
 			animate={isVisible ? 'visible' : 'hidden'}
 			className="p-20 font-exo relative overflow-hidden  "
 		>
-			<AnimatedBlobs count={6} />
+			{/* <AnimatedBlobs count={6} /> */}
 			<div className="flex flex-col gap-10 px-5 py-12 xs:p-10  mx-auto relative z-10 max-w-[1200px]">
 				<div className="flex justify-between">
 					<span className="text-[45px] font-bold">Latest project</span>
@@ -70,8 +70,8 @@ const ProjectSection = () => {
 						{charityDetail.slice(0, 6).map((charity) => (
 							<motion.div
 								key={charity.id}
-								variants={cardVariants}
-								className="h-full"
+								// variants={cardVariants}
+								className="h-full hover:scale-105 duration-300 transition-transform"
 							>
 								<CharityCard charityDetail={charity} />
 							</motion.div>

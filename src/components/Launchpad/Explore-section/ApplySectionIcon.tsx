@@ -8,7 +8,21 @@ import Image from 'next/image'
 
 const MotionImage = motion(Image) // wrap Image với motion
 
-const ApplySectionIcon = () => {
+type ApplySectionIconProps = {
+	titleLine1: string
+	titleLine2: string
+	subtitle: string
+	buttonText: string
+	onButtonClick?: () => void
+}
+
+const ApplySectionIcon = ({
+	titleLine1,
+	titleLine2,
+	subtitle,
+	buttonText,
+	onButtonClick,
+}: ApplySectionIconProps) => {
 	const sectionRef = useRef<HTMLElement>(null)
 
 	const floatTransition = {
@@ -56,18 +70,21 @@ const ApplySectionIcon = () => {
 				className="flex flex-col justify-center items-center gap-5 glass-component-1 rounded-3xl w-full h-auto p-5 border-2 border-gradient-to-br from-pink-500 to-blue-500"
 			>
 				<div className="flex flex-col items-center font-exo">
-					<span className={`text-[55px] font-bold text-center `}>
-						Apply for project
+					<span className="text-[55px] font-bold text-center">
+						{titleLine1}
 					</span>
-					<span className={`text-[55px] font-bold text-center`}>
-						incubation
+					<span className="text-[55px] font-bold text-center">
+						{titleLine2}
 					</span>
 				</div>
 				<span className="text-[20px] font-light text-center py-5 gap-3 [letter-spacing: 0.8rem]">
-					If you want to start your project, it will be your perfect choice
+					{subtitle}
 				</span>
-				<Button className="bg-gradient text-white px-[5rem] py-3 mb-3 rounded-full hover:opacity-90 transition-all duration-300">
-					Add Project
+				<Button
+					onClick={onButtonClick}
+					className="bg-gradient text-white px-[5rem] py-3 mb-3 rounded-full hover:opacity-90 transition-all duration-300"
+				>
+					{buttonText}
 				</Button>
 			</motion.div>
 		</section>

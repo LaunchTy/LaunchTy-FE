@@ -185,7 +185,13 @@ const ExploreProjectPage = () => {
 					</Button>
 				</div>
 			)}
-			<ApplySectionIcon />
+			<ApplySectionIcon
+				titleLine1="Apply for project"
+				titleLine2="incubation"
+				subtitle="If you want to start your project, it will be your perfect choice"
+				buttonText="Add Project"
+				onButtonClick={() => {}}
+			/>
 		</div>
 	)
 }

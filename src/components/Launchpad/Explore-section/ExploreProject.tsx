@@ -38,7 +38,7 @@ const ExploreProject = ({
 							<input
 								type="text"
 								placeholder={searchPlaceholder}
-								className="w-full px-6 py-4 rounded-[20px] bg-transparent backdrop-blur-sm border border-[#2A2A2A] text-white placeholder-gray-400 focus:outline-none focus:border-[#8132a2] transition-all duration-300"
+								className="w-full px-6 py-4 rounded-[20px] bg-transparent backdrop-blur-xl border border-[#2A2A2A] text-white placeholder-gray-400 focus:outline-none focus:border-[#8132a2] transition-all duration-300"
 								style={{
 									backgroundColor: 'rgba(255, 255, 255, 0.13)',
 									border: '1px solid rgba(255, 255, 255, 0.37)',
@@ -46,7 +46,7 @@ const ExploreProject = ({
 							/>
 							<div className="absolute right-6 top-1/2 -translate-y-1/2">
 								<svg
-									className="w-5 h-5 text-gray-400"
+									className="w-5 h-5 text-white"
 									fill="none"
 									stroke="currentColor"
 									viewBox="0 0 24 24"

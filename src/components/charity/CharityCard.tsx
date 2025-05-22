@@ -12,7 +12,7 @@ type Charity = {
 }
 
 type CharityCardProps = {
-	charityDetail: Charity // 👈 không còn là Charity[]
+	charityDetail: Charity
 }
 
 const CharityCard = ({ charityDetail }: CharityCardProps) => {
@@ -40,7 +40,14 @@ const CharityCard = ({ charityDetail }: CharityCardProps) => {
 			<p className="text-sm text-gray-300 min-h-[70px]">
 				{charity.shortDescription}
 			</p>
-			<div className="h-[4px] bg-gradient w-full"></div>
+			<div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden my-2">
+				<div
+					className="h-full bg-gradient"
+					style={{
+						width: `${Math.min((charity.raised / charity.goal) * 100, 100)}%`,
+					}}
+				></div>
+			</div>
 
 			<div className=" flex justify-between">
 				<span className="text-sm font-semibold">Goal:</span>

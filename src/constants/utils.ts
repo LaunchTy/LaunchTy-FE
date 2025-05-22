@@ -173,6 +173,7 @@ export const charityDetail = [
 			"Millions of people lack access to clean water, leading to severe health issues. This initiative focuses on building wells, water purification systems, and educating communities about hygiene practices.",
 		goal: 100000,
 		raised: 45000,
+		status: "ongoing",
 	},
 	{
 		id: 2,
@@ -186,6 +187,7 @@ export const charityDetail = [
 			"Education is a fundamental right, yet many children in rural areas lack access to schools and learning materials. This program provides resources, builds schools, and trains teachers to ensure every child has a chance to learn.",
 		goal: 150000,
 		raised: 75000,
+		status: "ongoing",
 	},
 	{
 		id: 3,
@@ -199,6 +201,7 @@ export const charityDetail = [
 			"Healthcare is a basic necessity, but many remote areas lack proper facilities. This project funds mobile clinics, medical supplies, and training for local healthcare workers to save lives.",
 		goal: 200000,
 		raised: 120000,
+		status: "ongoing",
 	},
 	{
 		id: 4,
@@ -212,6 +215,7 @@ export const charityDetail = [
 			"Hunger affects millions of people worldwide, especially children. This program distributes food packages, supports local food banks, and educates communities on sustainable farming practices.",
 		goal: 50000,
 		raised: 30000,
+		status: "ongoing",
 	},
 	{
 		id: 5,
@@ -225,6 +229,7 @@ export const charityDetail = [
 			"Wildlife is under threat from habitat destruction and poaching. This project funds conservation programs, anti-poaching patrols, and community education to protect endangered species.",
 		goal: 250000,
 		raised: 180000,
+		status: "ongoing",
 	},
 	{
 		id: 6,
@@ -238,6 +243,7 @@ export const charityDetail = [
 			"Natural disasters leave communities devastated, often without basic necessities. This fund provides emergency supplies, temporary shelters, and resources for rebuilding homes and infrastructure.",
 		goal: 300000,
 		raised: 200000,
+		status: "ongoing",
 	},
 	{
 		id: 7,
@@ -250,6 +256,7 @@ export const charityDetail = [
 			"Mental health is often overlooked, yet it affects millions. This program funds counseling services, awareness campaigns, and community support groups to improve mental well-being.",
 		goal: 80000,
 		raised: 40000,
+		status: "finished",
 	},
 	{
 		id: 8,
@@ -262,6 +269,7 @@ export const charityDetail = [
 			"Renewable energy is key to combating climate change. This initiative installs solar panels, wind turbines, and educates communities on sustainable energy practices.",
 		goal: 400000,
 		raised: 250000,
+		status: "finished",
 	},
 	{
 		id: 9,
@@ -274,6 +282,7 @@ export const charityDetail = [
 			"Animal shelters often struggle with limited resources. This project funds food, medical care, and adoption programs to give animals a second chance at life.",
 		goal: 60000,
 		raised: 35000,
+		status: "finished",
 	},
 	{
 		id: 10,
@@ -286,5 +295,6 @@ export const charityDetail = [
 			"Urban areas often lack greenery, leading to environmental and health issues. This project funds the creation of parks, rooftop gardens, and tree-planting initiatives to enhance urban living.",
 		goal: 120000,
 		raised: 60000,
+		status: "finished",
 	},
 ];
