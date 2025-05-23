@@ -17,6 +17,9 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useState } from 'react'
 import HistoryEvidence from '@/components/charity/charity-detail-section/HistoryEvidence'
 import AddressInfo from '@/components/charity/charity-detail-section/AddressInfo'
+import ProjectImg from '@/public/Project.png';
+import DonorsTable from '@/components/charity/charity-detail-section/DonorsTable'
+import CountdownTimer from '@/components/UI/countdown/CountdownTimer'
 
 interface ModalProjectProps {
 	projectDetail: {
@@ -58,10 +61,13 @@ const CharityDetail = () => {
 				</AnimatePresence>
 
 				<div className="relative px-20 pt-48 pb-12 z-10">
-					<ProjectHeader projectDetail={projectDetail} />
+					<div className="flex justify-between items-center">
+						<ProjectHeader projectDetail={projectDetail} />
+						<CountdownTimer endTime={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()} />
+					</div>
 				</div>
 
-				<div className="flex items-start justify-center gap-12 m-">
+				<div className="flex items-start justify-center gap-12">
 					<div className="w-10/12">
 						<ThumbNailCarousel
 							fullWidthBackground={false}
@@ -75,16 +81,15 @@ const CharityDetail = () => {
 								claim them.
 							</span>
 						</div>
-
 					</div>
 				</div>
-                <div className="flex items-start justify-center gap-12">
+                <div className="flex items-start justify-center gap-9">
 					<div className="w-6/12">
                     <div className="h-[500px]">
                         <HistoryEvidence
                             images={[
                                 {
-                                    src: '/images/charity/evidence1.jpg',
+                                    src: ProjectImg.src,
                                     alt: 'Charity evidence 1'
                                 },
                                 {
@@ -135,6 +140,24 @@ const CharityDetail = () => {
                                 }
                             ]}
                         />
+					</div>
+				</div>
+				<div className = 'flex items-start justify-center gap-12'>
+					<div className='w-10/12'>
+						<DonorsTable 
+							donors={[
+								{ ranking: 1, name: "John Doe", date: "2024-03-15", amount: 5000, currency: "USD" },
+								{ ranking: 2, name: "Jane Smith", date: "2024-03-14", amount: 3000, currency: "USD" },
+								{ ranking: 3, name: "Mike Johnson", date: "2024-03-13", amount: 2000, currency: "USD" },
+								{ ranking: 4, name: "Sarah Wilson", date: "2024-03-12", amount: 1500, currency: "USD" },
+								{ ranking: 5, name: "David Brown", date: "2024-03-11", amount: 1000, currency: "USD" },
+								{ ranking: 6, name: "Emily Davis", date: "2024-03-10", amount: 800, currency: "USD" },
+								{ ranking: 7, name: "Robert Wilson", date: "2024-03-09", amount: 750, currency: "USD" },
+								{ ranking: 8, name: "Lisa Anderson", date: "2024-03-08", amount: 600, currency: "USD" },
+								{ ranking: 9, name: "James Taylor", date: "2024-03-07", amount: 500, currency: "USD" },
+								{ ranking: 10, name: "Emma White", date: "2024-03-06", amount: 450, currency: "USD" },
+							]}
+						/>
 					</div>
 				</div>
 				<ModalBody>
