@@ -8,8 +8,13 @@ import { motion } from 'framer-motion'
 import ThumbNailCarousel from '@/components/UI/carousel/ThumbnailCarousel'
 import ProjectProgress from '@/components/project-component/ProjectProgress'
 import Button from '@/components/UI/button/Button'
-import useLaunchpadStore from '@/store/launchpad/CreateLaunchpadStore'
+import { useLaunchpadStore } from '@/store/launchpad/CreateLaunchpadStore'
 import ProjectHeader from '@/components/project-component/ProjectHeader'
+
+interface SocialLink {
+	platform: string;
+	url: string;
+}
 
 const Preview = () => {
 	const longDescription = useLaunchpadStore((state) => state.longDescription)
@@ -17,9 +22,7 @@ const Preview = () => {
 	const projectName = useLaunchpadStore((state) => state.projectName)
 	const logo = useLaunchpadStore((state) => state.logo)
 	const backgroundImage = useLaunchpadStore((state) => state.backgroundImage)
-	const setBackgroundImage = useLaunchpadStore(
-		(state) => state.setBackgroundImage
-	)
+	const setBackgroundImage = useLaunchpadStore((state) => state.setBackgroundImage)
 	const images = useLaunchpadStore((state) => state.images)
 	const socialLinks = useLaunchpadStore((state) => state.socialLinks)
 
@@ -69,13 +72,13 @@ const Preview = () => {
 					/>
 				</div>
 
-				<div className="flex items-start justify-center gap-12 m-">
+				<div className="flex items-start justify-center gap-12">
 					<div className="w-7/12">
 						{/* Pass images from store to the carousel */}
 						<ThumbNailCarousel
 							fullWidthBackground={false}
 							onImageChange={handleImageChange}
-							projectImages={images.map((image) => ({
+							projectImages={images.map((image: string) => ({
 								src: image,
 								alt: 'Image',
 								description: 'Image',
