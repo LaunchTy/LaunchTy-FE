@@ -20,7 +20,7 @@ interface Project {
 	endTime?: string // Optional end time for countdown
 }
 
-interface CharityRowCardProps {
+interface AdminRowCardProps {
 	adminprojects: Project[]
 	className?: string
 	onEdit?: (projectId: string, action: 'approve' | 'deny') => void
@@ -28,13 +28,13 @@ interface CharityRowCardProps {
 	countdownDuration?: number // in hours
 }
 
-const CharityRowCard = ({
+const AdminRowCard = ({
 	adminprojects,
 	className = '',
 	showCountdown = true,
 	countdownDuration = 12, // in hours
 	onEdit,
-}: CharityRowCardProps) => {
+}: AdminRowCardProps) => {
 	const sectionRef = useRef<HTMLElement>(null)
 	const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
 	const mouseX = useMotionValue(0)
@@ -109,7 +109,7 @@ const CharityRowCard = ({
 	return (
 		<section
 			ref={sectionRef}
-			className={`px-20 py-10 font-exo relative overflow-hidden min-h-auto ${className}`}
+			className={`pr-20 font-exo relative overflow-hidden min-h-auto ${className}`}
 		>
 			<div className="flex flex-col gap-5 z-20 relative">
 				{adminprojects.map((project, index) => (
@@ -146,7 +146,7 @@ const CharityRowCard = ({
 								</p>
 							</div>
 
-							<div className="grid grid-cols-4 gap-6 items-center">
+							<div className="grid grid-cols-3 gap-6 items-center">
 								{/* Token */}
 								<div className="text-white text-sm">
 									<span className="font-medium">Token:</span>{' '}
@@ -161,28 +161,25 @@ const CharityRowCard = ({
 										: '--'}
 								</div>
 
-								{/* Approve Button */}
-								<div className="flex justify-end">
+								{/* Approve & Deny Buttons */}
+								<div className="flex justify-end gap-4">
 									{onEdit && (
-										<Button
-											onClick={() => onEdit?.(project.id, 'approve')}
-											className="bg-gradient text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300"
-										>
-											Approve
-										</Button>
-									)}
+										<>
+											<Button
+												onClick={() => onEdit?.(project.id, 'approve')}
+												className="bg-gradient text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300"
+											>
+												Approve
+											</Button>
 
-									{/* Deny Button */}
-									<div className="flex justify-end">
-										{onEdit && (
 											<Button
 												onClick={() => onEdit?.(project.id, 'deny')}
 												className="bg-red-600 text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300"
 											>
 												Deny
 											</Button>
-										)}
-									</div>
+										</>
+									)}
 								</div>
 							</div>
 						</div>
@@ -193,4 +190,4 @@ const CharityRowCard = ({
 	)
 }
 
-export default CharityRowCard
+export default AdminRowCard

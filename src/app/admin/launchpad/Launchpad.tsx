@@ -1,9 +1,11 @@
+'use client'
 import React from 'react'
 import SplitText from '@/components/UI/text-effect/SplitText'
-import CharityRowCard from '@/components/admin/CharityRowCard'
-import Myproject from '@/public/MyProject.svg' // Adjust the import path as necessary
+import AdminRowCard from '@/components/admin/AdminRowCard'
+import Myproject from '@/public/Myproject.svg' // Adjust the import path as necessary
 import { useState } from 'react' // Adjust the import path as necessary
-import { useEffect } from 'react' // Adjust the import path as necessary
+import LeftNavBar from '@/components/admin/LeftNavBar' // Adjust the import path as necessary
+import Button from '@/components/UI/button/Button' // Adjust the import path as necessary
 
 const adminprojects = [
 	{
@@ -65,9 +67,9 @@ const adminprojects = [
 	// Add more if needed
 ]
 
-const Charity = () => {
+const Launchpad = () => {
 	const [visibleCount, setVisibleCount] = useState(6)
-
+	const [activeMenu, setActiveMenu] = useState('launchpad')
 	const handleShowMore = () => {
 		setVisibleCount((prev) => prev + 6)
 	}
@@ -98,7 +100,36 @@ const Charity = () => {
 					rootMargin="-50px"
 				/>
 			</div>
+			<div className="flex min-h-screen pt-10 gap-10">
+				<div className="pl-20 h-full flex flex-col sticky top-6">
+					<LeftNavBar activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+				</div>
+
+				<div className=" h-full flex flex-col">
+					<div className="h-full">
+						<AdminRowCard
+							adminprojects={visibleProjects}
+							showCountdown={true}
+							countdownDuration={24}
+							className="custom-class"
+							onEdit={(projectId) => {
+								console.log('Edit project:', projectId)
+							}}
+						/>
+						{hasMore && (
+							<div className="align-center flex flex-col justify-center items-center p-8">
+								<Button
+									onClick={handleShowMore}
+									className="font-bold bg-gradient text-white px-9 py-2.5 hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300"
+								>
+									Show more
+								</Button>
+							</div>
+						)}
+					</div>
+				</div>
+			</div>
 		</div>
 	)
 }
-export default Charity
+export default Launchpad
