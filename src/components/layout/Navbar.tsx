@@ -7,6 +7,9 @@ import { useEffect, useState } from 'react'
 import Logo from '@/public/Logo.png'
 import { cn } from '@/lib/utils'
 import Button from '../UI/button/Button'
+import ConnectWalletButton from '../UI/button/ConnectWalletButton'
+
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 const Navbar = ({
 	navItems,
@@ -102,9 +105,11 @@ const Navbar = ({
 								/>
 							</svg>
 						</div>
-						<Button className="hidden lg:block bg-gradient text-white px-4 sm:px-5 py-2 rounded-full shadow-[0_0_10px_rgba(192,74,241,0.6),0_0_20px_rgba(39,159,232,0.4)] hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 text-sm sm:text-md">
+						{/* <Button className="hidden lg:block bg-gradient text-white px-4 sm:px-5 py-2 rounded-full shadow-[0_0_10px_rgba(192,74,241,0.6),0_0_20px_rgba(39,159,232,0.4)] hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 text-sm sm:text-md">
 							Connect Wallet
-						</Button>
+						</Button> */}
+						{/* <ConnectButton accountStatus="avatar" />{' '} */}
+						<ConnectWalletButton />
 					</div>
 					<div className="lg:hidden flex flex-col justify-end">
 						<button onClick={toggleNavbar}>
