@@ -3,6 +3,7 @@ import { Exo } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
+import { Web3Provider } from '../provider/provider'
 
 const exo = Exo({ subsets: ['latin'], variable: '--font-exo' }) // Added Exo font
 
@@ -21,15 +22,17 @@ export default function RootLayout({
 			<body
 				className={`${exo.variable}`} // Added Exo variable
 			>
-				<Navbar
-					navItems={[
-						{ name: 'About us', link: '/' },
-						{ name: 'Charity', link: '/about' },
-						{ name: 'Launchpad', link: '/launchpad/explore-launchpad' },
-					]}
-				/>
-				{children}
-				<Footer />
+				<Web3Provider>
+					<Navbar
+						navItems={[
+							{ name: 'About us', link: '/' },
+							{ name: 'Charity', link: '/about' },
+							{ name: 'Launchpad', link: '/launchpad/explore-project' },
+						]}
+					/>
+					{children}
+					<Footer />
+				</Web3Provider>
 			</body>
 		</html>
 	)
