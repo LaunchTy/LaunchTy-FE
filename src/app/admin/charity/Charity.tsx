@@ -6,6 +6,7 @@ import Myproject from '@/public/Myproject.svg' // Adjust the import path as nece
 import { useState } from 'react' // Adjust the import path as necessary
 import LeftNavBar from '@/components/admin/LeftNavBar' // Adjust the import path as necessary
 import Button from '@/components/UI/button/Button' // Adjust the import path as necessary
+import router from 'next/router' // Adjust the import path as necessary
 
 const adminprojects = [
 	{
@@ -112,8 +113,9 @@ const Charity = () => {
 							countdownDuration={24}
 							className="custom-class"
 							onEdit={(projectId) => {
-								console.log('Edit project:', projectId)
+								router.push(`/admin/charity-detail/${projectId}`)
 							}}
+							path="/admin/charity-detail"
 						/>
 						{hasMore && (
 							<div className="align-center flex flex-col justify-center items-center p-8">

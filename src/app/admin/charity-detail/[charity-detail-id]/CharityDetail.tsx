@@ -20,6 +20,7 @@ import AddressInfo from '@/components/charity/charity-detail-section/AddressInfo
 import ProjectImg from '@/public/Project.png'
 import DonorsTable from '@/components/charity/charity-detail-section/DonorsTable'
 import CountdownTimer from '@/components/UI/countdown/CountdownTimer'
+import Button from '@/components/UI/button/Button'
 
 interface ModalProjectProps {
 	projectDetail: {
@@ -146,114 +147,51 @@ const CharityDetail = () => {
 							]}
 						/>
 					</div>
-				</div>
-				<div className="flex items-start justify-center gap-12">
-					<div className="w-10/12">
-						<DonorsTable
-							donors={[
-								{
-									ranking: 1,
-									name: 'John Doe',
-									date: '2024-03-15',
-									amount: 5000,
-									currency: 'USD',
-								},
-								{
-									ranking: 2,
-									name: 'Jane Smith',
-									date: '2024-03-14',
-									amount: 3000,
-									currency: 'USD',
-								},
-								{
-									ranking: 3,
-									name: 'Mike Johnson',
-									date: '2024-03-13',
-									amount: 2000,
-									currency: 'USD',
-								},
-								{
-									ranking: 4,
-									name: 'Sarah Wilson',
-									date: '2024-03-12',
-									amount: 1500,
-									currency: 'USD',
-								},
-								{
-									ranking: 5,
-									name: 'David Brown',
-									date: '2024-03-11',
-									amount: 1000,
-									currency: 'USD',
-								},
-								{
-									ranking: 6,
-									name: 'Emily Davis',
-									date: '2024-03-10',
-									amount: 800,
-									currency: 'USD',
-								},
-								{
-									ranking: 7,
-									name: 'Robert Wilson',
-									date: '2024-03-09',
-									amount: 750,
-									currency: 'USD',
-								},
-								{
-									ranking: 8,
-									name: 'Lisa Anderson',
-									date: '2024-03-08',
-									amount: 600,
-									currency: 'USD',
-								},
-								{
-									ranking: 9,
-									name: 'James Taylor',
-									date: '2024-03-07',
-									amount: 500,
-									currency: 'USD',
-								},
-								{
-									ranking: 10,
-									name: 'Emma White',
-									date: '2024-03-06',
-									amount: 450,
-									currency: 'USD',
-								},
-							]}
-						/>
-					</div>
-				</div>
-				<ModalBody>
-					<ModalContent>
-						<div className="z-30">
-							<div className="mb-9 font-orbitron font-bold text-white text-center text-xl">
-								All Pool
+
+					<ModalBody>
+						<ModalContent>
+							<div className="z-30">
+								<div className="mb-9 font-orbitron font-bold text-white text-center text-xl">
+									All Pool
+								</div>
+								<div className="max-h-96 overflow-x-hidden overflow-y-auto px-4">
+									{projectDetail.tokenPools.map((pool) => (
+										<div key={pool.id}>
+											<motion.div
+												className="glass-component-1 h-12 mb-6 rounded-xl flex flex-row items-center hover:bg-gray-700 transition-colors duration-300"
+												whileHover={{
+													scale: 1.05,
+												}}
+												whileTap={{ scale: 0.95 }}
+												initial={{ opacity: 0, y: 20 }}
+												animate={{ opacity: 1, y: 0 }}
+												transition={{ duration: 0.3 }}
+											>
+												{/* Add content inside the glass component if needed */}
+												<div className="mx-3 bg-white rounded-full w-8 h-8"></div>
+												<div className="text-white font-bold">{pool.name}</div>
+											</motion.div>
+										</div>
+									))}
+								</div>
 							</div>
-							<div className="max-h-96 overflow-x-hidden overflow-y-auto px-4">
-								{projectDetail.tokenPools.map((pool) => (
-									<div key={pool.id}>
-										<motion.div
-											className="glass-component-1 h-12 mb-6 rounded-xl flex flex-row items-center hover:bg-gray-700 transition-colors duration-300"
-											whileHover={{
-												scale: 1.05,
-											}}
-											whileTap={{ scale: 0.95 }}
-											initial={{ opacity: 0, y: 20 }}
-											animate={{ opacity: 1, y: 0 }}
-											transition={{ duration: 0.3 }}
-										>
-											{/* Add content inside the glass component if needed */}
-											<div className="mx-3 bg-white rounded-full w-8 h-8"></div>
-											<div className="text-white font-bold">{pool.name}</div>
-										</motion.div>
-									</div>
-								))}
-							</div>
-						</div>
-					</ModalContent>
-				</ModalBody>
+						</ModalContent>
+					</ModalBody>
+				</div>
+				<div className="flex items-center justify-center p-5 gap-3">
+					<Button
+						// onClick={() => onEdit?.(project.id, 'approve')}
+						className="bg-gradient text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300"
+					>
+						Approve
+					</Button>
+					<Button
+						// onClick={() => onEdit?.(project.id, 'deny')}
+						className="bg-red-600 text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300"
+					>
+						Deny
+					</Button>
+				</div>
 			</div>
 		</Modal>
 	)

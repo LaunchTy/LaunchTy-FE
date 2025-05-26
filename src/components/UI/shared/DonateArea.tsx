@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import Button from '../button/Button'
-const StakeArea = () => {
+const StakeArea = ({ enabled = false }: { enabled: boolean }) => {
 	const [tokenAmount, setTokenAmount] = useState(0)
+	const isButtonDisabled = !enabled || tokenAmount <= 0
 	return (
 		<div className="">
 			<div className="glass-component-1 p-12 text-white rounded-xl h-[400px]">
@@ -18,8 +19,9 @@ const StakeArea = () => {
     						[&::-webkit-outer-spin-button]:appearance-none"
 							placeholder="--USDT"
 							onChange={(e) => {
-								setTokenAmount(parseInt(e.target.value))
+								setTokenAmount(parseInt(e.target.value) || 0)
 							}}
+							disabled={!enabled} // vô hiệu hoá input nếu không được phép
 						/>
 						<div className="w-1/3 flex flex-row items-center justify-end">
 							<svg
@@ -55,9 +57,11 @@ const StakeArea = () => {
 
 				<div className=" flex flex-row gap-2 mt-10 w-full">
 					{/* stake button */}
-
 					<Button
-						className="w-full bg-gradient font-extrabold glass-component-1"
+						className={`w-full font-extrabold transition ${
+							isButtonDisabled ? 'bg-gray-500' : 'bg-gradient glass-component-1'
+						}`}
+						disabled={isButtonDisabled}
 						onClick={() => {
 							alert('Donate button clicked')
 						}}

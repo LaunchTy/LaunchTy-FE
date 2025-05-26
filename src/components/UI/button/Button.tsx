@@ -18,7 +18,7 @@ const Button: React.FC<ButtonProps> = ({
 			onClick={onClick}
 			className={
 				disabled
-					? 'cursor-not-allowed rounded-full bg-white/10 opacity-50 text-white px-4 py-2'
+					? 'cursor-not-allowed rounded-full bg-white/10 opacity-50 text-white px-4 py-2 w-full'
 					: `px-4 py-2 text-white rounded-full font-exo transition-all duration-300 ease-in-out 
 					hover:opacity-80 hover:shadow-lg hover:scale-105 
 					active:scale-95 active:opacity-90 ${className}

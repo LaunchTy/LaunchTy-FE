@@ -10,6 +10,7 @@ import {
 	useSpring,
 } from 'framer-motion'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 interface Project {
 	id: string
 	title: string
@@ -25,22 +26,24 @@ interface AdminRowCardProps {
 	className?: string
 	onEdit?: (projectId: string, action: 'approve' | 'deny') => void
 	showCountdown?: boolean
-	countdownDuration?: number // in hours
+	countdownDuration?: number
+	path?: string
 }
 
 const AdminRowCard = ({
 	adminprojects,
 	className = '',
 	showCountdown = true,
-	countdownDuration = 12, // in hours
+	countdownDuration = 12,
 	onEdit,
+	path,
 }: AdminRowCardProps) => {
 	const sectionRef = useRef<HTMLElement>(null)
-	const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+	const [countdowns, setCountdowns] = useState<{ [key: string]: string }>({})
+	const router = useRouter()
+
 	const mouseX = useMotionValue(0)
 	const mouseY = useMotionValue(0)
-	const [countdowns, setCountdowns] = useState<{ [key: string]: string }>({})
-
 	const smoothX = useSpring(mouseX, { damping: 50, stiffness: 300 })
 	const smoothY = useSpring(mouseY, { damping: 50, stiffness: 300 })
 
@@ -118,7 +121,8 @@ const AdminRowCard = ({
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.4, ease: 'easeOut' }}
-						className="relative z-20 px-6 py-[7px] border border-gray-300 shadow-md glass-component-2 rounded-[40px] flex items-center gap-4"
+						className="relative z-20 px-6 py-[7px] border border-gray-300 shadow-md glass-component-2 rounded-[40px] flex items-center gap-4 cursor-pointer"
+						onClick={() => router.push(`${path}/${project.id}`)}
 					>
 						{/* Project Image */}
 						<div className="w-[60px] h-[60px] flex-shrink-0 rounded-full overflow-hidden">
