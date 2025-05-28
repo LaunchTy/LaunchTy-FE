@@ -1,0 +1,100 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id        String   @id @default(uuid())
+  wallet_address String   @unique
+  user_name      String
+  create_date    DateTime @default(now())
+
+  donations  Donation[]
+  deposits   Deposit[]
+  charities  Charity[]
+  launchpads Launchpad[]
+}
+
+model Launchpad {
+  launchpad_id         String    @id @default(uuid())
+  token_address        String
+  launchpad_token      String
+  max_stake            Float
+  min_stake            Float
+  soft_cap             Float
+  hard_cap             Float
+  launchpad_name       String
+  launchpad_logo       String
+  launchpad_short_des  String
+  launchpad_long_des   String
+  launchpad_fb         String?
+  launchpad_x          String?
+  launchpad_ig         String?
+  launchpad_website    String?
+  launchpad_whitepaper String?
+  launchpad_img        String[]
+  launchpad_start_date DateTime
+  launchpad_end_date   DateTime
+  project_owner_id     String
+  user                 User      @relation(fields: [project_owner_id], references: [user_id])
+  deposits             Deposit[]
+}
+
+model Deposit {
+  deposit_id   String   @id @default(uuid())
+  datetime     DateTime @default(now())
+  amount       Float
+  tx_hash      String?
+  user_id      String
+  launchpad_id String
+
+  user      User      @relation(fields: [user_id], references: [user_id])
+  launchpad Launchpad @relation(fields: [launchpad_id], references: [launchpad_id])
+}
+
+model Charity {
+  charity_id           String     @id @default(uuid())
+  charity_name         String
+  charity_short_des    String
+  charity_long_des     String
+  charity_token_symbol String
+  charity_logo         String
+  charity_fb           String?
+  charity_x            String?
+  charity_ig           String?
+  charity_website      String?
+  charity_whitepaper   String?
+  charity_img          String[]
+  charity_start_date   DateTime
+  charity_end_date     DateTime
+  license_certificate  String?
+  evidence             String[]
+  repre_name           String
+  repre_phone          String
+  repre_id             String
+  repre_faceid         String
+  user                 User       @relation(fields: [repre_id], references: [user_id])
+  donations            Donation[]
+}
+
+model Donation {
+  donate_id  String   @id @default(uuid())
+  amount     Float
+  datetime   DateTime @default(now())
+  tx_hash    String?
+  user_id    String
+  charity_id String
+  user       User     @relation(fields: [user_id], references: [user_id])
+  charity    Charity  @relation(fields: [charity_id], references: [charity_id])
+}
