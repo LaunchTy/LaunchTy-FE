@@ -6,12 +6,18 @@ import ReactDOM from 'react-dom'
 interface ImageItem {
 	id: string
 	base64: string
-	name?: string // Optional name for display purposes
+	name?: string
+	type: string
 }
 
 interface LogoItem {
 	base64: string
-	name?: string // Optional name for display purposes
+	name?: string
+}
+
+interface TabConfig {
+	id: string
+	label: string
 }
 
 interface ImageManagerProps {
@@ -24,6 +30,8 @@ interface ImageManagerProps {
 	buttonText?: string
 	emptyText?: string
 	showLogoTab?: boolean
+	tabs?: TabConfig[] // Custom tabs configuration
+	defaultTab?: string // Default active tab
 }
 
 const ImageManager: React.FC<ImageManagerProps> = ({
@@ -36,9 +44,11 @@ const ImageManager: React.FC<ImageManagerProps> = ({
 	buttonText = 'Manage Images',
 	emptyText = 'No images uploaded yet',
 	showLogoTab = false,
+	tabs = [], // Default to empty array if no tabs provided
+	defaultTab = 'project', // Default to 'project' if no default tab provided
 }) => {
 	const [isModalOpen, setIsModalOpen] = useState(false)
-	const [activeTab, setActiveTab] = useState<'images' | 'logo'>('images')
+	const [activeTab, setActiveTab] = useState<string>(defaultTab)
 	const modalRef = useRef<HTMLDivElement>(null)
 	const [modalAnimation, setModalAnimation] = useState('')
 
@@ -90,11 +100,16 @@ const ImageManager: React.FC<ImageManagerProps> = ({
 		}
 	}
 
+	// Filter images by type
+	const getImagesByType = (type: string) => {
+		return images.filter(img => img.type === type)
+	}
+
 	return (
 		<div className={`relative ${className}`}>
 			{/* Trigger Button */}
 			<button
-				className="w-full px-4 py-2 text-center  border rounded-xl focus:outline-none flex items-center glass-component-2 justify-center space-x-2 text-white hover:bg-gray-700/30 transition-colors"
+				className="w-full px-4 py-2 text-center border rounded-xl focus:outline-none flex items-center glass-component-2 justify-center space-x-2 text-white hover:bg-gray-700/30 transition-colors"
 				onClick={openModalWithAnimation}
 				type="button"
 				aria-haspopup="dialog"
@@ -114,7 +129,7 @@ const ImageManager: React.FC<ImageManagerProps> = ({
 							className={`bg-black border border-gray-700 text-white rounded-3xl max-w-4xl w-full p-6 transform z-10 ${modalAnimation}`}
 							style={{ maxHeight: '85vh' }}
 						>
-							<div className="absolute top-[-50px] left-[200px] h-[600px] w-[600px] rounded-full opacity-20 blur-[5000px]  z-0"></div>
+							<div className="absolute top-[-50px] left-[200px] h-[600px] w-[600px] rounded-full opacity-20 blur-[5000px] z-0"></div>
 							<div className="flex justify-between items-center mb-6">
 								<h2 className="text-xl font-comfortaa">{title}</h2>
 								<button
@@ -125,25 +140,29 @@ const ImageManager: React.FC<ImageManagerProps> = ({
 								</button>
 							</div>
 
-							{showLogoTab && (
-								<div className="flex justify-center border-b border-gray-700 mb-8 sticky top-0 bg-black z-10 pb-0">
+							{/* Tabs */}
+							<div className="flex justify-center border-b border-gray-700 mb-8 sticky top-0 bg-black z-10 pb-0 overflow-x-auto">
+								{tabs.map((tab) => (
 									<button
-										className={`px-8 py-4 font-comfortaa text-base transition-all duration-200 relative ${
-											activeTab === 'images'
+										key={tab.id}
+										className={`px-8 py-4 font-comfortaa text-base transition-all duration-200 relative whitespace-nowrap ${
+											activeTab === tab.id
 												? 'text-blue-400 font-medium'
 												: 'text-gray-400 hover:text-gray-300'
 										}`}
-										onClick={() => setActiveTab('images')}
+										onClick={() => setActiveTab(tab.id)}
 										style={{
 											zIndex: 20,
 											outline: 'none',
 										}}
 									>
-										Project Images
-										{activeTab === 'images' && (
+										{tab.label}
+										{activeTab === tab.id && (
 											<div className="absolute bottom-0 left-0 right-0 h-[2px] bg-blue-400"></div>
 										)}
 									</button>
+								))}
+								{showLogoTab && (
 									<button
 										className={`px-8 py-4 font-comfortaa text-base transition-all duration-200 relative ${
 											activeTab === 'logo'
@@ -161,24 +180,24 @@ const ImageManager: React.FC<ImageManagerProps> = ({
 											<div className="absolute bottom-0 left-0 right-0 h-[2px] bg-blue-400"></div>
 										)}
 									</button>
-								</div>
-							)}
+								)}
+							</div>
 
 							<div
 								className="overflow-y-auto"
 								style={{ maxHeight: 'calc(85vh - 150px)' }}
 							>
-								{activeTab === 'images' && (
+								{activeTab !== 'logo' && (
 									<>
-										{images.length > 0 ? (
+										{getImagesByType(activeTab).length > 0 ? (
 											<div
 												className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 ${
-													images.length <= 4
+													getImagesByType(activeTab).length <= 4
 														? ''
 														: 'pr-2 overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-white/5 [&::-webkit-scrollbar-track]:rounded-lg [&::-webkit-scrollbar-thumb]:bg-blue-500/50 [&::-webkit-scrollbar-thumb]:rounded-lg [&::-webkit-scrollbar-thumb:hover]:bg-blue-500/70'
 												}`}
 											>
-												{images.map((image) => (
+												{getImagesByType(activeTab).map((image) => (
 													<div
 														key={image.id}
 														className="group glass-component-3 rounded-xl p-2 flex flex-col items-center relative"
@@ -186,7 +205,7 @@ const ImageManager: React.FC<ImageManagerProps> = ({
 														<div className="w-full aspect-square overflow-hidden rounded-lg mb-2 relative">
 															<Image
 																src={image.base64}
-																alt={`Image ${image.id}`}
+																alt={image.name || `Image ${image.id}`}
 																width={800}
 																height={800}
 																className="w-full h-full object-cover"

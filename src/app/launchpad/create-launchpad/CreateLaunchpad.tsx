@@ -645,6 +645,7 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 										id: index.toString(),
 										base64,
 										name: `Image ${index + 1}`,
+										type: 'project'
 									}))}
 									logo={
 										logo
@@ -660,6 +661,13 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 									buttonText="Manage Uploaded Images"
 									emptyText="No images uploaded yet"
 									showLogoTab={true}
+									tabs={[
+										{
+											id: 'project',
+											label: 'Project Images'
+										}
+									]}
+									defaultTab="project"
 								/>
 							</div>
 

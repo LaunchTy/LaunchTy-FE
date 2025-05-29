@@ -618,7 +618,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 											type="text"
 											value={representativeName}
 											onChange={(e) => setRepresentativeName(e.target.value)}
-											placeholder="Enter project name"
+											placeholder="Enter Representative name"
 											className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
     															[&::-webkit-inner-spin-button]:appearance-none 
     															[&::-webkit-outer-spin-button]:appearance-none"
@@ -634,7 +634,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 											type="text"
 											value={phoneNumber}
 											onChange={(e) => setPhoneNumber(e.target.value)}
-											placeholder="Enter project name"
+											placeholder="Enter phone number"
 											className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
     															[&::-webkit-inner-spin-button]:appearance-none 
     															[&::-webkit-outer-spin-button]:appearance-none"
@@ -736,11 +736,38 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 								</div>
 								<div className="w-full ">
 									<ImageManager
-										images={images.map((base64: string, index: number) => ({
-											id: index.toString(),
-											base64,
-											name: `Image ${index + 1}`,
-										}))}
+										images={[
+											...images.map((base64: string, index: number) => ({
+												id: `project-${index}`,
+												base64,
+												name: `Project Image ${index + 1}`,
+												type: 'project'
+											})),
+											...(licenseAndCertification ? [{
+												id: 'license',
+												base64: licenseAndCertification,
+												name: 'License & Certification',
+												type: 'license'
+											}] : []),
+											...(historyEvidence ? [{
+												id: 'history',
+												base64: historyEvidence,
+												name: 'History Evidence',
+												type: 'history'
+											}] : []),
+											...(personalId ? [{
+												id: 'personalId',
+												base64: personalId,
+												name: 'Personal ID',
+												type: 'personalId'
+											}] : []),
+											...(faceId ? [{
+												id: 'faceId',
+												base64: faceId,
+												name: 'Face ID',
+												type: 'faceId'
+											}] : [])
+										]}
 										logo={
 											logo
 												? {
@@ -749,12 +776,48 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 													}
 												: null
 										}
-										onDeleteImage={handleImageDelete}
+										onDeleteImage={(id) => {
+											const [type, index] = id.split('-')
+											if (type === 'project') {
+												removeImage(parseInt(index))
+											} else if (type === 'license') {
+												setLicenseAndCertification(null)
+											} else if (type === 'history') {
+												setHistoryEvidence(null)
+											} else if (type === 'personalId') {
+												setPersonalId(null)
+											} else if (type === 'faceId') {
+												setFaceId(null)
+											}
+										}}
 										onDeleteLogo={handleLogoDelete}
 										title="Manage Project Media"
 										buttonText="Manage Uploaded Images"
 										emptyText="No images uploaded yet"
 										showLogoTab={true}
+										tabs={[
+											{
+												id: 'project',
+												label: 'Project Images'
+											},
+											{
+												id: 'license',
+												label: 'License & Certification'
+											},
+											{
+												id: 'history',
+												label: 'History Evidence'
+											},
+											{
+												id: 'personalId',
+												label: 'Personal ID'
+											},
+											{
+												id: 'faceId',
+												label: 'Face ID'
+											}
+										]}
+										defaultTab="project"
 									/>
 								</div>
 							</motion.div>
