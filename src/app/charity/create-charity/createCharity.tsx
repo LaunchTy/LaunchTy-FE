@@ -53,21 +53,13 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 		setFaceId,
 	} = useCharityStore()
 
-	// Separate state for different types of images
-	const [projectImages, setProjectImages] = useState<string[]>([])
-	const [idImages, setIdImages] = useState<string[]>([])
-
-	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'project' | 'id') => {
+	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files) {
 			const files = Array.from(e.target.files)
 			const base64Images = await Promise.all(
 				files.map((file) => convertToBase64(file))
 			)
-			if (type === 'project') {
-				setProjectImages([...projectImages, ...base64Images])
-			} else {
-				setIdImages([...idImages, ...base64Images])
-			}
+			setImages([...images, ...base64Images])
 		}
 	}
 
@@ -106,14 +98,10 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 		}
 	}
 
-	const handleImageDelete = (id: string, type: 'project' | 'id') => {
+	const handleImageDelete = (id: string) => {
 		const index = parseInt(id, 10)
 		if (!isNaN(index)) {
-			if (type === 'project') {
-				setProjectImages(projectImages.filter((_, i) => i !== index))
-			} else {
-				setIdImages(idImages.filter((_, i) => i !== index))
-			}
+			removeImage(index)
 		}
 	}
 
@@ -131,50 +119,11 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 	}
 
 	const onFinalStepCompleted = () => {
-		// Validate required fields
-		const requiredFields = {
-			projectName,
-			shortDescription,
-			longDescription,
-			representativeName,
-			phoneNumber,
-			logo,
-			licenseAndCertification,
-			historyEvidence,
-			personalId,
-			faceId
-		};
-
-		const missingFields = Object.entries(requiredFields)
-			.filter(([_, value]) => !value)
-			.map(([field]) => field.replace(/([A-Z])/g, ' $1').toLowerCase());
-
-		if (missingFields.length > 0) {
-			alert(`Please fill in all required fields: ${missingFields.join(', ')}`);
-			return;
-		}
-
-		// Validate social links
-		const hasAtLeastOneSocialLink = Object.values(socialLinks).some(link => link.trim() !== '');
-		if (!hasAtLeastOneSocialLink) {
-			alert('Please provide at least one social media link');
-			return;
-		}
-
-		// Validate project images
-		if (projectImages.length === 0) {
-			alert('Please upload at least one project image');
-			return;
-		}
-
-		// Update store with project images
-		setImages(projectImages);
-
 		if (isEditing) {
 			// TODO: Call update API here
-			router.push(`/charity/${id}`);
+			router.push(`/charity/${id}`)
 		} else {
-			router.push('/charity/create-charity/preview');
+			router.push('/charity/create-charity/preview')
 		}
 	}
 
@@ -304,54 +253,70 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 					{/* --------------------------------------Create launchpad form----------------------------------------------------- */}
 
 					<Step>
-						<div className="flex flex-col items-center justify-center w-full gap-5">
+						<div className="">
+							{/* <span className="text-xl   flex justify-start w-full">
+								Select staking token
+							</span> */}
+
 							<motion.div
 								initial={{ opacity: 0, y: 50 }}
 								animate={{ opacity: 1, y: 0 }}
 								transition={{ duration: 0.5 }}
-								className="flex items-center justify-center flex-col gap-5 w-full"
+								className=" flex items-center justify-center flex-col gap-5"
 							>
-								{/* Project Name and Description */}
 								<div className="w-full flex items-center justify-between p-2 gap-3">
+									{/* Chain indicator */}
+
 									<div className="w-full flex flex-col gap-3 relative">
-										<span className="text-lg">Project Name</span>
+										<span className=" text-lg">Project Name</span>
 										<input
 											type="text"
 											value={projectName}
 											onChange={(e) => setProjectName(e.target.value)}
 											placeholder="Enter project name"
-											className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none"
+											className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+    															[&::-webkit-inner-spin-button]:appearance-none 
+    															[&::-webkit-outer-spin-button]:appearance-none"
 										/>
 									</div>
 								</div>
 
-								{/* Short Description */}
 								<div className="w-full flex flex-col p-2 gap-3">
 									<span className="text-lg">Short Description</span>
-									<textarea
-										id="shortDescription"
-										value={shortDescription}
-										onChange={(e) => setShortDescription(e.target.value)}
-										placeholder="Brief overview of your launchpad (100 words max)"
-										className="p-4 text-white rounded-xl glass-component-2 h-32 resize-none w-full text-sm"
-									/>
+									<div className="flex gap-5">
+										<textarea
+											id="shortDescription"
+											value={shortDescription}
+											onChange={(e) => setShortDescription(e.target.value)}
+											placeholder="Brief overview of your launchpad (100 words max)"
+											className="p-4  text-white rounded-xl glass-component-2 h-32 resize-none w-full text-sm"
+										/>
+									</div>
+									{/* <div className="text-xs text-gray-400 text-right font-comfortaa">
+										{
+											createProjectStore.shortDescription
+												.trim()
+												.split(/\s+/)
+												.filter(Boolean).length
+										}
+										/100 words
+									</div> */}
 								</div>
 
-								{/* Long Description */}
 								<div className="w-full flex flex-col p-2 gap-3">
-									<span className="text-lg">Long Description</span>
-									<textarea
-										id="longDescription"
-										value={longDescription}
-										onChange={(e) => setLongDescription(e.target.value)}
-										placeholder="Detailed description of your launchpad"
-										className="p-4 rounded-xl glass-component-2 text-white h-56 resize-none w-full text-sm"
-									/>
+									<span className=" text-lg">Long Description</span>
+									<div className="flex gap-5">
+										<textarea
+											id="longDescription"
+											value={longDescription}
+											onChange={(e) => setLongDescription(e.target.value)}
+											placeholder="Detailed description of your launchpad"
+											className="p-4 rounded-xl glass-component-2 text-white  h-56 resize-none w-full text-sm"
+										/>
+									</div>
 								</div>
-
-								{/* Social Links */}
 								<div className="w-full flex flex-col p-2 gap-5">
-									<span className="text-lg">Socials</span>
+									<span className=" text-lg">Socials</span>
 									<div className="flex flex-col gap-5">
 										<div className="flex gap-5">
 											<svg
@@ -484,20 +449,20 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 								<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
 									{/* Project Images Upload */}
 									<div className="w-full flex flex-col gap-3 p-2">
-										<span className="text-lg">Project Images</span>
+										<span className="text-lg">Images</span>
 										<div className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible">
 											<input
 												type="file"
 												id="projectImageUpload"
 												accept="image/*"
 												multiple
-												onChange={(e) => handleImageUpload(e, 'project')}
+												onChange={handleImageUpload}
 												className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
 											/>
 											<Folder
 												color="#00d8ff"
 												size={0.8}
-												items={projectImages.map((image: string, index: number) => (
+												items={images.map((image: string, index: number) => (
 													<div
 														key={`folder-image-${index}`}
 														className="w-full h-full flex items-center justify-center"
@@ -505,7 +470,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 														<Image
 															key={`image-${index}`}
 															src={image}
-															alt={`Project Image ${index + 1}`}
+															alt={`Image ${index + 1}`}
 															width={512}
 															height={512}
 															className="max-w-full max-h-full object-contain rounded"
@@ -515,6 +480,26 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 												maxItems={3}
 											/>
 										</div>
+										{/* Preview and Delete Options */}
+										{/* <div className="flex gap-2 flex-wrap mt-4">
+												{images.map((image, index) => (
+													<div key={index} className="relative w-20 h-20">
+														<Image
+															src={image}
+															alt={`Preview ${index}`}
+															width={80}
+															height={80}
+															className="object-cover rounded"
+														/>
+														<button
+															onClick={() => handleImageDelete(index)}
+															className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
+														>
+															X
+														</button>
+													</div>
+												))}
+											</div> */}
 									</div>
 
 									{/* Project Logo Upload */}
@@ -535,7 +520,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 													logo
 														? [
 																<div
-																	key="logo-preview"
+																	key={'image-${index}'}
 																	className="w-full h-full flex items-center justify-center"
 																>
 																	<Image
@@ -553,14 +538,12 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 											/>
 										</div>
 									</div>
-
-									{/* License & Certification Upload */}
 									<div className="w-full flex flex-col gap-3 p-2">
-										<span className="text-lg">License & Certification</span>
+										<span className="text-lg">Liscense & Certification</span>
 										<div className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible">
 											<input
 												type="file"
-												id="licenseUpload"
+												id="projectLogoUpload"
 												accept="image/*"
 												onChange={handleLicenseUpload}
 												className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -569,15 +552,15 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 												color="#00d8ff"
 												size={0.8}
 												items={
-													licenseAndCertification
+													logo
 														? [
 																<div
-																	key="license-preview"
+																	key={'image-${index}'}
 																	className="w-full h-full flex items-center justify-center"
 																>
 																	<Image
-																		src={licenseAndCertification}
-																		alt="License & Certification"
+																		src={logo}
+																		alt="Logo"
 																		width={512}
 																		height={512}
 																		className="max-w-full max-h-full object-contain rounded"
@@ -590,14 +573,12 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 											/>
 										</div>
 									</div>
-
-									{/* History Evidence Upload */}
 									<div className="w-full flex flex-col gap-3 p-2">
 										<span className="text-lg">History Evidence</span>
 										<div className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible">
 											<input
 												type="file"
-												id="historyUpload"
+												id="projectLogoUpload"
 												accept="image/*"
 												onChange={handleHistoryUpload}
 												className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -606,15 +587,15 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 												color="#00d8ff"
 												size={0.8}
 												items={
-													historyEvidence
+													logo
 														? [
 																<div
-																	key="history-preview"
+																	key={'image-${index}'}
 																	className="w-full h-full flex items-center justify-center"
 																>
 																	<Image
-																		src={historyEvidence}
-																		alt="History Evidence"
+																		src={logo}
+																		alt="Logo"
 																		width={512}
 																		height={512}
 																		className="max-w-full max-h-full object-contain rounded"
@@ -627,51 +608,102 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 											/>
 										</div>
 									</div>
+								</div>
+								<div className="w-full flex items-center justify-between p-2 gap-3">
+									{/* Chain indicator */}
 
-									{/* Personal ID Upload */}
+									<div className="w-full flex flex-col gap-3 relative">
+										<span className=" text-lg">Representative Name</span>
+										<input
+											type="text"
+											value={representativeName}
+											onChange={(e) => setRepresentativeName(e.target.value)}
+											placeholder="Enter project name"
+											className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+    															[&::-webkit-inner-spin-button]:appearance-none 
+    															[&::-webkit-outer-spin-button]:appearance-none"
+										/>
+									</div>
+								</div>
+								<div className="w-full flex items-center justify-between p-2 gap-3">
+									{/* Chain indicator */}
+
+									<div className="w-full flex flex-col gap-3 relative">
+										<span className=" text-lg">Phone Number</span>
+										<input
+											type="text"
+											value={phoneNumber}
+											onChange={(e) => setPhoneNumber(e.target.value)}
+											placeholder="Enter project name"
+											className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+    															[&::-webkit-inner-spin-button]:appearance-none 
+    															[&::-webkit-outer-spin-button]:appearance-none"
+										/>
+									</div>
+								</div>
+								<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+									{/* Project Images Upload */}
 									<div className="w-full flex flex-col gap-3 p-2">
 										<span className="text-lg">Personal ID or Passport</span>
 										<div className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible">
 											<input
 												type="file"
-												id="personalIdUpload"
+												id="projectImageUpload"
 												accept="image/*"
+												multiple
 												onChange={handlePersonalIdUpload}
 												className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
 											/>
 											<Folder
 												color="#00d8ff"
 												size={0.8}
-												items={
-													personalId
-														? [
-																<div
-																	key="personal-id-preview"
-																	className="w-full h-full flex items-center justify-center"
-																>
-																	<Image
-																		src={personalId}
-																		alt="Personal ID"
-																		width={512}
-																		height={512}
-																		className="max-w-full max-h-full object-contain rounded"
-																	/>
-																</div>,
-															]
-														: []
-												}
-												maxItems={1}
+												items={images.map((image: string, index: number) => (
+													<div
+														key={`folder-image-${index}`}
+														className="w-full h-full flex items-center justify-center"
+													>
+														<Image
+															key={`image-${index}`}
+															src={image}
+															alt={`Image ${index + 1}`}
+															width={512}
+															height={512}
+															className="max-w-full max-h-full object-contain rounded"
+														/>
+													</div>
+												))}
+												maxItems={3}
 											/>
 										</div>
+										{/* Preview and Delete Options */}
+										{/* <div className="flex gap-2 flex-wrap mt-4">
+												{images.map((image, index) => (
+													<div key={index} className="relative w-20 h-20">
+														<Image
+															src={image}
+															alt={`Preview ${index}`}
+															width={80}
+															height={80}
+															className="object-cover rounded"
+														/>
+														<button
+															onClick={() => handleImageDelete(index)}
+															className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
+														>
+															X
+														</button>
+													</div>
+												))}
+											</div> */}
 									</div>
 
-									{/* Face ID Upload */}
+									{/* Project Logo Upload */}
 									<div className="w-full flex flex-col gap-3 p-2">
 										<span className="text-lg">Face ID</span>
 										<div className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible">
 											<input
 												type="file"
-												id="faceIdUpload"
+												id="projectLogoUpload"
 												accept="image/*"
 												onChange={handleFaceIdUpload}
 												className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -680,15 +712,15 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 												color="#00d8ff"
 												size={0.8}
 												items={
-													faceId
+													logo
 														? [
 																<div
-																	key="face-id-preview"
+																	key={'image-${index}'}
 																	className="w-full h-full flex items-center justify-center"
 																>
 																	<Image
-																		src={faceId}
-																		alt="Face ID"
+																		src={logo}
+																		alt="Logo"
 																		width={512}
 																		height={512}
 																		className="max-w-full max-h-full object-contain rounded"
@@ -704,10 +736,10 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 								</div>
 								<div className="w-full ">
 									<ImageManager
-										images={projectImages.map((base64: string, index: number) => ({
+										images={images.map((base64: string, index: number) => ({
 											id: index.toString(),
 											base64,
-											name: `Project Image ${index + 1}`,
+											name: `Image ${index + 1}`,
 										}))}
 										logo={
 											logo
@@ -717,69 +749,17 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 													}
 												: null
 										}
-										onDeleteImage={(id) => handleImageDelete(id, 'project')}
+										onDeleteImage={handleImageDelete}
 										onDeleteLogo={handleLogoDelete}
 										title="Manage Project Media"
-										buttonText="Manage Project Images"
-										emptyText="No project images uploaded yet"
+										buttonText="Manage Uploaded Images"
+										emptyText="No images uploaded yet"
 										showLogoTab={true}
 									/>
 								</div>
 							</motion.div>
 						</div>
 					</Step>
-
-					{/* Representative Name and Phone Number */}
-					<div className="w-full flex items-center justify-between p-2 gap-3">
-						<div className="w-full flex flex-col gap-3 relative">
-							<span className="text-lg">Representative Name</span>
-							<input
-								type="text"
-								value={representativeName}
-								onChange={(e) => setRepresentativeName(e.target.value)}
-								placeholder="Enter representative name"
-								className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none"
-							/>
-						</div>
-					</div>
-
-					<div className="w-full flex items-center justify-between p-2 gap-3">
-						<div className="w-full flex flex-col gap-3 relative">
-							<span className="text-lg">Phone Number</span>
-							<input
-								type="text"
-								value={phoneNumber}
-								onChange={(e) => setPhoneNumber(e.target.value)}
-								placeholder="Enter phone number"
-								className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none"
-							/>
-						</div>
-					</div>
-
-					{/* Image Manager */}
-					<div className="w-full mt-8">
-						<ImageManager
-							images={projectImages.map((base64: string, index: number) => ({
-								id: index.toString(),
-								base64,
-								name: `Project Image ${index + 1}`,
-							}))}
-							logo={
-								logo
-									? {
-											base64: logo,
-											name: 'Project Logo',
-										}
-									: null
-							}
-							onDeleteImage={(id) => handleImageDelete(id, 'project')}
-							onDeleteLogo={handleLogoDelete}
-							title="Manage Project Media"
-							buttonText="Manage Project Images"
-							emptyText="No project images uploaded yet"
-							showLogoTab={true}
-						/>
-					</div>
 				</Stepper>
 			</div>
 		</div>

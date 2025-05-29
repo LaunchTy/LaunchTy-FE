@@ -10,7 +10,6 @@ import { useState } from 'react'
 
 const Preview = () => {
     const router = useRouter()
-    const [isSubmitting, setIsSubmitting] = useState(false)
     const {
         projectName,
         shortDescription,
@@ -42,50 +41,6 @@ const Preview = () => {
                 setBackgroundImage(reader.result as string)
             }
             reader.readAsDataURL(file)
-        }
-    }
-
-    const handleSubmit = async () => {
-        try {
-            setIsSubmitting(true)
-            
-            // Prepare the data
-            const charityData = {
-                projectName,
-                shortDescription,
-                longDescription,
-                representativeName,
-                phoneNumber,
-                socialLinks,
-                logo,
-                backgroundImage,
-                images,
-                licenseAndCertification,
-                historyEvidence,
-                personalId,
-                faceId,
-            }
-
-            // TODO: Replace with your actual API endpoint
-            const response = await fetch('/api/charity/create', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(charityData),
-            })
-
-            if (!response.ok) {
-                throw new Error('Failed to create charity')
-            }
-
-            const data = await response.json()
-            router.push(`/charity/${data.id}`)
-        } catch (error) {
-            console.error('Error creating charity:', error)
-            alert('Failed to create charity. Please try again.')
-        } finally {
-            setIsSubmitting(false)
         }
     }
 
@@ -273,25 +228,18 @@ const Preview = () => {
                 </div>
             </div>
 
-            {/* Action Buttons */}
+            {/* Submit Button */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
-                className="mt-8 z-20 flex gap-4"
+                className="mt-8 z-20"
             >
                 <Button
                     onClick={() => router.push('/charity/create-charity')}
                     className="glass-component-3 px-8 py-3 rounded-xl text-white hover:bg-opacity-80 transition-all duration-300"
                 >
                     Edit Information
-                </Button>
-                <Button
-                    onClick={handleSubmit}
-                    disabled={isSubmitting}
-                    className="glass-component-3 px-8 py-3 rounded-xl text-white hover:bg-opacity-80 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {isSubmitting ? 'Creating...' : 'Create Charity'}
                 </Button>
             </motion.div>
         </div>
