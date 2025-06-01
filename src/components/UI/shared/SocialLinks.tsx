@@ -6,8 +6,8 @@ export interface SocialLinksProps {
 	socials?: {
 		website?: string
 		twitter?: string
-		telegram?: string
-		discord?: string
+		facebook?: string
+		instagram?: string
 		github?: string
 	}
 	iconColor?: string
@@ -39,22 +39,22 @@ const SocialLinks: FC<SocialLinksProps> = ({
 		small: {
 			website: { width: 16, height: 16 },
 			twitter: { width: 14, height: 14 },
-			telegram: { width: 16, height: 16 },
-			discord: { width: 18, height: 18 },
+			facebook: { width: 16, height: 16 },
+			instagram: { width: 18, height: 18 },
 			github: { width: 16, height: 16 },
 		},
 		medium: {
 			website: { width: 20, height: 20 },
 			twitter: { width: 18, height: 18 },
-			telegram: { width: 20, height: 20 },
-			discord: { width: 22, height: 22 },
+			facebook: { width: 20, height: 20 },
+			instagram: { width: 22, height: 22 },
 			github: { width: 20, height: 20 },
 		},
 		large: {
 			website: { width: 24, height: 24 },
 			twitter: { width: 22, height: 22 },
-			telegram: { width: 24, height: 24 },
-			discord: { width: 26, height: 26 },
+			facebook: { width: 24, height: 24 },
+			instagram: { width: 26, height: 26 },
 			github: { width: 24, height: 24 },
 		},
 	}
@@ -108,18 +108,18 @@ const SocialLinks: FC<SocialLinksProps> = ({
 				</a>
 			)}
 
-			{socials?.telegram && socials.telegram.trim() !== '' && (
+			{socials?.facebook && socials.facebook.trim() !== '' && (
 				<a
-					href={socials.telegram}
+					href={socials.facebook}
 					target="_blank"
 					rel="noopener noreferrer"
 					className={`${iconColor} hover:${hoverColor} transition-colors`}
-					title="Telegram"
+					title="facebook"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
-						width={sizeMap[iconSize].telegram.width}
-						height={sizeMap[iconSize].telegram.height}
+						width={sizeMap[iconSize].facebook.width}
+						height={sizeMap[iconSize].facebook.height}
 						fill="currentColor"
 						viewBox="0 0 16 16"
 					>
@@ -128,18 +128,18 @@ const SocialLinks: FC<SocialLinksProps> = ({
 				</a>
 			)}
 
-			{socials?.discord && socials.discord.trim() !== '' && (
+			{socials?.instagram && socials.instagram.trim() !== '' && (
 				<a
-					href={socials.discord}
+					href={socials.instagram}
 					target="_blank"
 					rel="noopener noreferrer"
 					className={`${iconColor} hover:${hoverColor} transition-colors`}
-					title="Discord"
+					title="instagram"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
-						width={sizeMap[iconSize].discord.width}
-						height={sizeMap[iconSize].discord.height}
+						width={sizeMap[iconSize].instagram.width}
+						height={sizeMap[iconSize].instagram.height}
 						fill="currentColor"
 						viewBox="0 0 16 16"
 					>

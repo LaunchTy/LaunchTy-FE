@@ -37,9 +37,9 @@ const EditLaunchpadPage = () => {
 						'A more detailed description of the dummy project for editing.',
 					socialLinks: {
 						website: 'https://example.com',
-						telegram: 'https://t.me/example',
+						facebook: 'https://t.me/example',
 						twitter: 'https://twitter.com/example',
-						discord: 'https://discord.gg/example',
+						instagram: 'https://instagram.gg/example',
 						github: 'https://github.com/example',
 					},
 					whitepaper: 'https://example.com/whitepaper.pdf',
@@ -50,9 +50,6 @@ const EditLaunchpadPage = () => {
 					endDate: '2025-06-07T18:00',
 				}
 				loadLaunchpad(dummyData)
-				// const response = await fetch(`/api/launchpad/${launchpadId}`)
-				// const data = await response.json()
-				// loadLaunchpad(data)
 			} catch (error) {
 				console.error('Error fetching launchpad data:', error)
 			}

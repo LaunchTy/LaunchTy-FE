@@ -3,10 +3,9 @@ import { devtools } from 'zustand/middleware'
 
 export type SocialLinks = {
 	website: string
-	telegram: string
+	facebook: string
 	twitter: string
-	discord: string
-	github: string
+	instagram: string
 }
 
 interface CharityState {
@@ -64,10 +63,9 @@ const initialState = {
 	selectedToken: '',
 	socialLinks: {
 		website: '',
-		telegram: '',
+		facebook: '',
 		twitter: '',
-		discord: '',
-		github: '',
+		instagram: '',
 	},
 	logo: null,
 	images: [],

@@ -8,8 +8,8 @@ interface ProjectProgressProps {
 	socials?: {
 		website?: string
 		twitter?: string
-		telegram?: string
-		discord?: string
+		facebook?: string
+		instagram?: string
 		github?: string
 	}
 }

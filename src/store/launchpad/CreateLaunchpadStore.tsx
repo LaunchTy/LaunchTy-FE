@@ -5,10 +5,9 @@ import { devtools } from 'zustand/middleware'
 // Social links type
 export type SocialLinks = {
 	website: string
-	telegram: string
+	facebook: string
 	twitter: string
-	discord: string
-	github: string
+	instagram: string
 }
 
 // Data interface for loading existing launchpad
@@ -109,10 +108,9 @@ const initialState = {
 	longDescription: '',
 	socialLinks: {
 		website: '',
-		telegram: '',
+		facebook: '',
 		twitter: '',
-		discord: '',
-		github: '',
+		instagram: '',
 	},
 	whitepaper: '',
 	logo: null,
@@ -140,10 +138,13 @@ export const useLaunchpadStore = create<LaunchpadState>()(
 		setHardCap: (amount) => set({ hardCap: amount }),
 
 		setProjectName: (name) => set({ projectName: name }),
-		setShortDescription: (description) => set({ shortDescription: description }),
+		setShortDescription: (description) =>
+			set({ shortDescription: description }),
 		setLongDescription: (description) => set({ longDescription: description }),
 		setSocialLink: (platform, url) =>
-			set((state) => ({ socialLinks: { ...state.socialLinks, [platform]: url } })),
+			set((state) => ({
+				socialLinks: { ...state.socialLinks, [platform]: url },
+			})),
 		setWhitepaper: (url) => set({ whitepaper: url }),
 
 		setLogo: (imageBase64) => set({ logo: imageBase64 }),
@@ -157,7 +158,8 @@ export const useLaunchpadStore = create<LaunchpadState>()(
 		setStartDate: (date) => set({ startDate: date }),
 		setEndDate: (date) => set({ endDate: date }),
 
-		setIsTokenValidated: (isValidated) => set({ isTokenValidated: isValidated }),
+		setIsTokenValidated: (isValidated) =>
+			set({ isTokenValidated: isValidated }),
 
 		reset: () => set(initialState),
 
@@ -187,12 +189,16 @@ export const useLaunchpadStore = create<LaunchpadState>()(
 			const state = get()
 			const errors: string[] = []
 
-			if (!state.projectTokenAddress) errors.push('Project token address is required')
-			if (!state.isTokenValidated) errors.push('Project token needs to be validated')
+			if (!state.projectTokenAddress)
+				errors.push('Project token address is required')
+			if (!state.isTokenValidated)
+				errors.push('Project token needs to be validated')
 			if (!state.tokenSupply) errors.push('Token supply is required')
 			if (!state.selectedStakingToken) errors.push('Staking token is required')
-			if (!state.maxStakePerInvestor) errors.push('Maximum stake per investor is required')
-			if (!state.minStakePerInvestor) errors.push('Minimum stake per investor is required')
+			if (!state.maxStakePerInvestor)
+				errors.push('Maximum stake per investor is required')
+			if (!state.minStakePerInvestor)
+				errors.push('Minimum stake per investor is required')
 			if (!state.softCap) errors.push('Soft cap is required')
 			if (!state.hardCap) errors.push('Hard cap is required')
 			if (!state.projectName) errors.push('Project name is required')
@@ -203,8 +209,14 @@ export const useLaunchpadStore = create<LaunchpadState>()(
 
 			const numberFields = [
 				{ value: state.tokenSupply, name: 'Token supply' },
-				{ value: state.maxStakePerInvestor, name: 'Maximum stake per investor' },
-				{ value: state.minStakePerInvestor, name: 'Minimum stake per investor' },
+				{
+					value: state.maxStakePerInvestor,
+					name: 'Maximum stake per investor',
+				},
+				{
+					value: state.minStakePerInvestor,
+					name: 'Minimum stake per investor',
+				},
 				{ value: state.softCap, name: 'Soft cap' },
 				{ value: state.hardCap, name: 'Hard cap' },
 			]
@@ -222,7 +234,9 @@ export const useLaunchpadStore = create<LaunchpadState>()(
 				if (start < new Date()) errors.push('Start date cannot be in the past')
 			}
 
-			if (Number(state.minStakePerInvestor) > Number(state.maxStakePerInvestor)) {
+			if (
+				Number(state.minStakePerInvestor) > Number(state.maxStakePerInvestor)
+			) {
 				errors.push('Minimum stake cannot be greater than maximum stake')
 			}
 			if (Number(state.softCap) > Number(state.hardCap)) {

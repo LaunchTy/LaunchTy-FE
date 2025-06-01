@@ -454,11 +454,11 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 										</svg>
 										<input
 											type="text"
-											value={socialLinks.telegram}
+											value={socialLinks.facebook}
 											onChange={(e) =>
-												setSocialLink('telegram', e.target.value)
+												setSocialLink('facebook', e.target.value)
 											}
-											placeholder="Enter your telegram here"
+											placeholder="Enter your facebook here"
 											className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
     															[&::-webkit-inner-spin-button]:appearance-none 
     															[&::-webkit-outer-spin-button]:appearance-none"
@@ -500,16 +500,18 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 										</svg>
 										<input
 											type="text"
-											value={socialLinks.discord}
-											onChange={(e) => setSocialLink('discord', e.target.value)}
-											placeholder="Enter your discord here"
+											value={socialLinks.instagram}
+											onChange={(e) =>
+												setSocialLink('instagram', e.target.value)
+											}
+											placeholder="Enter your instagram here"
 											className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
     															[&::-webkit-inner-spin-button]:appearance-none 
     															[&::-webkit-outer-spin-button]:appearance-none"
 										/>
 									</div>
 								</div>
-								<div className="flex flex-col gap-5">
+								{/* <div className="flex flex-col gap-5">
 									<div className="flex gap-5">
 										<svg
 											xmlns="http://www.w3.org/2000/svg"
@@ -522,15 +524,17 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 										</svg>
 										<input
 											type="text"
-											value={socialLinks.discord}
-											onChange={(e) => setSocialLink('discord', e.target.value)}
+											value={socialLinks.instagram}
+											onChange={(e) =>
+												setSocialLink('instagram', e.target.value)
+											}
 											placeholder="Enter your github here"
 											className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
     															[&::-webkit-inner-spin-button]:appearance-none 
     															[&::-webkit-outer-spin-button]:appearance-none"
 										/>
 									</div>
-								</div>
+								</div> */}
 							</div>
 							<div className="w-full flex items-center justify-between p-2 gap-3">
 								{/* Chain indicator */}

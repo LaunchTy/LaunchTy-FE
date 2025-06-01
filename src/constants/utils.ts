@@ -153,8 +153,8 @@ export const projectDetail = {
 	socials: {
 		website: "https://www.example.com",
 		twitter: "https://twitter.com/example",
-		telegram: "https://t.me/example",
-		discord: "https://discord.gg/example",
+		facebook: "https://t.me/example",
+		instagram: "https://instagram.gg/example",
 		github: "https://github.com/example",
 	},
 };

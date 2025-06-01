@@ -10,25 +10,63 @@ import ProjectProgress from '@/components/project-component/ProjectProgress'
 import Button from '@/components/UI/button/Button'
 import { useLaunchpadStore } from '@/store/launchpad/CreateLaunchpadStore'
 import ProjectHeader from '@/components/project-component/ProjectHeader'
+import { useRouter } from 'next/navigation'
+import axios from 'axios'
 
 interface SocialLink {
-	platform: string;
-	url: string;
+	platform: string
+	url: string
 }
 
 const Preview = () => {
+	const router = useRouter()
 	const longDescription = useLaunchpadStore((state) => state.longDescription)
 	const shortDescription = useLaunchpadStore((state) => state.shortDescription)
 	const projectName = useLaunchpadStore((state) => state.projectName)
 	const logo = useLaunchpadStore((state) => state.logo)
 	const backgroundImage = useLaunchpadStore((state) => state.backgroundImage)
-	const setBackgroundImage = useLaunchpadStore((state) => state.setBackgroundImage)
+	const setBackgroundImage = useLaunchpadStore(
+		(state) => state.setBackgroundImage
+	)
 	const images = useLaunchpadStore((state) => state.images)
 	const socialLinks = useLaunchpadStore((state) => state.socialLinks)
+	const whitepaper = useLaunchpadStore((state) => state.whitepaper)
 
 	// Handler for image changes from the carousel
 	const handleImageChange = (imageSrc: string) => {
 		setBackgroundImage(imageSrc)
+	}
+
+	const handleSubmit = async () => {
+		try {
+			const response = await axios.post('/api/launchpad/create', {
+				token_address: '0x123456...',
+				launchpad_token: 'ABC',
+				max_stake: 1000,
+				min_stake: 100,
+				soft_cap: 5000,
+				hard_cap: 10000,
+				launchpad_name: projectName,
+				launchpad_logo: logo,
+				launchpad_short_des: shortDescription,
+				launchpad_long_des: longDescription,
+				launchpad_fb: socialLinks?.facebook || null,
+				launchpad_x: socialLinks?.twitter || null,
+				launchpad_ig: socialLinks?.instagram || null,
+				launchpad_website: socialLinks?.website || null,
+				launchpad_whitepaper: whitepaper || null,
+				launchpad_img: images,
+				launchpad_start_date: new Date().toISOString(), // Hoặc lấy từ input
+				launchpad_end_date: new Date(
+					Date.now() + 7 * 24 * 60 * 60 * 1000
+				).toISOString(),
+				project_owner_id: 'user-uuid-123', // Lấy từ session / user store
+			})
+
+			console.log('Launchpad created:', response.data)
+		} catch (error) {
+			console.error('Error submitting launchpad:', error)
+		}
 	}
 
 	// Convert socialLinks object to an array of non-empty links
@@ -98,7 +136,9 @@ const Preview = () => {
 							)}
 						/>
 						<div>
-							<Button className="w-full bg-gradient">Submit</Button>
+							<Button className="w-full bg-gradient" onClick={handleSubmit}>
+								Submit
+							</Button>
 						</div>
 					</div>
 				</div>
