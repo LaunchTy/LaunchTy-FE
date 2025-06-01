@@ -7,7 +7,10 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Folder from '@/components/UI/shared/Folder'
-import { useLaunchpadStore, LaunchpadData } from '@/store/launchpad/CreateLaunchpadStore'
+import {
+	useLaunchpadStore,
+	LaunchpadData,
+} from '@/store/launchpad/CreateLaunchpadStore'
 import ImageManager from '@/components/UI/shared/ImageManager'
 import { useRouter } from 'next/navigation'
 
@@ -645,7 +648,7 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 										id: index.toString(),
 										base64,
 										name: `Image ${index + 1}`,
-										type: 'project'
+										type: 'project',
 									}))}
 									logo={
 										logo
@@ -664,8 +667,8 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 									tabs={[
 										{
 											id: 'project',
-											label: 'Project Images'
-										}
+											label: 'Project Images',
+										},
 									]}
 									defaultTab="project"
 								/>

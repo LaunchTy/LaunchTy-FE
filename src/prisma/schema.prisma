@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../app/generated/prisma"
@@ -15,15 +9,14 @@ datasource db {
 }
 
 model User {
-  user_id        String   @id @default(uuid())
-  wallet_address String   @unique
+  user_id        String      @id @default(uuid())
+  wallet_address String      @unique
   user_name      String
-  create_date    DateTime @default(now())
-
-  donations  Donation[]
-  deposits   Deposit[]
-  charities  Charity[]
-  launchpads Launchpad[]
+  create_date    DateTime    @default(now())
+  charities      Charity[]
+  deposits       Deposit[]
+  donations      Donation[]
+  launchpads     Launchpad[]
 }
 
 model Launchpad {
@@ -47,20 +40,19 @@ model Launchpad {
   launchpad_start_date DateTime
   launchpad_end_date   DateTime
   project_owner_id     String
-  user                 User      @relation(fields: [project_owner_id], references: [user_id])
   deposits             Deposit[]
+  user                 User      @relation(fields: [project_owner_id], references: [user_id])
 }
 
 model Deposit {
-  deposit_id   String   @id @default(uuid())
-  datetime     DateTime @default(now())
+  deposit_id   String    @id @default(uuid())
+  datetime     DateTime  @default(now())
   amount       Float
   tx_hash      String?
   user_id      String
   launchpad_id String
-
-  user      User      @relation(fields: [user_id], references: [user_id])
-  launchpad Launchpad @relation(fields: [launchpad_id], references: [launchpad_id])
+  launchpad    Launchpad @relation(fields: [launchpad_id], references: [launchpad_id])
+  user         User      @relation(fields: [user_id], references: [user_id])
 }
 
 model Charity {
@@ -95,6 +87,6 @@ model Donation {
   tx_hash    String?
   user_id    String
   charity_id String
-  user       User     @relation(fields: [user_id], references: [user_id])
   charity    Charity  @relation(fields: [charity_id], references: [charity_id])
+  user       User     @relation(fields: [user_id], references: [user_id])
 }
