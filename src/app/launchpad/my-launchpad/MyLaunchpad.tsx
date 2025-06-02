@@ -7,6 +7,8 @@ import Tab from '@/components/Launchpad/Explore-section/Tab' // Adjust the impor
 import ProjectRowCard from '@/components/Launchpad/MyProject-section/ProjectRowCard' // Adjust the import path as necessary
 import { useState } from 'react' // Adjust the import path as necessary
 import Myproject from '@/public/MyProject.svg' // Adjust the import path as necessary
+import { useEffect } from 'react' // Adjust the import path as necessary
+import axios from 'axios' // Adjust the import path as necessary
 
 const navItems = [
 	{ id: 'all', label: 'All Projects' },
@@ -15,77 +17,28 @@ const navItems = [
 	{ id: 'finished', label: 'Finished' },
 ]
 
-const projects = [
-	{
-		id: '1',
-		title: 'Name 1',
-		image: Myproject,
-		shortDescription: 'Short description 1',
-		tokenSymbol: 'BNB',
-		totalInvest: 692.182,
-		endTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-	},
-	{
-		id: '2',
-		title: 'Name 2',
-		image: Myproject,
-		shortDescription: 'Short description 2',
-		tokenSymbol: 'BNB',
-		totalInvest: 123.456,
-		endTime: new Date(Date.now() + 36 * 60 * 60 * 1000).toISOString(),
-	},
-	{
-		id: '3',
-		title: 'Name 3',
-		image: Myproject,
-		shortDescription: 'Short description 3',
-		tokenSymbol: 'BNB',
-		totalInvest: 789.101,
-		endTime: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
-	},
-	{
-		id: '4',
-		title: 'Name 4',
-		image: Myproject,
-		shortDescription: 'Short description 4',
-		tokenSymbol: 'BNB',
-		totalInvest: 250.789,
-		endTime: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
-	},
-	{
-		id: '5',
-		title: 'Name 5',
-		image: Myproject,
-		shortDescription: 'Short description 5',
-		tokenSymbol: 'BNB',
-		totalInvest: 321.123,
-		endTime: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(),
-	},
-	{
-		id: '6',
-		title: 'Name 6',
-		image: Myproject,
-		shortDescription: 'Short description 6',
-		tokenSymbol: 'BNB',
-		totalInvest: 654.987,
-		endTime: new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString(),
-	},
-	{
-		id: '7',
-		title: 'Name 7',
-		image: Myproject,
-		shortDescription: 'Short description 7',
-		tokenSymbol: 'BNB',
-		totalInvest: 111.222,
-		endTime: new Date(Date.now() + 96 * 60 * 60 * 1000).toISOString(),
-	},
-	// Add more if needed
-]
-
 const MyProject = () => {
 	const [activeTab, setActiveTab] = useState('all')
 	const [visibleCount, setVisibleCount] = useState(6)
+	const [projects, setProjects] = useState([])
+	const [loading, setLoading] = useState(true)
+	const [error, setError] = useState(null)
 
+	// Load data from API
+	useEffect(() => {
+		const fetchProjects = async () => {
+			try {
+				const response = await axios.get('/api/launchpad/my-launchpad')
+				setProjects(response.data.data)
+			} catch (error) {
+				console.error('Failed to load projects:', error)
+			} finally {
+				setLoading(false)
+			}
+		}
+
+		fetchProjects()
+	}, [])
 	const handleShowMore = () => {
 		setVisibleCount((prev) => prev + 6)
 	}
@@ -105,7 +58,7 @@ const MyProject = () => {
 				onTabChange={setActiveTab}
 			/>
 			<ProjectRowCard
-				projects={visibleProjects} // ✅ truyền đúng số lượng cần hiển thị
+				projects={visibleProjects}
 				showCountdown={true}
 				countdownDuration={24}
 				className="custom-class"
