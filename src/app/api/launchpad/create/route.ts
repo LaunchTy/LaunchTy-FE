@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prismaClient from "@/prisma";
 
 export async function POST(req: NextRequest) {
+	console.log("API route hit!");
 	try {
 		const body = await req.json();
 
