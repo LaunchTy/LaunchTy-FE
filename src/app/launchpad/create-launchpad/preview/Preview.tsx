@@ -12,6 +12,7 @@ import { useLaunchpadStore } from '@/store/launchpad/CreateLaunchpadStore'
 import ProjectHeader from '@/components/project-component/ProjectHeader'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
+import { useAccount } from 'wagmi'
 
 interface SocialLink {
 	platform: string
@@ -20,17 +21,30 @@ interface SocialLink {
 
 const Preview = () => {
 	const router = useRouter()
-	const longDescription = useLaunchpadStore((state) => state.longDescription)
-	const shortDescription = useLaunchpadStore((state) => state.shortDescription)
+	const account = useAccount()
+
+	const tokenAddress = useLaunchpadStore((state) => state.projectTokenAddress)
+	const tokenSupply = useLaunchpadStore((state) => state.tokenSupply)
+	const launchpadToken = useLaunchpadStore((state) => state.launchpadToken)
+
+	const maxStake = useLaunchpadStore((state) => state.maxStakePerInvestor)
+	const minStake = useLaunchpadStore((state) => state.minStakePerInvestor)
+	const softCap = useLaunchpadStore((state) => state.softCap)
+	const hardCap = useLaunchpadStore((state) => state.hardCap)
+
 	const projectName = useLaunchpadStore((state) => state.projectName)
 	const logo = useLaunchpadStore((state) => state.logo)
+	const shortDescription = useLaunchpadStore((state) => state.shortDescription)
+	const longDescription = useLaunchpadStore((state) => state.longDescription)
+
+	const socialLinks = useLaunchpadStore((state) => state.socialLinks)
+	const whitepaper = useLaunchpadStore((state) => state.whitepaper)
+
+	const images = useLaunchpadStore((state) => state.images)
 	const backgroundImage = useLaunchpadStore((state) => state.backgroundImage)
 	const setBackgroundImage = useLaunchpadStore(
 		(state) => state.setBackgroundImage
 	)
-	const images = useLaunchpadStore((state) => state.images)
-	const socialLinks = useLaunchpadStore((state) => state.socialLinks)
-	const whitepaper = useLaunchpadStore((state) => state.whitepaper)
 
 	// Handler for image changes from the carousel
 	const handleImageChange = (imageSrc: string) => {
@@ -38,14 +52,16 @@ const Preview = () => {
 	}
 
 	const handleSubmit = async () => {
+		console.log('account.address: ', account.address)
 		try {
 			const response = await axios.post('/api/launchpad/create', {
-				token_address: '0x123456...',
-				launchpad_token: 'ABC',
-				max_stake: 1000,
-				min_stake: 100,
-				soft_cap: 5000,
-				hard_cap: 10000,
+				token_address: tokenAddress,
+				total_supply: tokenSupply,
+				launchpad_token: launchpadToken,
+				max_stake: maxStake,
+				min_stake: minStake,
+				soft_cap: softCap,
+				hard_cap: hardCap,
 				launchpad_name: projectName,
 				launchpad_logo: logo,
 				launchpad_short_des: shortDescription,
@@ -56,11 +72,11 @@ const Preview = () => {
 				launchpad_website: socialLinks?.website || null,
 				launchpad_whitepaper: whitepaper || null,
 				launchpad_img: images,
-				launchpad_start_date: new Date().toISOString(), // Hoặc lấy từ input
+				launchpad_start_date: new Date().toISOString(),
 				launchpad_end_date: new Date(
 					Date.now() + 7 * 24 * 60 * 60 * 1000
 				).toISOString(),
-				project_owner_id: 'user-uuid-123', // Lấy từ session / user store
+				wallet_address: account.address,
 			})
 
 			console.log('Launchpad created:', response.data)

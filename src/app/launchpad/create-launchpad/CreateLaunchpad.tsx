@@ -9,7 +9,7 @@ import Image from 'next/image'
 import Folder from '@/components/UI/shared/Folder'
 import {
 	useLaunchpadStore,
-	LaunchpadData,
+	LaunchpadState,
 } from '@/store/launchpad/CreateLaunchpadStore'
 import ImageManager from '@/components/UI/shared/ImageManager'
 import { useRouter } from 'next/navigation'
@@ -25,6 +25,8 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 	const {
 		projectTokenAddress,
 		setProjectTokenAddress,
+		launchpadToken,
+		setLaunchpadToken,
 		tokenSupply,
 		setTokenSupply,
 		maxStakePerInvestor,
@@ -261,6 +263,19 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 											Check
 										</Button>
 									</div>
+								</div>
+
+								<div className="w-full flex flex-col gap-3 p-2">
+									<span className=" text-lg">Launchpad Token</span>
+									<input
+										type="text"
+										value={launchpadToken}
+										onChange={(e) => setLaunchpadToken(e.target.value)}
+										placeholder="Enter launchpad token"
+										className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+    																[&::-webkit-inner-spin-button]:appearance-none 
+    																[&::-webkit-outer-spin-button]:appearance-none"
+									/>
 								</div>
 
 								<div className="w-full flex flex-col gap-3 p-2">
@@ -683,7 +698,9 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 									<span className=" text-base sm:text-lg">From</span>
 									<input
 										type="datetime-local"
-										value={startDate}
+										value={
+											startDate ? startDate.toISOString().slice(0, 16) : ''
+										}
 										onChange={(e) => setStartDate(e.target.value)}
 										placeholder="Enter start date"
 										className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"
@@ -693,7 +710,7 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 									<span className=" text-base sm:text-lg">To</span>
 									<input
 										type="datetime-local"
-										value={endDate}
+										value={endDate ? endDate.toISOString().slice(0, 16) : ''}
 										onChange={(e) => setEndDate(e.target.value)}
 										placeholder="Enter start date"
 										className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"

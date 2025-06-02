@@ -22,6 +22,7 @@ model User {
 model Launchpad {
   launchpad_id         String    @id @default(uuid())
   token_address        String
+  total_supply         Int
   launchpad_token      String
   max_stake            Float
   min_stake            Float

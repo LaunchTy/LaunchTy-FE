@@ -8,6 +8,7 @@ export async function POST(req: NextRequest) {
 
 		const {
 			token_address,
+			total_supply,
 			launchpad_token,
 			max_stake,
 			min_stake,
@@ -25,13 +26,28 @@ export async function POST(req: NextRequest) {
 			launchpad_img,
 			launchpad_start_date,
 			launchpad_end_date,
-			project_owner_id,
+			wallet_address,
 		} = body;
 		console.log("Received data:", body);
+
+		const user = await prismaClient.user.findUnique({
+			where: { wallet_address },
+		});
+
+		if (!user) {
+			return NextResponse.json(
+				{
+					success: false,
+					error: "User not found with given wallet address.",
+				},
+				{ status: 404 }
+			);
+		}
 
 		const newLaunchpad = await prismaClient.launchpad.create({
 			data: {
 				token_address,
+				total_supply,
 				launchpad_token,
 				max_stake,
 				min_stake,
@@ -49,7 +65,7 @@ export async function POST(req: NextRequest) {
 				launchpad_img,
 				launchpad_start_date: new Date(launchpad_start_date),
 				launchpad_end_date: new Date(launchpad_end_date),
-				project_owner_id,
+				project_owner_id: user?.user_id!,
 			},
 		});
 

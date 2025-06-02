@@ -11,63 +11,67 @@ export type SocialLinks = {
 }
 
 // Data interface for loading existing launchpad
-export interface LaunchpadData {
-	tokenAddress: string
-	totalSupply: number
-	selectedStakingToken: string
-	selectedStakingTokenSymbol: string
-	maxInvestment: number
-	minInvestment: number
-	softCap: number
-	hardCap: number
-	projectName: string
-	shortDescription: string
-	longDescription: string
-	socialLinks: SocialLinks
-	whitepaper: string
-	logo: string | null
-	images: string[]
-	backgroundImage: string
-	startDate: string
-	endDate: string
-}
+// export interface LaunchpadData {
+// 	tokenAddress: string
+// 	totalSupply: number
+// 	selectedStakingToken: string
+// 	selectedStakingTokenSymbol: string
+// 	maxInvestment: number
+// 	minInvestment: number
+// 	softCap: number
+// 	hardCap: number
+// 	projectName: string
+// 	shortDescription: string
+// 	longDescription: string
+// 	socialLinks: SocialLinks
+// 	whitepaper: string
+// 	logo: string | null
+// 	images: string[]
+// 	backgroundImage: string
+// 	startDate: string
+// 	endDate: string
+// }
 
 // Main store state interface
-interface LaunchpadState {
+export interface LaunchpadState {
 	// Token information
-	projectTokenAddress: string
-	tokenSupply: string
-	selectedStakingToken: string
-	selectedStakingTokenSymbol: string
+	projectTokenAddress: string // địa chỉ token
+	tokenSupply: number // số lượng tổng token (Int)
+
+	launchpadToken: string
+
+	selectedStakingToken: string // token staking (ví dụ: USDT)
+	selectedStakingTokenSymbol: string // ký hiệu của token staking
 
 	// Investment limits
-	maxStakePerInvestor: string
-	minStakePerInvestor: string
-	softCap: string
-	hardCap: string
+	maxStakePerInvestor: number // số lượng tối đa được stake
+	minStakePerInvestor: number // số lượng tối thiểu được stake
+	softCap: number // Soft cap (ngưỡng tối thiểu)
+	hardCap: number // Hard cap (ngưỡng tối đa)
 
 	// Project information
-	projectName: string
-	shortDescription: string
-	longDescription: string
-	socialLinks: SocialLinks
-	whitepaper: string
+	projectName: string // tên dự án
+	shortDescription: string // mô tả ngắn
+	longDescription: string // mô tả dài
+	socialLinks: SocialLinks // link mạng xã hội (facebook, twitter, v.v.)
+	whitepaper: string // link whitepaper
 
 	// Media
-	logo: string | null
-	images: string[]
-	backgroundImage: string
+	logo: string | null // logo base64 hoặc URL
+	images: string[] // danh sách hình ảnh dự án
+	backgroundImage: string // hình nền
 
 	// Time settings
-	startDate: string
-	endDate: string
+	startDate: Date // thời gian bắt đầu
+	endDate: Date // thời gian kết thúc
 
 	// Validation status
-	isTokenValidated: boolean
+	isTokenValidated: boolean // token đã được xác thực hay chưa
 
 	// Form actions
 	setProjectTokenAddress: (address: string) => void
 	setTokenSupply: (supply: string) => void
+	setLaunchpadToken: (supply: string) => void
 	setSelectedStakingToken: (token: string, symbol: string) => void
 	setMaxStakePerInvestor: (amount: string) => void
 	setMinStakePerInvestor: (amount: string) => void
@@ -90,19 +94,20 @@ interface LaunchpadState {
 	// Helpers
 	reset: () => void
 	validateForm: () => { isValid: boolean; errors: string[] }
-	loadLaunchpad: (data: LaunchpadData) => void
+	loadLaunchpad: (data: LaunchpadState) => void
 }
 
 // Initial state
 const initialState = {
 	projectTokenAddress: '',
-	tokenSupply: '',
+	tokenSupply: 0, // number
+	launchpadToken: '',
 	selectedStakingToken: '',
 	selectedStakingTokenSymbol: '',
-	maxStakePerInvestor: '',
-	minStakePerInvestor: '',
-	softCap: '',
-	hardCap: '',
+	maxStakePerInvestor: 0, // number
+	minStakePerInvestor: 0, // number
+	softCap: 0, // number
+	hardCap: 0, // number
 	projectName: '',
 	shortDescription: '',
 	longDescription: '',
@@ -113,11 +118,11 @@ const initialState = {
 		instagram: '',
 	},
 	whitepaper: '',
-	logo: null,
-	images: [],
+	logo: null as string | null,
+	images: [] as string[],
 	backgroundImage: '',
-	startDate: '',
-	endDate: '',
+	startDate: undefined as Date | undefined,
+	endDate: undefined as Date | undefined,
 	isTokenValidated: false,
 }
 
@@ -128,14 +133,17 @@ export const useLaunchpadStore = create<LaunchpadState>()(
 		...initialState,
 
 		setProjectTokenAddress: (address) => set({ projectTokenAddress: address }),
-		setTokenSupply: (supply) => set({ tokenSupply: supply }),
+		setTokenSupply: (supply) => set({ tokenSupply: Number(supply) }),
+		setLaunchpadToken: (token) => set({ launchpadToken: token }),
 		setSelectedStakingToken: (token, symbol) =>
 			set({ selectedStakingToken: token, selectedStakingTokenSymbol: symbol }),
 
-		setMaxStakePerInvestor: (amount) => set({ maxStakePerInvestor: amount }),
-		setMinStakePerInvestor: (amount) => set({ minStakePerInvestor: amount }),
-		setSoftCap: (amount) => set({ softCap: amount }),
-		setHardCap: (amount) => set({ hardCap: amount }),
+		setMaxStakePerInvestor: (amount) =>
+			set({ maxStakePerInvestor: Number(amount) }),
+		setMinStakePerInvestor: (amount) =>
+			set({ minStakePerInvestor: Number(amount) }),
+		setSoftCap: (amount) => set({ softCap: Number(amount) }),
+		setHardCap: (amount) => set({ hardCap: Number(amount) }),
 
 		setProjectName: (name) => set({ projectName: name }),
 		setShortDescription: (description) =>
@@ -155,8 +163,8 @@ export const useLaunchpadStore = create<LaunchpadState>()(
 		setImages: (images) => set({ images }),
 		setBackgroundImage: (image) => set({ backgroundImage: image }),
 
-		setStartDate: (date) => set({ startDate: date }),
-		setEndDate: (date) => set({ endDate: date }),
+		setStartDate: (date) => set({ startDate: new Date(date) }),
+		setEndDate: (date) => set({ endDate: new Date(date) }),
 
 		setIsTokenValidated: (isValidated) =>
 			set({ isTokenValidated: isValidated }),
@@ -165,14 +173,15 @@ export const useLaunchpadStore = create<LaunchpadState>()(
 
 		loadLaunchpad: (data) =>
 			set({
-				projectTokenAddress: data.tokenAddress,
-				tokenSupply: data.totalSupply.toString(),
+				projectTokenAddress: data.projectTokenAddress,
+				tokenSupply: data.tokenSupply,
+				launchpadToken: data.launchpadToken,
 				selectedStakingToken: data.selectedStakingToken,
 				selectedStakingTokenSymbol: data.selectedStakingTokenSymbol,
-				maxStakePerInvestor: data.maxInvestment.toString(),
-				minStakePerInvestor: data.minInvestment.toString(),
-				softCap: data.softCap.toString(),
-				hardCap: data.hardCap.toString(),
+				maxStakePerInvestor: data.maxStakePerInvestor,
+				minStakePerInvestor: data.minStakePerInvestor,
+				softCap: data.softCap,
+				hardCap: data.hardCap,
 				projectName: data.projectName,
 				shortDescription: data.shortDescription,
 				longDescription: data.longDescription,
@@ -194,6 +203,7 @@ export const useLaunchpadStore = create<LaunchpadState>()(
 			if (!state.isTokenValidated)
 				errors.push('Project token needs to be validated')
 			if (!state.tokenSupply) errors.push('Token supply is required')
+			if (!state.launchpadToken) errors.push('Launchpad token is required')
 			if (!state.selectedStakingToken) errors.push('Staking token is required')
 			if (!state.maxStakePerInvestor)
 				errors.push('Maximum stake per investor is required')
