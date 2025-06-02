@@ -9,7 +9,8 @@ import { useState } from 'react' // Adjust the import path as necessary
 import Myproject from '@/public/MyProject.svg' // Adjust the import path as necessary
 import { useEffect } from 'react' // Adjust the import path as necessary
 import axios from 'axios' // Adjust the import path as necessary
-
+import { useParams } from 'next/navigation'
+import { useAccount } from 'wagmi'
 const navItems = [
 	{ id: 'all', label: 'All Projects' },
 	{ id: 'upcoming', label: 'Upcoming' },
@@ -18,17 +19,25 @@ const navItems = [
 ]
 
 const MyProject = () => {
+	const wallet_address = useAccount()
+	const params = useParams()
+	const project_owner_id = params['project-owner-id']
 	const [activeTab, setActiveTab] = useState('all')
 	const [visibleCount, setVisibleCount] = useState(6)
 	const [projects, setProjects] = useState([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
 
-	// Load data from API
 	useEffect(() => {
+		// if (!wallet_address) return
+		console.log('project_owner_id:', project_owner_id)
 		const fetchProjects = async () => {
 			try {
-				const response = await axios.get('/api/launchpad/my-launchpad')
+				const response = await axios.get(
+					`/api/launchpad/my-launchpad?project_owner_id=${project_owner_id}`
+				)
+				console.log('Response data:', response.data)
+				console.log('Fetched projects:', response.data.data)
 				setProjects(response.data.data)
 			} catch (error) {
 				console.error('Failed to load projects:', error)
@@ -38,7 +47,8 @@ const MyProject = () => {
 		}
 
 		fetchProjects()
-	}, [])
+	}, [project_owner_id])
+
 	const handleShowMore = () => {
 		setVisibleCount((prev) => prev + 6)
 	}

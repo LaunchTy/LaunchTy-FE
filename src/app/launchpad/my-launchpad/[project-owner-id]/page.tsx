@@ -1,5 +1,5 @@
 import React from 'react'
-import MyProject from '@/app/launchpad/my-launchpad/MyLaunchpad' // Adjust the import path as necessary
+import MyProject from './MyLaunchpad'
 
 export default function page() {
 	return (

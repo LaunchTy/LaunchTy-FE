@@ -1,13 +1,23 @@
 import { NextResponse } from "next/server";
 import prismaClient from "@/prisma";
 
-export async function GET() {
+export async function GET(request: Request) {
 	try {
+		// Lấy URL từ request
+		const { searchParams } = new URL(request.url);
+		const projectOwnerId = searchParams.get("project_owner_id");
+		console.log("projectOwnerId:", projectOwnerId);
+
+		if (!projectOwnerId) {
+			return NextResponse.json(
+				{ success: false, error: "Missing project_owner_id" },
+				{ status: 400 }
+			);
+		}
+
 		const projects = await prismaClient.launchpad.findMany({
 			where: {
-				deposits: {
-					some: {},
-				},
+				project_owner_id: projectOwnerId,
 			},
 			orderBy: {
 				launchpad_start_date: "desc",
@@ -20,6 +30,7 @@ export async function GET() {
 				},
 			},
 		});
+		console.log("Fetched projects:", projects);
 
 		const formattedProjects = projects.map((project) => {
 			const totalInvest = project.deposits.reduce(
@@ -32,7 +43,7 @@ export async function GET() {
 				title: project.launchpad_name,
 				image: project.launchpad_logo,
 				tokenSymbol: project.launchpad_token,
-				totalInvest,
+				// totalInvest,
 				endTime: new Date(project.launchpad_end_date).toISOString(),
 			};
 		});
