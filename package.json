@@ -7,7 +7,8 @@
 		"build": "next build",
 		"start": "next start",
 		"lint": "next lint",
-		"prepare": "husky install"
+		"prepare": "husky install",
+		"copy:abi": "ts-node src/scripts/copyABIs.ts"
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx}": [
@@ -23,13 +24,14 @@
 		"@emotion/styled": "^11.14.0",
 		"@mui/material": "^7.0.2",
 		"@prisma/client": "^6.8.2",
-		"@prisma/extension-accelerate": "^2.0.0",
+		"@prisma/extension-accelerate": "^2.0.1",
 		"@rainbow-me/rainbowkit": "^2.2.5",
 		"@react-spring/web": "^9.7.5",
 		"@splidejs/react-splide": "^0.7.12",
 		"@tanstack/react-query": "^5.76.1",
 		"axios": "^1.9.0",
 		"clsx": "^2.1.1",
+		"ethers": "^5.7.2",
 		"framer-motion": "^12.9.2",
 		"lucide-react": "^0.503.0",
 		"motion": "^12.9.2",
@@ -44,7 +46,7 @@
 	"devDependencies": {
 		"@commitlint/config-conventional": "^19.8.0",
 		"@eslint/js": "^9.24.0",
-		"@types/node": "^20",
+		"@types/node": "^20.17.57",
 		"@types/react": "^18",
 		"@types/react-dom": "^18",
 		"autoprefixer": "^10",
@@ -59,10 +61,11 @@
 		"lint-staged": "^15.5.0",
 		"postcss": "^8",
 		"prettier": "^3.5.3",
-		"prisma": "^6.8.2",
+		"prisma": "6.8.2",
 		"tailwindcss": "^3",
+		"ts-node": "^10.9.2",
 		"tsx": "^4.19.4",
-		"typescript": "^5",
+		"typescript": "^5.8.3",
 		"typescript-eslint": "^8.29.1"
 	},
 	"packageManager": "pnpm@10.4.0+sha512.6b849d0787d97f8f4e1f03a9b8ff8f038e79e153d6f11ae539ae7c435ff9e796df6a862c991502695c7f9e8fac8aeafc1ac5a8dab47e36148d183832d886dd52"

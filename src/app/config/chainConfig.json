@@ -1,0 +1,91 @@
+{
+  "31337": {
+    "chainId": 31337,
+    "parachainId": null,
+    "chainName": "local",
+    "testnet": true,
+    "contracts": {
+      "MockProjectToken": {
+        "address": "0xbCF26943C0197d2eE0E5D05c716Be60cc2761508",
+        "decimals": "18"
+      },
+      "MockERC20MintOnInit": {
+        "address": "0x71C95911E9a5D330f4D621842EC243EE1343292e",
+        "decimals": "18"
+      },
+      "MockVAsset": {
+        "address": "0x71C95911E9a5D330f4D621842EC243EE1343292e",
+        "decimals": "18"
+      },
+      "BifrostEarningMock": {
+        "address": "0x948B3c65b89DF0B4894ABE91E6D02FE579834F8F"
+      },
+      "PoolFactory": {
+        "address": "0x712516e61C8B383dF4A63CFe83d7701Bce54B03e"
+      },
+      "PreMarketFactory": {
+        "address": "0x59F2f1fCfE2474fD5F0b9BA1E73ca90b143Eb8d0"
+      },
+      "MockVDot": {
+        "address": "0x8464135c8F25Da09e49BC8782676a84730C318bC",
+        "decimals": "18"
+      },
+      "MockERC20": {
+        "address": "0xbCF26943C0197d2eE0E5D05c716Be60cc2761508"
+      },
+      "LaunchpadFactory": {
+        "address": "0x59F2f1fCfE2474fD5F0b9BA1E73ca90b143Eb8d0"
+      },
+      "Launchpad": {},
+      "CharityFactory": {},
+      "Charity": {}
+    },
+    "nativeAsset": {
+      "name": "Westend",
+      "symbol": "WND",
+      "address": "0x0000000000000000000000000000000000000000",
+      "decimals": "12",
+      "icon": "https://s2.coinmarketcap.com/static/img/coins/200x200/12885.png"
+    },
+    "vAssets": [
+      {
+        "name": "voucher Westend",
+        "symbol": "vWND",
+        "address": "0x71C95911E9a5D330f4D621842EC243EE1343292e",
+        "icon": "https://www.stakingrewards.com/_next/image?url=https%3A%2F%2Fstorage.googleapis.com%2Fstakingrewards-static%2Fimages%2Fassets%2Fproduction%2Fbifrost-voucher-astr_logo.png%3Fv%3D1717150606436&w=3840&q=75",
+        "decimals": 18
+      },
+      {
+        "name": "voucher Dot",
+        "symbol": "vDOT",
+        "address": "0x8464135c8F25Da09e49BC8782676a84730C318bC",
+        "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSvWgkOiR1hhHPj-S4ECiQOSEVwsPVFYBcWEOBYslnHs9DWI3Ne2y_zh7NnD9HVn49zn60&usqp=CAU",
+        "decimals": 18
+      },
+      {
+        "name": "voucher Astar",
+        "symbol": "vASTAR",
+        "address": "0x000",
+        "icon": "https://www.stakingrewards.com/_next/image?url=https%3A%2F%2Fstorage.googleapis.com%2Fstakingrewards-static%2Fimages%2Fassets%2Fproduction%2Fbifrost-voucher-astr_logo.png%3Fv%3D1717150606436&w=3840&q=75",
+        "decimals": 18
+      },
+      {
+        "name": "voucher Moonbeam",
+        "symbol": "vGLMR",
+        "address": "0x000",
+        "icon": "https://www.stakingrewards.com/_next/image?url=https%3A%2F%2Fstorage.googleapis.com%2Fstakingrewards-static%2Fimages%2Fassets%2Fproduction%2Fbifrost-voucher-astr_logo.png%3Fv%3D1717150606436&w=3840&q=75",
+        "decimals": 18
+      }
+    ],
+    "rpcNodes": [
+      {
+        "provider": "Foundry",
+        "url": "http://127.0.0.1:8545"
+      },
+      {
+        "provider": "Hardhat",
+        "url": "http://127.0.0.1:8545"
+      }
+    ]
+  }
+}
