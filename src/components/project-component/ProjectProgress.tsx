@@ -5,13 +5,10 @@ interface ProjectProgressProps {
 	projectProgress?: number
 	steps?: number
 	currentStep?: number
-	socials?: {
-		website?: string
-		twitter?: string
-		facebook?: string
-		instagram?: string
-		github?: string
-	}
+	launchpad_website?: string
+	launchpad_ig?: string
+	launchpad_x?: string
+	launchpad_fb?: string
 }
 
 interface ProgressBarProps {
@@ -19,7 +16,19 @@ interface ProgressBarProps {
 	currentStep: number
 }
 
-const ProjectProgress = ({ socials }: ProjectProgressProps) => {
+const ProjectProgress = ({
+	launchpad_website,
+	launchpad_ig,
+	launchpad_x,
+	launchpad_fb,
+}: ProjectProgressProps) => {
+	const socials = {
+		website: launchpad_website,
+		ig: launchpad_ig,
+		x: launchpad_x,
+		fb: launchpad_fb,
+	}
+
 	const steps = [{ name: 'Upcoming' }, { name: 'Ongoing' }, { name: 'Ended' }]
 	const currentStep = 2
 

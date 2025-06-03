@@ -1,15 +1,29 @@
 'use client'
-import Image, { StaticImageData } from 'next/image'
+import Image from 'next/image'
+
 interface ProjectHeaderProps {
 	projectDetail: {
-		id: number
 		name: string
-		description: string
-		image: string
-		status: string
+		logo: string
+		shortDescription: string
+		startDate: string
+		endDate: string
 	}
 }
+
 const ProjectHeader = ({ projectDetail }: ProjectHeaderProps) => {
+	const getStatus = (startDate: string, endDate: string) => {
+		const now = new Date()
+		const start = new Date(startDate)
+		const end = new Date(endDate)
+
+		if (now < start) return 'upcoming'
+		if (now >= start && now <= end) return 'on-going'
+		return 'ended'
+	}
+
+	const status = getStatus(projectDetail.startDate, projectDetail.endDate)
+
 	const getStatusColor = (status: string) => {
 		switch (status.toLowerCase()) {
 			case 'upcoming':
@@ -19,46 +33,40 @@ const ProjectHeader = ({ projectDetail }: ProjectHeaderProps) => {
 			case 'ended':
 				return 'bg-red-500 text-white'
 			default:
-				return 'bg-gray-500 text-white' // Default color for unknown status
+				return 'bg-gray-500 text-white'
 		}
 	}
 
 	return (
-		<div>
-			<div className="text-white">
-				<div className="flex justify-between px-8 w-full">
-					<div className="flex flex-row gap-10">
-						<div className="w-auto">
-							<Image
-								src={projectDetail.image}
-								alt="Project Logo"
-								width={64}
-								height={64}
-								className="rounded-full object-cover items-center h-28 w-28 bg-slate-700 "
-							/>
+		<div className="text-white">
+			<div className="flex justify-between px-8 w-full">
+				<div className="flex flex-row gap-10">
+					<div className="w-auto">
+						<Image
+							src={projectDetail.logo}
+							alt="Project Logo"
+							width={64}
+							height={64}
+							className="rounded-full object-cover items-center h-28 w-28 bg-slate-700"
+						/>
+					</div>
+
+					<div className="flex flex-col">
+						<div className="flex">
+							<span className="text-2xl font-orbitron font-bold">
+								{projectDetail.name}
+							</span>
+							<div
+								className={`flex ml-14 justify-center items-center rounded-xl text-xs font-semibold px-5 py-1 ${getStatusColor(
+									status
+								)}`}
+							>
+								{status.charAt(0).toUpperCase() + status.slice(1)}
+							</div>
 						</div>
 
-						<div className="flex flex-col">
-							<div className="flex ">
-								<span className="text-2xl font-orbitron font-bold">
-									{projectDetail.name}
-								</span>
-								{/* Status if it upcoming then bg yellow if ongoing green if ended red */}
-
-								<div
-									className={`flex ml-14 justify-center items-center rounded-xl
-                  text-xs font-semibold px-5 py-1 {} ${getStatusColor(
-										projectDetail.status
-									)}`}
-								>
-									{projectDetail.status.charAt(0).toUpperCase() +
-										projectDetail.status.slice(1)}
-								</div>
-							</div>
-
-							<div className="text-[#CACACA] font-comfortaa w-2/3  mt-2">
-								{projectDetail.description}
-							</div>
+						<div className="text-[#CACACA] font-comfortaa w-2/3 mt-2">
+							{projectDetail.shortDescription}
 						</div>
 					</div>
 				</div>

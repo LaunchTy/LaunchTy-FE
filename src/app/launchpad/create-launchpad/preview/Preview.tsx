@@ -42,6 +42,8 @@ const Preview = () => {
 
 	const images = useLaunchpadStore((state) => state.images)
 	const backgroundImage = useLaunchpadStore((state) => state.backgroundImage)
+	const startDate = useLaunchpadStore((state) => state.startDate)
+	const endDate = useLaunchpadStore((state) => state.endDate)
 	const setBackgroundImage = useLaunchpadStore(
 		(state) => state.setBackgroundImage
 	)
@@ -72,10 +74,13 @@ const Preview = () => {
 				launchpad_website: socialLinks?.website || null,
 				launchpad_whitepaper: whitepaper || null,
 				launchpad_img: images,
-				launchpad_start_date: new Date().toISOString(),
-				launchpad_end_date: new Date(
-					Date.now() + 7 * 24 * 60 * 60 * 1000
-				).toISOString(),
+				//
+				launchpad_start_date: startDate.toISOString(),
+				launchpad_end_date: endDate.toISOString(),
+				// launchpad_start_date: new Date().toISOString(),
+				// launchpad_end_date: new Date(
+				// 	Date.now() + 7 * 24 * 60 * 60 * 1000
+				// ).toISOString(),
 				wallet_address: account.address,
 			})
 

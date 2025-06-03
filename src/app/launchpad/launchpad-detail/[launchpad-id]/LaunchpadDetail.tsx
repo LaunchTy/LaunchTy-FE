@@ -12,9 +12,12 @@ import {
 import StakeArea from '@/components/UI/shared/StakeArea'
 import CustomTabs from '@/components/UI/shared/Tabs'
 import Tabs from '@/components/UI/shared/Tabs'
-import { projectDetail } from '@/constants/utils'
+import { Launchpad } from '@/interface/interface'
+// import { projectDetail } from '@/constants/utils'
+import axios from 'axios'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useState } from 'react'
+import { useParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 interface ModalProjectProps {
 	projectDetail: {
 		socials: any[]
@@ -25,7 +28,28 @@ interface ModalProjectProps {
 	}
 }
 const LaunchpadDetail = () => {
+	const params = useParams()
+	const launchpad_id = params['launchpad-id']
+	const [launchpad, setLaunchpad] = useState<Launchpad>({} as Launchpad)
+	const [loading, setLoading] = useState(true)
 	const [backgroundImage, setBackgroundImage] = useState<string>('')
+
+	useEffect(() => {
+		const fetchProjects = async () => {
+			try {
+				const response = await axios.get(
+					`/api/launchpad/launchpad-detail?launchpad_id=${launchpad_id}`
+				)
+				setLaunchpad(response.data.data)
+			} catch (error) {
+				console.error('Failed to load projects:', error)
+			} finally {
+				setLoading(false)
+			}
+		}
+
+		fetchProjects()
+	}, [launchpad_id])
 
 	// Handler for image changes from the carousel
 	const handleImageChange = (imageSrc: string) => {
@@ -55,7 +79,15 @@ const LaunchpadDetail = () => {
 				</AnimatePresence>
 
 				<div className="relative px-20 pt-48 pb-12 z-10">
-					<ProjectHeader projectDetail={projectDetail} />
+					<ProjectHeader
+						projectDetail={{
+							name: launchpad.launchpad_name,
+							logo: launchpad.launchpad_logo,
+							shortDescription: launchpad.launchpad_short_des,
+							startDate: launchpad.launchpad_start_date,
+							endDate: launchpad.launchpad_end_date,
+						}}
+					/>
 				</div>
 
 				<div className="flex items-start justify-center gap-12 m-">
@@ -67,36 +99,20 @@ const LaunchpadDetail = () => {
 						<div className="mb-28 mt-10 flex flex-col gap-5 h-auto w-full rounded-xl glass-component-1 p-5">
 							<span className="text-[45px] font-bold">Description</span>
 							<span>
-								If you have funded this project, we will be in touch to let you
-								know when the rewards have started distributing and when you can
-								claim them. If you have funded this project, we will be in touch
-								to let you know when the rewards have startStakeAreaed
-								distributing and when you can claim them. If you have funded
-								this project, we will be in touch to let you know when the
-								rewards have started distributing and when you can claim them.
-								If you have funded this project, we will be in touch to let you
-								know when the rewards have started distributing and when you can
-								claim them. If you have funded this project, we will be in touch
-								to let you know when the rewards have started distributing and
-								when you can claim them. If you have funded this project, we
-								will be in touch to let you know when the rewards have started
-								distributing and when you can claim them. If you have funded
-								this project, we will be in touch to let you know when the
-								rewards have started distributing and when you can claim them.
-								If you have funded this project, we will be in touch to let you
-								know when the rewards have started distributing and when you can
-								claim them. If you have funded this project, we will be in touch
-								to let you know when the rewards have started distributing and
-								when you can claim them. If you have funded this project, we
-								will be in touch to let you know when the rewards have started
-								distributing and when you can claim them.
+								{launchpad.launchpad_long_des ||
+									'No description available for this project.'}
 							</span>
 						</div>
 					</div>
 					{/* Right Sticky Column */}
 					<div className="w-3/12 h-fit sticky top-12 flex flex-col">
 						<div className="">
-							<ProjectProgress socials={projectDetail.socials} />
+							<ProjectProgress
+								launchpad_website={launchpad.launchpad_website}
+								launchpad_fb={launchpad.launchpad_fb}
+								launchpad_x={launchpad.launchpad_x}
+								launchpad_ig={launchpad.launchpad_ig}
+							/>
 						</div>
 						<div className="">
 							<StakeArea />
@@ -104,7 +120,7 @@ const LaunchpadDetail = () => {
 					</div>
 				</div>
 
-				<ModalBody>
+				{/* <ModalBody>
 					<ModalContent>
 						<div className="z-30">
 							<div className="mb-9 font-orbitron font-bold text-white text-center text-xl">
@@ -123,7 +139,6 @@ const LaunchpadDetail = () => {
 											animate={{ opacity: 1, y: 0 }}
 											transition={{ duration: 0.3 }}
 										>
-											{/* Add content inside the glass component if needed */}
 											<div className="mx-3 bg-white rounded-full w-8 h-8"></div>
 											<div className="text-white font-bold">{pool.name}</div>
 										</motion.div>
@@ -132,7 +147,7 @@ const LaunchpadDetail = () => {
 							</div>
 						</div>
 					</ModalContent>
-				</ModalBody>
+				</ModalBody> */}
 			</div>
 		</Modal>
 	)
