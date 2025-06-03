@@ -108,10 +108,10 @@ const LaunchpadDetail = () => {
 					<div className="w-3/12 h-fit sticky top-12 flex flex-col">
 						<div className="">
 							<ProjectProgress
-								launchpad_website={launchpad.launchpad_website}
-								launchpad_fb={launchpad.launchpad_fb}
-								launchpad_x={launchpad.launchpad_x}
-								launchpad_ig={launchpad.launchpad_ig}
+								website={launchpad.launchpad_website}
+								fb={launchpad.launchpad_fb}
+								x={launchpad.launchpad_x}
+								ig={launchpad.launchpad_ig}
 							/>
 						</div>
 						<div className="">

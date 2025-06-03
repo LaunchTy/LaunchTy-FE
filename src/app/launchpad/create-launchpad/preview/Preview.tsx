@@ -164,11 +164,11 @@ const Preview = () => {
 					{/* Project Header */}
 					<ProjectHeader
 						projectDetail={{
-							id: 0,
-							image: logo || '',
 							name: projectName,
-							description: shortDescription,
-							status: 'upcoming',
+							logo: logo ?? '',
+							shortDescription: shortDescription,
+							startDate: startDate.toISOString(),
+							endDate: endDate.toISOString(),
 						}}
 					/>
 				</div>
@@ -192,12 +192,20 @@ const Preview = () => {
 					</div>
 					{/* Right Sticky Column */}
 					<div className="w-3/12 h-fit sticky top-12 flex flex-col gap-5">
-						<ProjectProgress
+						{/* <ProjectProgress
 							socials={socials.reduce(
 								(acc, { platform, url }) => ({ ...acc, [platform]: url }),
 								{}
 							)}
-						/>
+						/> */}
+						<div className="">
+							<ProjectProgress
+								website={socialLinks.website}
+								fb={socialLinks.facebook}
+								x={socialLinks.twitter}
+								ig={socialLinks.instagram}
+							/>
+						</div>
 						<div>
 							<Button className="w-full bg-gradient" onClick={handleSubmit}>
 								Submit
