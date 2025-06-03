@@ -2,14 +2,20 @@
 
 import '@rainbow-me/rainbowkit/styles.css'
 import { getDefaultConfig, RainbowKitProvider } from '@rainbow-me/rainbowkit'
-import { WagmiProvider } from 'wagmi'
-import { mainnet, sepolia, polygon } from 'wagmi/chains'
+import { http, WagmiProvider } from 'wagmi'
+import { mainnet, sepolia, polygon, anvil } from 'wagmi/chains'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 const config = getDefaultConfig({
 	appName: 'LaunchTy',
 	projectId: 'YOUR_WALLETCONNECT_PROJECT_ID',
-	chains: [mainnet, sepolia, polygon],
+	chains: [mainnet, sepolia, polygon, anvil],
+	transports: {
+		[mainnet.id]: http(),
+		[sepolia.id]: http(),
+		[polygon.id]: http(),
+		[anvil.id]: http('http://127.0.0.1:8545'),
+	},
 	ssr: true,
 })
 
