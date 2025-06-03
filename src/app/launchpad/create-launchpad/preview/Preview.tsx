@@ -3,7 +3,7 @@
 import AnimatedBlobs from '@/components/UI/background/AnimatedBlobs'
 import { Modal } from '@/components/UI/modal/AnimatedModal'
 import { AnimatePresence } from 'framer-motion'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import ThumbNailCarousel from '@/components/UI/carousel/ThumbnailCarousel'
 import ProjectProgress from '@/components/project-component/ProjectProgress'
@@ -12,7 +12,12 @@ import { useLaunchpadStore } from '@/store/launchpad/CreateLaunchpadStore'
 import ProjectHeader from '@/components/project-component/ProjectHeader'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
-import { useAccount } from 'wagmi'
+import { useAccount, useWriteContract } from 'wagmi'
+import { WriteContractMutateAsync } from 'wagmi/query'
+import { LaunchpadFactoryABI } from '@/app/abi'
+import { chainConfig } from '@/app/config'
+import { Address } from 'viem'
+import { convertNumToOnChainFormat } from '@/app/utils/decimal'
 
 interface SocialLink {
 	platform: string
@@ -22,6 +27,7 @@ interface SocialLink {
 const Preview = () => {
 	const router = useRouter()
 	const account = useAccount()
+	const userAddress = account.address
 
 	const tokenAddress = useLaunchpadStore((state) => state.projectTokenAddress)
 	const tokenSupply = useLaunchpadStore((state) => state.tokenSupply)
@@ -53,9 +59,45 @@ const Preview = () => {
 		setBackgroundImage(imageSrc)
 	}
 
+	const { writeContractAsync } = useWriteContract()
+
+	// const {}
+
 	const handleSubmit = async () => {
-		console.log('account.address: ', account.address)
+		if (!userAddress) {
+			console.log('account.address: ', account.address)
+			alert('Please connect your wallet to create a launchpad.')
+			return
+		}
 		try {
+			const factoryAddress = chainConfig[31337].contracts.LaunchpadFactory
+				.address as Address
+			const tokenAdd = chainConfig[31337].contracts.MockERC20.address as Address
+
+			const hash = await writeContractAsync({
+				abi: LaunchpadFactoryABI,
+				address: factoryAddress,
+				functionName: 'createLaunchpad',
+				args: [
+					tokenAdd,
+					userAddress,
+					1, //Price per token, set to 1 for simplicity
+					Math.floor(Date.now() / 1000), // Current time in seconds
+					Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // End time in seconds (1 week later)
+					BigInt(convertNumToOnChainFormat(10, 18)), // Soft cap in wei
+					BigInt(convertNumToOnChainFormat(500, 18)), // Hard cap in wei
+					BigInt(convertNumToOnChainFormat(1, 18)), // Min stake in wei
+					BigInt(convertNumToOnChainFormat(500, 18)), // Max stake in wei
+					BigInt(convertNumToOnChainFormat(500, 18)), // Total supply in wei
+				],
+			})
+
+			if (!hash) {
+				console.error('Transaction hash is undefined')
+				return
+			}
+			console.log('Transaction hash:', hash)
+
 			const response = await axios.post('/api/launchpad/create', {
 				token_address: tokenAddress,
 				total_supply: tokenSupply,
