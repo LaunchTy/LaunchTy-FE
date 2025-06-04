@@ -2,22 +2,23 @@
 import { useEffect, useState, useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import Image from 'next/image'
+import { BaseProject } from '@/interface/interface'
 
-interface Project {
-	id: string
-	title: string
-	image: string
-	logo: string
-	price: string
-	raiseGoal: string
-	min: string
-	max: string
-	timeLeft?: string
-	endTime?: string
-}
+// interface Project {
+// 	id: string
+// 	title: string
+// 	image: string
+// 	logo: string
+// 	price: string
+// 	raiseGoal: string
+// 	min: string
+// 	max: string
+// 	timeLeft?: string
+// 	endTime?: string
+// }
 
 interface ProjectSectionProps {
-	projects: Project[]
+	projects: BaseProject[]
 	className?: string
 	showCountdown?: boolean
 	countdownDuration?: number // in hours
@@ -66,8 +67,8 @@ const ProjectSection = ({
 		const updateCountdowns = () => {
 			const newCountdowns: { [key: string]: string } = {}
 			projects.forEach((project) => {
-				if (project.endTime) {
-					newCountdowns[project.id] = calculateTimeLeft(project.endTime)
+				if (project.endDate) {
+					newCountdowns[project.id] = calculateTimeLeft(project.endDate)
 				} else {
 					// Fallback to countdownDuration if no endTime is provided
 					const end = new Date()
@@ -116,8 +117,8 @@ const ProjectSection = ({
 							<div className="relative w-full h-[240px] rounded-[3.2rem] bg-white ">
 								<div className="relative w-full h-[200px] rounded-tr-xl rounded-tl-xl overflow-hidden">
 									<Image
-										src={project.image}
-										alt={project.title}
+										src={project.images[0]}
+										alt={project.name}
 										fill
 										className="object-cover"
 									/>
@@ -135,9 +136,9 @@ const ProjectSection = ({
 								<div className="flex flex-col w-3/4">
 									<h4
 										className="text-lg font-bold mb-1 truncate"
-										title={project.title}
+										title={project.name}
 									>
-										{project.title}
+										{project.name}
 									</h4>
 									<div className="text-sm text-gray-400">
 										Price project token = 19999999 vDot
@@ -161,20 +162,24 @@ const ProjectSection = ({
 									<p className="text-sm text-start">Raise Goal:</p>
 									<div className="flex justify-between text-sm">
 										<span>Min:</span>
-										<span className="text-gray-400">${project.min || '0'}</span>
+										<span className="text-gray-400">
+											${project.min_stake || '0'}
+										</span>
 									</div>
 								</div>
 								{/* Right column: values */}
 								<div className="flex flex-col gap-4 text-left pl-2">
 									<p className="text-sm text-gray-400 text-end">
-										${project.price || '0.00'}
+										${project.soft_cap || '0.00'}
 									</p>
 									<p className="text-sm text-gray-400 text-end">
-										${project.raiseGoal || '0'}
+										${project.min_stake || '0'}
 									</p>
 									<div className="flex justify-between text-sm">
 										<span>Max:</span>
-										<span className="text-gray-400">${project.max || '0'}</span>
+										<span className="text-gray-400">
+											${project.max_stake || '0'}
+										</span>
 									</div>
 								</div>
 							</div>

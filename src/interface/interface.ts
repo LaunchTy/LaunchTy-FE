@@ -81,3 +81,44 @@ export interface Donation {
 	charity?: Charity;
 	user?: User;
 }
+
+export interface BaseProject {
+	id: string;
+	name: string;
+	shortDescription: string;
+	longDescription: string;
+	logo: string;
+	images: string[];
+	startDate: string;
+	endDate: string;
+	facebook?: string;
+	x?: string;
+	instagram?: string;
+	website?: string;
+	whitepaper?: string;
+	type: "launchpad" | "charity";
+	status?: "upcoming" | "ongoing" | "finished";
+
+	//Launchpad
+	token_address?: string;
+	total_supply?: number;
+	launchpad_token?: string;
+	max_stake?: number;
+	min_stake?: number;
+	soft_cap?: number;
+	hard_cap?: number;
+	project_owner_id?: string;
+
+	//Charity
+	charity_token_symbol?: string;
+	license_certificate?: string;
+	evidence?: string[];
+	repre_name?: string;
+	repre_phone?: string;
+	repre_id?: string;
+	repre_faceid?: string;
+
+	deposits?: Deposit[];
+	donations?: Donation[];
+	user?: User;
+}

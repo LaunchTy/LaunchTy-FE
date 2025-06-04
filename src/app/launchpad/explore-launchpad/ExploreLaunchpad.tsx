@@ -7,6 +7,9 @@ import Button from '@/components/UI/button/Button'
 import ApplySection from '@/components/Launchpad/Explore-section/ApplySection'
 import exploreImage from '@/public/Explore.svg'
 import { motion, useMotionValue, useSpring } from 'framer-motion'
+import axios from 'axios'
+import { BaseProject, Launchpad } from '@/interface/interface'
+import AnimatedBlobs from '@/components/UI/background/AnimatedBlobs'
 
 const navItems = [
 	{ id: 'all', label: 'All Projects' },
@@ -15,145 +18,63 @@ const navItems = [
 	{ id: 'finished', label: 'Finished' },
 ]
 
-const projects = [
-	{
-		id: '1',
-		title: 'Project 1',
-		image: '/Project.png',
-		logo: '/ProjectLogo.png',
-		price: '100',
-		raiseGoal: '1000000',
-		min: '100',
-		max: '1000',
-		timeLeft: '12:00:00',
-		status: 'ongoing',
-		endTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
-	},
-	{
-		id: '2',
-		title: 'Project 2',
-		image: '/Project.png',
-		logo: '/ProjectLogo.png',
-		price: '100',
-		raiseGoal: '1000000',
-		min: '100',
-		max: '1000',
-		timeLeft: '12:00:00',
-		status: 'upcoming',
-		endTime: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(), // 48 hours from now
-	},
-	{
-		id: '3',
-		title: 'Project 3',
-		image: '/Project.png',
-		logo: '/ProjectLogo.png',
-		price: '100',
-		raiseGoal: '1000000',
-		min: '100',
-		max: '1000',
-		timeLeft: '12:00:00',
-		status: 'finished',
-		endTime: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 24 hours ago
-	},
-	{
-		id: '4',
-		title: 'Project 4',
-		image: '/Project.png',
-		logo: '/ProjectLogo.png',
-		price: '100',
-		raiseGoal: '1000000',
-		min: '100',
-		max: '1000',
-		timeLeft: '12:00:00',
-		status: 'ongoing',
-		endTime: new Date(Date.now() + 36 * 60 * 60 * 1000).toISOString(), // 36 hours from now
-	},
-	{
-		id: '5',
-		title: 'Project 5',
-		image: '/Project.png',
-		logo: '/ProjectLogo.png',
-		price: '100',
-		raiseGoal: '1000000',
-		min: '100',
-		max: '1000',
-		timeLeft: '12:00:00',
-		status: 'upcoming',
-		endTime: new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString(), // 72 hours from now
-	},
-	{
-		id: '6',
-		title: 'Project 6',
-		image: '/Project.png',
-		logo: '/ProjectLogo.png',
-		price: '100',
-		raiseGoal: '1000000',
-		min: '100',
-		max: '1000',
-		timeLeft: '12:00:00',
-		status: 'ongoing',
-		endTime: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(), // 12 hours from now
-	},
-	{
-		id: '7',
-		title: 'Project 7',
-		image: '/Project.png',
-		logo: '/ProjectLogo.png',
-		price: '100',
-		raiseGoal: '1000000',
-		min: '100',
-		max: '1000',
-		timeLeft: '12:00:00',
-		status: 'finished',
-		endTime: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), // 12 hours ago
-	},
-	{
-		id: '8',
-		title: 'Project 8',
-		image: '/Project.png',
-		logo: '/ProjectLogo.png',
-		price: '100',
-		raiseGoal: '1000000',
-		min: '100',
-		max: '1000',
-		timeLeft: '12:00:00',
-		status: 'upcoming',
-		endTime: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour from now
-	},
-	{
-		id: '9',
-		title: 'Project 9',
-		image: '/Project.png',
-		logo: '/ProjectLogo.png',
-		price: '100',
-		raiseGoal: '1000000',
-		min: '100',
-		max: '1000',
-		timeLeft: '12:00:00',
-		status: 'ongoing',
-		endTime: new Date(Date.now() + 18 * 60 * 60 * 1000).toISOString(), // 18 hours from now
-	},
-]
+const convertLaunchpadToProject = (launchpad: Launchpad): BaseProject => {
+	const now = new Date()
+	const startDate = new Date(launchpad.launchpad_start_date)
+	const endDate = new Date(launchpad.launchpad_end_date)
+	let status: 'upcoming' | 'ongoing' | 'finished' = 'finished'
+	if (now < startDate) status = 'upcoming'
+	else if (now >= startDate && now <= endDate) status = 'ongoing'
+
+	return {
+		id: launchpad.launchpad_id,
+		name: launchpad.launchpad_name,
+		shortDescription: launchpad.launchpad_short_des,
+		longDescription: launchpad.launchpad_long_des,
+		logo: launchpad.launchpad_logo,
+		images:
+			launchpad.launchpad_img.length > 0
+				? launchpad.launchpad_img
+				: ['/default-image.png'],
+		startDate: launchpad.launchpad_start_date,
+		endDate: launchpad.launchpad_end_date,
+		facebook: launchpad.launchpad_fb,
+		x: launchpad.launchpad_x,
+		instagram: launchpad.launchpad_ig,
+		website: launchpad.launchpad_website,
+		whitepaper: launchpad.launchpad_whitepaper,
+		type: 'launchpad',
+		status,
+	}
+}
 
 const ExploreProjectPage = () => {
 	const [activeTab, setActiveTab] = useState('all')
 	const [showAll, setShowAll] = useState(false)
-	const mouseX = useMotionValue(0)
-	const mouseY = useMotionValue(0)
-	const smoothX = useSpring(mouseX, { damping: 20, stiffness: 100 })
-	const smoothY = useSpring(mouseY, { damping: 20, stiffness: 100 })
+	const [loading, setLoading] = useState(true)
+	const [launchpads, setLaunchpads] = useState<BaseProject[]>([])
 
 	useEffect(() => {
-		const handleMouseMove = (e: MouseEvent) => {
-			mouseX.set(e.clientX)
-			mouseY.set(e.clientY)
+		const fetchProjects = async () => {
+			try {
+				const response = await axios.get(`/api/launchpad/explore-launchpad`)
+				const launchpadsData: Launchpad[] = response.data.data
+				const projectsData: BaseProject[] = launchpadsData.map(
+					convertLaunchpadToProject
+				)
+				setLaunchpads(projectsData)
+				console.log('Fetched projects:', projectsData)
+			} catch (error) {
+				console.error('Failed to load projects:', error)
+			} finally {
+				setLoading(false)
+			}
 		}
 
-		window.addEventListener('mousemove', handleMouseMove)
-		return () => window.removeEventListener('mousemove', handleMouseMove)
-	}, [mouseX, mouseY])
+		fetchProjects()
+	}, [])
 
-	const filteredProjects = projects.filter((project) => {
+	const filteredProjects = launchpads.filter((project) => {
 		if (activeTab === 'all') return true
 		return project.status === activeTab
 	})
@@ -165,16 +86,8 @@ const ExploreProjectPage = () => {
 
 	return (
 		<div className="min-h-screen font-exo relative">
-			<motion.div
-				className="fixed w-[400px] h-[400px] rounded-full bg-gradient-to-r from-purple-500/30 to-blue-500/30 blur-[80px] opacity-70 pointer-events-none"
-				style={{
-					x: smoothX,
-					y: smoothY,
-					translateX: '-50%',
-					translateY: '-50%',
-					zIndex: 50,
-				}}
-			/>
+			<AnimatedBlobs />
+			<motion.div className="fixed w-[400px] h-[400px] rounded-full bg-gradient-to-r from-purple-500/30 to-blue-500/30 blur-[80px] opacity-70 pointer-events-none" />
 			<div className="relative z-20">
 				<ExploreProject
 					title="Explore Projects"
