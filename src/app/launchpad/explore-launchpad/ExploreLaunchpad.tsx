@@ -11,6 +11,7 @@ import axios from 'axios'
 import { BaseProject, Launchpad } from '@/interface/interface'
 import AnimatedBlobs from '@/components/UI/background/AnimatedBlobs'
 import { useRouter } from 'next/navigation'
+import LoadingModal from '@/components/UI/modal/LoadingModal'
 
 const navItems = [
 	{ id: 'all', label: 'All Projects' },
@@ -92,39 +93,45 @@ const ExploreProjectPage = () => {
 	return (
 		<div className="min-h-screen font-exo relative">
 			<AnimatedBlobs />
-			<motion.div className="fixed w-[400px] h-[400px] rounded-full bg-gradient-to-r from-purple-500/30 to-blue-500/30 blur-[80px] opacity-70 pointer-events-none" />
-			<div className="relative z-20">
-				<ExploreProject
-					title="Explore Projects"
-					backgroundImage={exploreImage.src}
-					searchPlaceholder="Search projects..."
-				/>
-				<Tab
-					navItems={navItems}
-					activeTab={activeTab}
-					onTabChange={(tab) => {
-						setActiveTab(tab)
-						setShowAll(false)
-					}}
-				/>
-				<ProjectSection
-					projects={displayedProjects}
-					showCountdown={true}
-					countdownDuration={24}
-					className="custom-class pb-12"
-				/>
-				{hasMoreProjects && !showAll && (
-					<div className="flex justify-center my-10">
-						<Button
-							className="bg-gradient text-white px-[5rem] py-3 rounded-full hover:opacity-90 transition-all duration-300"
-							onClick={() => setShowAll(true)}
-						>
-							Show More
-						</Button>
+			{/* <motion.div className="fixed w-[400px] h-[400px] rounded-full bg-gradient-to-r from-purple-500/30 to-blue-500/30 blur-[80px] opacity-70 pointer-events-none" /> */}
+			{loading ? (
+				<LoadingModal open={loading} onOpenChange={setLoading} />
+			) : (
+				<>
+					<div className="relative z-20">
+						<ExploreProject
+							title="Explore Projects"
+							backgroundImage={exploreImage.src}
+							searchPlaceholder="Search projects..."
+						/>
+						<Tab
+							navItems={navItems}
+							activeTab={activeTab}
+							onTabChange={(tab) => {
+								setActiveTab(tab)
+								setShowAll(false)
+							}}
+						/>
+						<ProjectSection
+							projects={displayedProjects}
+							showCountdown={true}
+							countdownDuration={24}
+							className="custom-class pb-12"
+						/>
+						{hasMoreProjects && !showAll && (
+							<div className="flex justify-center my-10">
+								<Button
+									className="bg-gradient text-white px-[5rem] py-3 rounded-full hover:opacity-90 transition-all duration-300"
+									onClick={() => setShowAll(true)}
+								>
+									Show More
+								</Button>
+							</div>
+						)}
+						<ApplySection handleAddProject={handleAddProject} />
 					</div>
-				)}
-				<ApplySection handleAddProject={handleAddProject} />
-			</div>
+				</>
+			)}
 		</div>
 	)
 }

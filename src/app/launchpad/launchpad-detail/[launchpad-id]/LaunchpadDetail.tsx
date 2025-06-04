@@ -5,6 +5,7 @@ import ProjectProgress from '@/components/project-component/ProjectProgress'
 import AnimatedBlobs from '@/components/UI/background/AnimatedBlobs'
 import ThumbNailCarousel from '@/components/UI/carousel/ThumbnailCarousel'
 import { Modal } from '@/components/UI/modal/AnimatedModal'
+import LoadingModal from '@/components/UI/modal/LoadingModal'
 import StakeArea from '@/components/UI/shared/StakeArea'
 import { Launchpad } from '@/interface/interface'
 // import { projectDetail } from '@/constants/utils'
@@ -70,79 +71,86 @@ const LaunchpadDetail = () => {
 		<Modal>
 			<div className="relative min-h-screen w-full font-exo pb-10">
 				<AnimatedBlobs count={6} />
+				{loading ? (
+					<LoadingModal open={loading} onOpenChange={setLoading} />
+				) : (
+					<>
+						<AnimatePresence mode="wait">
+							{backgroundImage && (
+								<motion.div
+									key={backgroundImage}
+									initial={{ opacity: 0 }}
+									animate={{ opacity: 0.2 }}
+									exit={{ opacity: 0 }}
+									transition={{ duration: 0.2 }}
+									className="fixed inset-0 w-full h-2/3 z-0 bg-cover bg-center scale-110"
+									style={{
+										backgroundImage: `url(${backgroundImage})`,
+										filter: 'blur(15px)',
+									}}
+								/>
+							)}
+						</AnimatePresence>
 
-				{/* Full-width background container */}
-				<AnimatePresence mode="wait">
-					{backgroundImage && (
-						<motion.div
-							key={backgroundImage}
-							initial={{ opacity: 0 }}
-							animate={{ opacity: 0.2 }}
-							exit={{ opacity: 0 }}
-							transition={{ duration: 0.2 }}
-							className="fixed inset-0 w-full h-2/3 z-0 bg-cover bg-center scale-110"
-							style={{
-								backgroundImage: `url(${backgroundImage})`,
-								filter: 'blur(15px)',
-							}}
-						/>
-					)}
-				</AnimatePresence>
+						<div className="relative px-20 pt-48 pb-12 z-10">
+							<ProjectHeader
+								projectDetail={{
+									name: launchpad.launchpad_name || 'Unknown Project',
+									logo: launchpad.launchpad_logo || '',
+									shortDescription: launchpad.launchpad_short_des,
+									startDate: launchpad.launchpad_start_date,
+									endDate: launchpad.launchpad_end_date,
+								}}
+							/>
+						</div>
 
-				<div className="relative px-20 pt-48 pb-12 z-10">
-					<ProjectHeader
-						projectDetail={{
-							name: launchpad.launchpad_name || 'Unknown Project',
-							logo: launchpad.launchpad_logo || '',
-							shortDescription: launchpad.launchpad_short_des,
-							startDate: launchpad.launchpad_start_date,
-							endDate: launchpad.launchpad_end_date,
-						}}
-					/>
-				</div>
-
-				<div className="flex items-start justify-center gap-12 m-">
-					<div className="w-7/12">
-						{/* <ThumbNailCarousel
+						<div className="flex items-start justify-center gap-12 m-">
+							<div className="w-7/12">
+								{/* <ThumbNailCarousel
 							fullWidthBackground={false}
 							onImageChange={handleImageChange}
 						/> */}
-						{launchpad?.launchpad_img?.length > 0 && (
-							<ThumbNailCarousel
-								fullWidthBackground={false}
-								onImageChange={handleImageChange}
-								projectImages={launchpad.launchpad_img.map((image: string) => ({
-									src: image,
-									alt: 'Image',
-									description: 'Image',
-								}))}
-							/>
-						)}
+								{launchpad?.launchpad_img?.length > 0 && (
+									<ThumbNailCarousel
+										fullWidthBackground={false}
+										onImageChange={handleImageChange}
+										projectImages={launchpad.launchpad_img.map(
+											(image: string) => ({
+												src: image,
+												alt: 'Image',
+												description: 'Image',
+											})
+										)}
+									/>
+								)}
 
-						<div className="mb-28 mt-10 flex flex-col gap-5 h-auto w-full rounded-xl glass-component-1 p-5">
-							<span className="text-[45px] font-bold">Description</span>
-							<span>
-								{launchpad.launchpad_long_des ||
-									'No description available for this project.'}
-							</span>
+								<div className="mb-28 mt-10 flex flex-col gap-5 h-auto w-full rounded-xl glass-component-1 p-5">
+									<span className="text-[45px] font-bold">Description</span>
+									<span>
+										{launchpad.launchpad_long_des ||
+											'No description available for this project.'}
+									</span>
+								</div>
+							</div>
+							{/* Right Sticky Column */}
+							<div className="w-3/12 h-fit sticky top-12 flex flex-col">
+								<div className="">
+									<ProjectProgress
+										website={launchpad.launchpad_website}
+										fb={launchpad.launchpad_fb}
+										x={launchpad.launchpad_x}
+										ig={launchpad.launchpad_ig}
+										currentStep={steps}
+									/>
+								</div>
+								<div className="">
+									<StakeArea />
+								</div>
+							</div>
 						</div>
-					</div>
-					{/* Right Sticky Column */}
-					<div className="w-3/12 h-fit sticky top-12 flex flex-col">
-						<div className="">
-							<ProjectProgress
-								website={launchpad.launchpad_website}
-								fb={launchpad.launchpad_fb}
-								x={launchpad.launchpad_x}
-								ig={launchpad.launchpad_ig}
-								currentStep={steps}
-							/>
-						</div>
-						<div className="">
-							<StakeArea />
-						</div>
-					</div>
-				</div>
+					</>
+				)}
+				{/* Full-width background container */}
 
 				{/* <ModalBody>
 					<ModalContent>

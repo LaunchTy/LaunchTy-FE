@@ -12,17 +12,21 @@ import { useLaunchpadStore } from '@/store/launchpad/CreateLaunchpadStore'
 import ProjectHeader from '@/components/project-component/ProjectHeader'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
-import { useAccount, useWriteContract } from 'wagmi'
+import { useAccount, useReadContract, useWriteContract } from 'wagmi'
 import { WriteContractMutateAsync } from 'wagmi/query'
 import { LaunchpadFactoryABI } from '@/app/abi'
 import { chainConfig } from '@/app/config'
-import { Address } from 'viem'
+import { Address, createPublicClient, http } from 'viem'
 import { convertNumToOnChainFormat } from '@/app/utils/decimal'
+import { waitForTransactionReceipt } from 'viem/actions'
+import { anvil } from 'viem/chains'
+import LoadingModal from '@/components/UI/modal/LoadingModal'
+import SuccessModal from '@/components/UI/modal/SuccessModal'
 
-interface SocialLink {
-	platform: string
-	url: string
-}
+// interface SocialLink {
+// 	platform: string
+// 	url: string
+// }
 
 const Preview = () => {
 	const router = useRouter()
@@ -54,13 +58,27 @@ const Preview = () => {
 		(state) => state.setBackgroundImage
 	)
 
+	const [loadingOpen, setLoadingOpen] = useState(false)
+	const [successOpen, setSuccessOpen] = useState(false)
+
 	// Handler for image changes from the carousel
 	const handleImageChange = (imageSrc: string) => {
 		setBackgroundImage(imageSrc)
 	}
 
 	const { writeContractAsync } = useWriteContract()
-
+	const { data, isLoading, error } = useReadContract({
+		abi: LaunchpadFactoryABI,
+		address:
+			'0x4506ea5f77d880f2e7b2abb02d7c7c925464e08a5cd606195aa76f1f5f1f38e1',
+		functionName: 'getLaunchpadAddress',
+		args: [chainConfig[31337].contracts.MockERC20.address],
+	})
+	useEffect(() => {
+		console.log('Data:', data)
+		console.log('Is Loading:', isLoading)
+		console.log('Error:', error)
+	}, [data, isLoading, error])
 	// const {}
 
 	const handleSubmit = async () => {
@@ -69,6 +87,9 @@ const Preview = () => {
 			alert('Please connect your wallet to create a launchpad.')
 			return
 		}
+
+		setLoadingOpen(true) // Show loading modal
+
 		try {
 			const factoryAddress = chainConfig[31337].contracts.LaunchpadFactory
 				.address as Address
@@ -97,8 +118,24 @@ const Preview = () => {
 				return
 			}
 			console.log('Transaction hash:', hash)
+			const client = createPublicClient({
+				chain: anvil,
+				transport: http('http://127.0.0.1:8545'),
+			})
+
+			const receipt = await waitForTransactionReceipt(client, {
+				hash,
+			})
+			console.log('Transaction receipt:', receipt)
+
+			const launchpadAddress = receipt.logs
+				.filter((log: any) => log.eventName === 'LaunchpadCreated')
+				.map((log: any) => log.args.launchpadAddress)[0]
+
+			console.log('Launchpad Address:', launchpadAddress)
 
 			const response = await axios.post('/api/launchpad/create', {
+				launchpad_id: hash,
 				token_address: tokenAddress,
 				total_supply: tokenSupply,
 				launchpad_token: launchpadToken,
@@ -125,96 +162,108 @@ const Preview = () => {
 				// ).toISOString(),
 				wallet_address: account.address,
 			})
+			// router.push(`/launchpad/my-launchpad/${response.data.project_owner_id}`)
 
 			console.log('Launchpad created:', response.data)
+			setLoadingOpen(false) // Hide loading modal
+			setSuccessOpen(true) // Show success modal
 		} catch (error) {
 			console.error('Error submitting launchpad:', error)
+			setLoadingOpen(false) // Hide loading modal
 		}
 	}
 
 	// Convert socialLinks object to an array of non-empty links
-	const socials = Object.entries(socialLinks)
-		.filter(([, url]) => url.trim() !== '')
-		.map(([platform, url]) => ({ platform, url }))
+	// const socials = Object.entries(socialLinks)
+	// 	.filter(([, url]) => url.trim() !== '')
+	// 	.map(([platform, url]) => ({ platform, url }))
 
 	return (
-		<Modal>
-			<div className="relative min-h-screen w-full font-exo pb-10">
-				<AnimatedBlobs count={6} />
-
-				{/* Full-width background container */}
-				<AnimatePresence mode="wait">
-					{backgroundImage && (
-						<motion.div
-							key={backgroundImage}
-							initial={{ opacity: 0 }}
-							animate={{ opacity: 0.2 }}
-							exit={{ opacity: 0 }}
-							transition={{ duration: 0.2 }}
-							className="fixed inset-0 w-full h-2/3 z-0 bg-cover bg-center scale-110"
-							style={{
-								backgroundImage: `url(${backgroundImage})`,
-								filter: 'blur(15px)',
-							}}
-						/>
-					)}
-				</AnimatePresence>
-
-				<div className="relative px-20 pt-48 pb-12 z-10">
-					{/* Project Header */}
-					<ProjectHeader
-						projectDetail={{
-							name: projectName,
-							logo: logo ?? '',
-							shortDescription: shortDescription,
-							startDate: startDate.toISOString(),
-							endDate: endDate.toISOString(),
+		<div className="relative min-h-screen w-full font-exo pb-10">
+			<AnimatedBlobs count={6} />
+			{/* Loading Modal */}
+			<LoadingModal open={loadingOpen} onOpenChange={setLoadingOpen} />
+			{/* Success Modal */}
+			<SuccessModal
+				open={successOpen}
+				onOpenChange={setSuccessOpen}
+				onContinue={() => {
+					setSuccessOpen(false)
+					router.push('/launchpad/explore-launchpad') // Redirect after success
+				}}
+			/>
+			{/* Full-width background container */}
+			<AnimatePresence mode="wait">
+				{backgroundImage && (
+					<motion.div
+						key={backgroundImage}
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 0.2 }}
+						exit={{ opacity: 0 }}
+						transition={{ duration: 0.2 }}
+						className="fixed inset-0 w-full h-2/3 z-0 bg-cover bg-center scale-110"
+						style={{
+							backgroundImage: `url(${backgroundImage})`,
+							filter: 'blur(15px)',
 						}}
 					/>
-				</div>
+				)}
+			</AnimatePresence>
 
-				<div className="flex items-start justify-center gap-12">
-					<div className="w-7/12">
-						{/* Pass images from store to the carousel */}
-						<ThumbNailCarousel
-							fullWidthBackground={false}
-							onImageChange={handleImageChange}
-							projectImages={images.map((image: string) => ({
-								src: image,
-								alt: 'Image',
-								description: 'Image',
-							}))}
-						/>
-						<div className="mb-28 mt-10 flex flex-col gap-5 h-auto w-full rounded-xl glass-component-1 p-5">
-							<span className="text-[45px] font-bold">Description</span>
-							<span>{longDescription ? longDescription : 'N/A'}</span>
-						</div>
+			<div className="relative px-20 pt-48 pb-12 z-10">
+				{/* Project Header */}
+				<ProjectHeader
+					projectDetail={{
+						name: projectName,
+						logo: logo ?? '',
+						shortDescription: shortDescription,
+						// startDate: startDate.toISOString(),
+						// endDate: endDate.toISOString(),
+					}}
+				/>
+			</div>
+
+			<div className="flex items-start justify-center gap-12">
+				<div className="w-7/12">
+					{/* Pass images from store to the carousel */}
+					<ThumbNailCarousel
+						fullWidthBackground={false}
+						onImageChange={handleImageChange}
+						projectImages={images.map((image: string) => ({
+							src: image,
+							alt: 'Image',
+							description: 'Image',
+						}))}
+					/>
+					<div className="mb-28 mt-10 flex flex-col gap-5 h-auto w-full rounded-xl glass-component-1 p-5">
+						<span className="text-[45px] font-bold">Description</span>
+						<span>{longDescription ? longDescription : 'N/A'}</span>
 					</div>
-					{/* Right Sticky Column */}
-					<div className="w-3/12 h-fit sticky top-12 flex flex-col gap-5">
-						{/* <ProjectProgress
+				</div>
+				{/* Right Sticky Column */}
+				<div className="w-3/12 h-fit sticky top-12 flex flex-col gap-5">
+					{/* <ProjectProgress
 							socials={socials.reduce(
 								(acc, { platform, url }) => ({ ...acc, [platform]: url }),
 								{}
 							)}
 						/> */}
-						<div className="">
-							<ProjectProgress
-								website={socialLinks.website}
-								fb={socialLinks.facebook}
-								x={socialLinks.twitter}
-								ig={socialLinks.instagram}
-							/>
-						</div>
-						<div>
-							<Button className="w-full bg-gradient" onClick={handleSubmit}>
-								Submit
-							</Button>
-						</div>
+					<div className="">
+						<ProjectProgress
+							website={socialLinks.website}
+							fb={socialLinks.facebook}
+							x={socialLinks.twitter}
+							ig={socialLinks.instagram}
+						/>
+					</div>
+					<div>
+						<Button className="w-full bg-gradient" onClick={handleSubmit}>
+							Submit
+						</Button>
 					</div>
 				</div>
 			</div>
-		</Modal>
+		</div>
 	)
 }
 
