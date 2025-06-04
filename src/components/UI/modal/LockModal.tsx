@@ -5,7 +5,7 @@ import { Lock, Shield } from 'lucide-react'
 import { useEffect } from 'react'
 
 interface LockModalProps {
-	open: boolean
+	open?: boolean
 	title?: string
 	description?: string
 	message?: string
@@ -15,7 +15,7 @@ interface LockModalProps {
 }
 
 export default function LockModal({
-	open,
+	open = true,
 	title = 'Page Locked',
 	description = 'This page is temporarily locked for security reasons',
 	message = 'This page has been locked to prevent unauthorized access. Please wait for an administrator to unlock it or contact support.',
