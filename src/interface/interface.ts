@@ -83,20 +83,20 @@ export interface Donation {
 }
 
 export interface BaseProject {
-	id: string;
-	name: string;
-	shortDescription: string;
-	longDescription: string;
-	logo: string;
-	images: string[];
-	startDate: string;
-	endDate: string;
+	id?: string;
+	name?: string;
+	shortDescription?: string;
+	longDescription?: string;
+	logo?: string;
+	images?: string[];
+	startDate?: string;
+	endDate?: string;
 	facebook?: string;
 	x?: string;
 	instagram?: string;
 	website?: string;
 	whitepaper?: string;
-	type: "launchpad" | "charity";
+	type?: "launchpad" | "charity";
 	status?: "upcoming" | "ongoing" | "finished";
 
 	//Launchpad

@@ -1,14 +1,9 @@
 'use client'
+import { BaseProject } from '@/interface/interface'
 import Image from 'next/image'
 
 interface ProjectHeaderProps {
-	projectDetail: {
-		name: string
-		logo: string
-		shortDescription: string
-		startDate: string
-		endDate: string
-	}
+	projectDetail: BaseProject
 }
 
 const ProjectHeader = ({ projectDetail }: ProjectHeaderProps) => {
@@ -22,7 +17,10 @@ const ProjectHeader = ({ projectDetail }: ProjectHeaderProps) => {
 		return 'ended'
 	}
 
-	const status = getStatus(projectDetail.startDate, projectDetail.endDate)
+	const status =
+		projectDetail.startDate && projectDetail.endDate
+			? getStatus(projectDetail.startDate, projectDetail.endDate)
+			: 'unknown'
 
 	const getStatusColor = (status: string) => {
 		switch (status.toLowerCase()) {
@@ -43,7 +41,7 @@ const ProjectHeader = ({ projectDetail }: ProjectHeaderProps) => {
 				<div className="flex flex-row gap-10">
 					<div className="w-auto">
 						<Image
-							src={projectDetail.logo}
+							src={projectDetail.logo || '/default-logo.png'}
 							alt="Project Logo"
 							width={64}
 							height={64}

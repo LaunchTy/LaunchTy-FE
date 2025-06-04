@@ -82,7 +82,7 @@ const LaunchpadDetail = () => {
 					<ProjectHeader
 						projectDetail={{
 							name: launchpad.launchpad_name,
-							logo: launchpad.launchpad_logo,
+							logo: launchpad.launchpad_logo || '',
 							shortDescription: launchpad.launchpad_short_des,
 							startDate: launchpad.launchpad_start_date,
 							endDate: launchpad.launchpad_end_date,

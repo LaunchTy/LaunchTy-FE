@@ -68,12 +68,16 @@ const ProjectSection = ({
 			const newCountdowns: { [key: string]: string } = {}
 			projects.forEach((project) => {
 				if (project.endDate) {
-					newCountdowns[project.id] = calculateTimeLeft(project.endDate)
+					if (project.id) {
+						newCountdowns[project.id] = calculateTimeLeft(project.endDate)
+					}
 				} else {
 					// Fallback to countdownDuration if no endTime is provided
 					const end = new Date()
 					end.setHours(end.getHours() + countdownDuration)
-					newCountdowns[project.id] = calculateTimeLeft(end.toISOString())
+					if (project.id) {
+						newCountdowns[project.id] = calculateTimeLeft(end.toISOString())
+					}
 				}
 			})
 			setCountdowns(newCountdowns)
@@ -117,8 +121,8 @@ const ProjectSection = ({
 							<div className="relative w-full h-[240px] rounded-[3.2rem] bg-white ">
 								<div className="relative w-full h-[200px] rounded-tr-xl rounded-tl-xl overflow-hidden">
 									<Image
-										src={project.images[0]}
-										alt={project.name}
+										src={project.images?.[0] || '/default-image-path.jpg'}
+										alt={project.name || 'Default Project Name'}
 										fill
 										className="object-cover"
 									/>
@@ -126,7 +130,9 @@ const ProjectSection = ({
 								{showCountdown && (
 									<div className="shadow flex items-center justify-center pt-1">
 										<span className="font-mono font-bold text-red-500 tracking-widest text-2xl">
-											{countdowns[project.id] || '00:00:00'}
+											{project.id
+												? countdowns[project.id] || '00:00:00'
+												: '00:00:00'}
 										</span>
 									</div>
 								)}
@@ -146,7 +152,7 @@ const ProjectSection = ({
 								</div>
 								<div className="relative w-12 h-12 rounded-full overflow-hidden">
 									<Image
-										src={project.logo}
+										src={project.logo || '/default-logo-path.png'}
 										alt="Project Logo"
 										fill
 										className="object-cover"
