@@ -27,6 +27,23 @@ const LaunchpadDetail = () => {
 	const [launchpad, setLaunchpad] = useState<Launchpad>({} as Launchpad)
 	const [loading, setLoading] = useState(true)
 	const [backgroundImage, setBackgroundImage] = useState<string>('')
+	const [steps, setSteps] = useState(2)
+
+	useEffect(() => {
+		if (!launchpad.launchpad_start_date || !launchpad.launchpad_end_date) return
+
+		const startDate = new Date(launchpad.launchpad_start_date)
+		const endDate = new Date(launchpad.launchpad_end_date)
+		const now = new Date()
+
+		if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return
+
+		if (now < startDate) {
+			setSteps(0)
+		} else if (now >= startDate && now <= endDate) {
+			setSteps(1)
+		}
+	}, [launchpad.launchpad_start_date, launchpad.launchpad_end_date])
 
 	useEffect(() => {
 		const fetchProjects = async () => {
@@ -86,10 +103,22 @@ const LaunchpadDetail = () => {
 
 				<div className="flex items-start justify-center gap-12 m-">
 					<div className="w-7/12">
-						<ThumbNailCarousel
+						{/* <ThumbNailCarousel
 							fullWidthBackground={false}
 							onImageChange={handleImageChange}
-						/>
+						/> */}
+						{launchpad?.launchpad_img?.length > 0 && (
+							<ThumbNailCarousel
+								fullWidthBackground={false}
+								onImageChange={handleImageChange}
+								projectImages={launchpad.launchpad_img.map((image: string) => ({
+									src: image,
+									alt: 'Image',
+									description: 'Image',
+								}))}
+							/>
+						)}
+
 						<div className="mb-28 mt-10 flex flex-col gap-5 h-auto w-full rounded-xl glass-component-1 p-5">
 							<span className="text-[45px] font-bold">Description</span>
 							<span>
@@ -106,6 +135,7 @@ const LaunchpadDetail = () => {
 								fb={launchpad.launchpad_fb}
 								x={launchpad.launchpad_x}
 								ig={launchpad.launchpad_ig}
+								currentStep={steps}
 							/>
 						</div>
 						<div className="">

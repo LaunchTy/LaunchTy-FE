@@ -3,7 +3,6 @@ import VerticalProgressBar from './VerticalProgressBar'
 
 interface ProjectProgressProps {
 	projectProgress?: number
-	steps?: number
 	currentStep?: number
 	website?: string
 	ig?: string
@@ -16,7 +15,13 @@ interface ProgressBarProps {
 	currentStep: number
 }
 
-const ProjectProgress = ({ website, ig, x, fb }: ProjectProgressProps) => {
+const ProjectProgress = ({
+	website,
+	ig,
+	x,
+	fb,
+	currentStep,
+}: ProjectProgressProps) => {
 	const socials = {
 		website: website,
 		ig: ig,
@@ -25,7 +30,6 @@ const ProjectProgress = ({ website, ig, x, fb }: ProjectProgressProps) => {
 	}
 
 	const steps = [{ name: 'Upcoming' }, { name: 'Ongoing' }, { name: 'Ended' }]
-	const currentStep = 2
 
 	// Only show socials if they exist and aren't empty strings
 	const hasSocialLinks =
@@ -56,7 +60,7 @@ const ProjectProgress = ({ website, ig, x, fb }: ProjectProgressProps) => {
 				</div>
 				{/* <div className="border-l border-gray-400 self-stretch mx-8"></div> */}
 				<div className="px-8 pb-[92px]">
-					<VerticalProgressBar steps={steps} currentStep={currentStep} />
+					<VerticalProgressBar steps={steps} currentStep={currentStep ?? 0} />
 				</div>
 			</div>
 		</div>
