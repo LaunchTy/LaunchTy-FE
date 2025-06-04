@@ -10,6 +10,7 @@ import { motion, useMotionValue, useSpring } from 'framer-motion'
 import axios from 'axios'
 import { BaseProject, Launchpad } from '@/interface/interface'
 import AnimatedBlobs from '@/components/UI/background/AnimatedBlobs'
+import { useRouter } from 'next/navigation'
 
 const navItems = [
 	{ id: 'all', label: 'All Projects' },
@@ -53,7 +54,11 @@ const ExploreProjectPage = () => {
 	const [showAll, setShowAll] = useState(false)
 	const [loading, setLoading] = useState(true)
 	const [launchpads, setLaunchpads] = useState<BaseProject[]>([])
+	const route = useRouter()
 
+	const handleAddProject = () => {
+		route.push('/launchpad/create-launchpad')
+	}
 	useEffect(() => {
 		const fetchProjects = async () => {
 			try {
@@ -118,7 +123,7 @@ const ExploreProjectPage = () => {
 						</Button>
 					</div>
 				)}
-				<ApplySection />
+				<ApplySection handleAddProject={handleAddProject} />
 			</div>
 		</div>
 	)

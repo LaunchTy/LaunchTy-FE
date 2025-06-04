@@ -3,7 +3,11 @@ import { motion } from 'framer-motion'
 import Button from '@/components/UI/button/Button'
 import { useEffect, useRef } from 'react'
 
-const ApplySection = () => {
+interface ApplySectionProps {
+	handleAddProject: () => void
+}
+
+const ApplySection = ({ handleAddProject }: ApplySectionProps) => {
 	const sectionRef = useRef<HTMLElement>(null)
 
 	return (
@@ -32,7 +36,10 @@ const ApplySection = () => {
 				<span className="text-[20px] font-light text-center py-5 gap-3 [letter-spacing: 0.8rem]">
 					If you want to start your project, it will be your perfect choice
 				</span>
-				<Button className="bg-gradient text-white px-[5rem] py-3 mb-3 rounded-full hover:opacity-90 transition-all duration-300">
+				<Button
+					onClick={handleAddProject}
+					className="bg-gradient text-white px-[5rem] py-3 mb-3 rounded-full hover:opacity-90 transition-all duration-300"
+				>
 					Add Project
 				</Button>
 			</motion.div>

@@ -4,14 +4,8 @@ import ProjectHeader from '@/components/project-component/ProjectHeader'
 import ProjectProgress from '@/components/project-component/ProjectProgress'
 import AnimatedBlobs from '@/components/UI/background/AnimatedBlobs'
 import ThumbNailCarousel from '@/components/UI/carousel/ThumbnailCarousel'
-import {
-	Modal,
-	ModalBody,
-	ModalContent,
-} from '@/components/UI/modal/AnimatedModal'
+import { Modal } from '@/components/UI/modal/AnimatedModal'
 import StakeArea from '@/components/UI/shared/StakeArea'
-import CustomTabs from '@/components/UI/shared/Tabs'
-import Tabs from '@/components/UI/shared/Tabs'
 import { Launchpad } from '@/interface/interface'
 // import { projectDetail } from '@/constants/utils'
 import axios from 'axios'
@@ -81,7 +75,7 @@ const LaunchpadDetail = () => {
 				<div className="relative px-20 pt-48 pb-12 z-10">
 					<ProjectHeader
 						projectDetail={{
-							name: launchpad.launchpad_name,
+							name: launchpad.launchpad_name || 'Unknown Project',
 							logo: launchpad.launchpad_logo || '',
 							shortDescription: launchpad.launchpad_short_des,
 							startDate: launchpad.launchpad_start_date,
