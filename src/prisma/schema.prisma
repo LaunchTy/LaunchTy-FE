@@ -20,7 +20,7 @@ model User {
 }
 
 model Launchpad {
-  launchpad_id         String    @id @default(uuid())
+  launchpad_id         String    @id 
   token_address        String
   total_supply         Int
   launchpad_token      String
