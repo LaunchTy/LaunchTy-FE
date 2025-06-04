@@ -2,6 +2,7 @@
 import { motion } from 'framer-motion'
 import Button from '@/components/UI/button/Button'
 import { useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 
 interface ApplySectionProps {
 	handleAddProject: () => void
@@ -9,6 +10,10 @@ interface ApplySectionProps {
 
 const ApplySection = ({ handleAddProject }: ApplySectionProps) => {
 	const sectionRef = useRef<HTMLElement>(null)
+	const router = useRouter()
+	const handleSubmit = () => {
+		router.push('/launchpad/create-launchpad')
+	}
 
 	return (
 		<section

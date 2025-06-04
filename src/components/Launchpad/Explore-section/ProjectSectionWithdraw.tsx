@@ -16,6 +16,8 @@ interface Project {
 	timeLeft?: string
 	endTime?: string
 	amount?: string
+	launchpad_start_date?: string
+	launchpad_end_date?: string
 }
 
 interface ProjectSectionProps {

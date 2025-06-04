@@ -30,7 +30,6 @@ const MyProject = () => {
 
 	useEffect(() => {
 		// if (!wallet_address) return
-		console.log('project_owner_id:', project_owner_id)
 		const fetchProjects = async () => {
 			try {
 				const response = await axios.get(
