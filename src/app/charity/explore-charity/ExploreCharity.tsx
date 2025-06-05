@@ -2,13 +2,16 @@
 import ExploreProject from '@/components/Launchpad/Explore-section/ExploreProject'
 import exploreImage from '@/public/Explore.svg'
 import Tab from '@/components/Launchpad/Explore-section/Tab'
-import { useState } from 'react'
-import { charityDetail } from '@/constants/utils'
+import { useEffect, useState } from 'react'
+// import { charityDetail } from '@/constants/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import CharityCard from '@/components/charity/CharityCard'
 import Button from '@/components/UI/button/Button'
 import ApplySectionIcon from '@/components/Launchpad/Explore-section/ApplySectionIcon'
 import AnimatedBlobs from '@/components/UI/background/AnimatedBlobs'
+import axios from 'axios'
+import { BaseProject, Charity } from '@/interface/interface'
+import LoadingModal from '@/components/UI/modal/LoadingModal'
 
 const navItems = [
 	{ id: 'all', label: 'All Projects' },
@@ -16,11 +19,45 @@ const navItems = [
 	{ id: 'finished', label: 'Finished' },
 ]
 
+const convertCharityToProject = (charity: Charity): BaseProject => {
+	const now = new Date()
+	const startDate = new Date(charity.charity_start_date)
+	const endDate = new Date(charity.charity_end_date)
+
+	let status: 'upcoming' | 'ongoing' | 'finished' = 'finished'
+	if (now < startDate) status = 'upcoming'
+	else if (now >= startDate && now <= endDate) status = 'ongoing'
+
+	return {
+		id: charity.charity_id,
+		name: charity.charity_name,
+		shortDescription: charity.charity_short_des,
+		longDescription: charity.charity_long_des,
+		logo: charity.charity_logo,
+		images:
+			Array.isArray(charity.charity_img) && charity.charity_img.length > 0
+				? charity.charity_img
+				: ['/default-image.png'],
+		startDate: charity.charity_start_date,
+		endDate: charity.charity_end_date,
+		facebook: charity.charity_fb,
+		x: charity.charity_x,
+		instagram: charity.charity_ig,
+		website: charity.charity_website,
+		whitepaper: charity.charity_whitepaper,
+		type: 'charity',
+		totalDonationAmount: charity.totalDonationAmount,
+		status,
+	}
+}
+
 const ExploreCharity = () => {
 	const [activeTab, setActiveTab] = useState('all')
 	const [showAll, setShowAll] = useState(false)
+	const [loading, setLoading] = useState(true)
+	const [charity, setCharity] = useState<BaseProject[]>([])
 
-	const filteredProjects = charityDetail.filter((project) => {
+	const filteredProjects = charity.filter((project) => {
 		if (activeTab === 'all') return true
 		return project.status === activeTab
 	})
@@ -39,64 +76,90 @@ const ExploreCharity = () => {
 			transition: { duration: 0.5 },
 		},
 	}
+
+	useEffect(() => {
+		const fetchProjects = async () => {
+			try {
+				const response = await axios.get(`/api/charity/explore-charity`)
+				const charityData: Charity[] = response.data.data
+				const projectsData: BaseProject[] = charityData.map(
+					convertCharityToProject
+				)
+				setCharity(projectsData)
+				console.log('Fetched projects:', projectsData)
+			} catch (error) {
+				console.error('Failed to load projects:', error)
+			} finally {
+				setLoading(false)
+			}
+		}
+
+		fetchProjects()
+	}, [])
 	return (
 		<div className="flex flex-col justify-center items-center w-full gap-5 min-h-screen font-exo ">
 			<AnimatedBlobs count={5} />
-			<div className="w-full">
-				<ExploreProject
-					title="Discover all projects"
-					backgroundImage={exploreImage.src}
-					searchPlaceholder="Search projects..."
-				/>
-			</div>
-			<div className="w-full">
-				<Tab
-					navItems={navItems}
-					activeTab={activeTab}
-					onTabChange={(tab) => {
-						setActiveTab(tab)
-						setShowAll(false)
-					}}
-				/>
-			</div>
-			<div className="max-w-[1300px] p-5">
-				<AnimatePresence mode="wait">
-					<div className="grid grid-cols-1 gap-5 xs:grid-cols-2 md:grid-cols-3 ">
-						{displayedProjects.map((charity) => (
-							<motion.div
-								key={charity.id}
-								variants={cardVariants}
-								initial="hidden"
-								animate="visible"
-								exit="hidden"
-								layout
-								className="h-full hover:scale-105 duration-300 transition-transform"
-							>
-								<CharityCard charityDetail={charity} />
-							</motion.div>
-						))}
+			{loading ? (
+				<LoadingModal open={loading} onOpenChange={setLoading} />
+			) : (
+				<>
+					<div className="w-full">
+						<ExploreProject
+							title="Discover all projects"
+							backgroundImage={exploreImage.src}
+							searchPlaceholder="Search projects..."
+						/>
 					</div>
-				</AnimatePresence>
-			</div>
-			{hasMoreProjects && !showAll && (
-				<div className="flex justify-center my-10">
-					<Button
-						className="bg-gradient text-white px-[5rem] py-3 rounded-full hover:opacity-90 transition-all duration-300"
-						onClick={() => setShowAll(true)}
-					>
-						Show More
-					</Button>
-				</div>
+					<div className="w-full">
+						<Tab
+							navItems={navItems}
+							activeTab={activeTab}
+							onTabChange={(tab) => {
+								setActiveTab(tab)
+								setShowAll(false)
+							}}
+						/>
+					</div>
+					<div className="max-w-[1300px] p-5">
+						<AnimatePresence mode="wait">
+							<div className="grid grid-cols-1 gap-5 xs:grid-cols-2 md:grid-cols-3 ">
+								{displayedProjects.map((charity) => (
+									<motion.div
+										key={charity.id}
+										variants={cardVariants}
+										initial="hidden"
+										animate="visible"
+										exit="hidden"
+										layout
+										className="h-full hover:scale-105 duration-300 transition-transform"
+									>
+										<CharityCard charityDetail={charity} />
+									</motion.div>
+								))}
+							</div>
+						</AnimatePresence>
+					</div>
+					{hasMoreProjects && !showAll && (
+						<div className="flex justify-center my-10">
+							<Button
+								className="bg-gradient text-white px-[5rem] py-3 rounded-full hover:opacity-90 transition-all duration-300"
+								onClick={() => setShowAll(true)}
+							>
+								Show More
+							</Button>
+						</div>
+					)}
+					<div className="w-full">
+						<ApplySectionIcon
+							titleLine1="LaunchTy Charity"
+							titleLine2=""
+							subtitle="Help build a better world by supporting these amazing charities. 100% of donations are sent directly to your charity of choice!"
+							buttonText="Add Project"
+							onButtonClick={() => {}}
+						/>
+					</div>
+				</>
 			)}
-			<div className="w-full">
-				<ApplySectionIcon
-					titleLine1="LaunchTy Charity"
-					titleLine2=""
-					subtitle="Help build a better world by supporting these amazing charities. 100% of donations are sent directly to your charity of choice!"
-					buttonText="Add Project"
-					onButtonClick={() => {}}
-				/>
-			</div>
 		</div>
 	)
 }

@@ -7,6 +7,7 @@ export async function POST(req: NextRequest) {
 		const body = await req.json();
 
 		const {
+			launchpad_id,
 			token_address,
 			total_supply,
 			launchpad_token,
@@ -46,6 +47,7 @@ export async function POST(req: NextRequest) {
 
 		const newLaunchpad = await prismaClient.launchpad.create({
 			data: {
+				launchpad_id,
 				token_address,
 				total_supply,
 				launchpad_token,

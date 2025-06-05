@@ -69,6 +69,7 @@ export interface Charity {
 	repre_faceid: string;
 	user?: User;
 	donations?: Donation[];
+	totalDonationAmount?: number; // Total amount donated to this charity
 }
 
 export interface Donation {
@@ -117,6 +118,7 @@ export interface BaseProject {
 	repre_phone?: string;
 	repre_id?: string;
 	repre_faceid?: string;
+	totalDonationAmount?: number;
 
 	deposits?: Deposit[];
 	donations?: Donation[];
