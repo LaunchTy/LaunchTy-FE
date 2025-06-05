@@ -19,6 +19,7 @@ interface Project {
 	tokenSymbol: string
 	endsInDays?: number
 	endTime?: string // Optional end time for countdown
+	status: 'pending' | 'approve' | 'deny'
 }
 
 interface AdminRowCardProps {
@@ -167,17 +168,23 @@ const AdminRowCard = ({
 
 								{/* Approve & Deny Buttons */}
 								<div className="flex justify-end gap-4">
-									{onEdit && (
+									{onEdit && project.status === 'pending' && (
 										<>
 											<Button
-												onClick={() => onEdit?.(project.id, 'approve')}
+												onClick={(e) => {
+													e.stopPropagation()
+													onEdit?.(project.id, 'approve')
+												}}
 												className="bg-gradient text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300"
 											>
 												Approve
 											</Button>
 
 											<Button
-												onClick={() => onEdit?.(project.id, 'deny')}
+												onClick={(e) => {
+													e.stopPropagation()
+													onEdit?.(project.id, 'deny')
+												}}
 												className="bg-red-600 text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300"
 											>
 												Deny
