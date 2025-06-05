@@ -9,7 +9,7 @@ type CharityCardProps = {
 const CharityCard = ({ charityDetail }: CharityCardProps) => {
 	const charity = charityDetail
 	const route = useRouter()
-	const handleSubmit = () => {
+	const handdlChooseLaunchpad = () => {
 		if (charity.id) {
 			route.push(`/charity/charity-detail/${charity.id}`)
 		} else {
@@ -19,7 +19,7 @@ const CharityCard = ({ charityDetail }: CharityCardProps) => {
 
 	return (
 		<div
-			onClick={() => handleSubmit()}
+			onClick={() => handdlChooseLaunchpad()}
 			className="border rounded-xl p-4 shadow-md bg-white glass-component-1 min-h-[450px] flex flex-col justify-between w-96 hover:scale-105 duration-300"
 		>
 			<Image

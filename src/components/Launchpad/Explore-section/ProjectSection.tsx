@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import Image from 'next/image'
 import { BaseProject } from '@/interface/interface'
+import { useRouter } from 'next/navigation'
 
 // interface Project {
 // 	id: string
@@ -32,7 +33,7 @@ const ProjectSection = ({
 }: ProjectSectionProps) => {
 	const sectionRef = useRef<HTMLElement>(null)
 	const [countdowns, setCountdowns] = useState<{ [key: string]: string }>({})
-
+	const route = useRouter()
 	const { scrollYProgress } = useScroll({
 		target: sectionRef,
 		offset: ['start end', 'end start'],
@@ -95,36 +96,30 @@ const ProjectSection = ({
 	return (
 		<section
 			ref={sectionRef}
-			className={`px-20 font-exo relative overflow-hidden min-h-auto ${className}`}
+			className={`py-5 px-10 font-exo relative overflow-hidden min-h-auto max-w-[1300px] ${className}`}
 		>
-			<div className="w-full flex flex-col items-center justify-center gap-10 z-20 relative">
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-10 w-full max-w-full">
-					{projects.map((project, index) => (
+			<div className="w-full flex flex-col items-center justify-center gap-10 z-20 relative ">
+				<div className="grid grid-cols-1 gap-5 xs:grid-cols-2 md:grid-cols-3 ">
+					{projects.map((project) => (
 						<motion.div
 							key={project.id}
-							initial={{ opacity: 0, y: 20 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							transition={{
-								duration: 1,
-								delay: index * 0.3,
-								ease: 'easeOut',
+							onClick={() => {
+								if (project.id) {
+									route.push(`/launchpad/launchpad-detail/${project.id}`)
+								} else {
+									console.error('Launchpad ID is not defined')
+								}
 							}}
-							viewport={{ once: true, margin: '-200px' }}
-							style={{
-								borderRadius,
-								opacity,
-								scale,
-							}}
-							className="p-5 border border-gray-300 shadow-md glass-component-1 h-[500px] flex flex-col"
+							className="p-5 border border-gray-300 rounded-xl shadow-md glass-component-1 h-[500px] w-96 flex flex-col hover:scale-105 duration-300"
 						>
 							{/* Image Section */}
-							<div className="relative w-full h-[240px] rounded-[3.2rem] bg-white ">
-								<div className="relative w-full h-[200px] rounded-tr-xl rounded-tl-xl overflow-hidden">
+							<div className="relative w-full h-[240px] rounded-xl bg-white ">
+								<div className="relative w-full h-[200px] overflow-hidden">
 									<Image
 										src={project.images?.[0] || '/default-image-path.jpg'}
 										alt={project.name || 'Default Project Name'}
 										fill
-										className="object-cover"
+										className="w-full h-48 object-cover  rounded-tr-xl rounded-tl-xl "
 									/>
 								</div>
 								{showCountdown && (
@@ -138,7 +133,7 @@ const ProjectSection = ({
 								)}
 							</div>
 							{/* Project Name and Logo */}
-							<div className="flex items-start justify-between py-5 border-b">
+							<div className="flex items-start justify-between py-5 ">
 								<div className="flex flex-col w-3/4">
 									<h4
 										className="text-lg font-bold mb-1 truncate"
@@ -158,6 +153,10 @@ const ProjectSection = ({
 										className="object-cover"
 									/>
 								</div>
+							</div>
+
+							<div className="w-full h-1	 bg-gray-200 rounded-full overflow-hidden my-2">
+								<div className="h-full bg-gradient"></div>
 							</div>
 
 							{/* Funding Information */}
