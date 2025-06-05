@@ -20,7 +20,7 @@ model User {
 }
 
 model Launchpad {
-  launchpad_id         String    @id 
+  launchpad_id         String    @id @default(uuid())
   token_address        String
   total_supply         Int
   launchpad_token      String
@@ -41,6 +41,7 @@ model Launchpad {
   launchpad_start_date DateTime
   launchpad_end_date   DateTime
   project_owner_id     String
+  status               String    @default("pending")
   deposits             Deposit[]
   user                 User      @relation(fields: [project_owner_id], references: [user_id])
 }
@@ -77,6 +78,7 @@ model Charity {
   repre_phone          String
   repre_id             String
   repre_faceid         String
+  status               String     @default("pending")
   user                 User       @relation(fields: [repre_id], references: [user_id])
   donations            Donation[]
 }
