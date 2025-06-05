@@ -10,13 +10,13 @@ datasource db {
 
 model User {
   user_id        String      @id @default(uuid())
-  wallet_address String      @unique
+  wallet_address String?      @unique
   user_name      String
   create_date    DateTime    @default(now())
-  charities      Charity[]
+  launchpads     Launchpad[]
   deposits       Deposit[]
   donations      Donation[]
-  launchpads     Launchpad[]
+  charities_as_owner          Charity[] @relation("OwnerUser")
 }
 
 model Launchpad {
@@ -76,10 +76,10 @@ model Charity {
   evidence             String[]
   repre_name           String
   repre_phone          String
-  repre_id             String
   repre_faceid         String
+  project_owner_id     String?
   status               String     @default("pending")
-  user                 User       @relation(fields: [repre_id], references: [user_id])
+  project_owner        User?       @relation("OwnerUser", fields: [project_owner_id], references: [user_id])
   donations            Donation[]
 }
 
