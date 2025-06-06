@@ -10,6 +10,7 @@ import { useEffect } from 'react'
 import axios from 'axios'
 import { useParams } from 'next/navigation'
 import { useAccount } from 'wagmi'
+import { Charity } from '@/interface/interface'
 
 const navItems = [
 	{ id: 'all', label: 'All Projects' },
@@ -24,7 +25,7 @@ const MyCharity = () => {
 	const project_owner_id = params['project-owner-id']
 	const [activeTab, setActiveTab] = useState('all')
 	const [visibleCount, setVisibleCount] = useState(6)
-	const [projects, setProjects] = useState([])
+	const [projects, setProjects] = useState<any[]>([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
 
@@ -34,7 +35,17 @@ const MyCharity = () => {
 				const response = await axios.get(
 					`/api/charity/my-charity?project_owner_id=${project_owner_id}`
 				)
-				setProjects(response.data.data)
+				// Transform charity data to match ProjectRowCard format
+				const transformedProjects = response.data.data.map((charity: Charity) => ({
+					id: charity.charity_id,
+					title: charity.charity_name,
+					image: charity.charity_logo,
+					shortDescription: charity.charity_short_des,
+					tokenSymbol: charity.charity_token_symbol,
+					totalInvest: charity.totalDonationAmount || 0,
+					endTime: charity.charity_end_date
+				}))
+				setProjects(transformedProjects)
 			} catch (error) {
 				console.error('Failed to load projects:', error)
 			} finally {
@@ -51,6 +62,11 @@ const MyCharity = () => {
 
 	const visibleProjects = projects.slice(0, visibleCount)
 	const hasMore = visibleCount < projects.length
+
+	if (loading) {
+		return <div>Loading...</div>
+	}
+
 	return (
 		<div className="min-h-screen font-exo">
 			<ExploreProject
