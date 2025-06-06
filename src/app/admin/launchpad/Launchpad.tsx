@@ -16,7 +16,7 @@ const Launchpad = () => {
 	const handleShowMore = () => {
 		setVisibleCount((prev) => prev + 6)
 	}
-	const [filter, setFilter] = useState<string>('approve')
+	const [filter, setFilter] = useState<string>('pending')
 	const [projects, setProjects] = useState<any[]>([])
 	const [loading, setLoading] = useState(false)
 	useEffect(() => {
@@ -35,7 +35,7 @@ const Launchpad = () => {
 					shortDescription: p.launchpad_short_des,
 					tokenSymbol: p.launchpad_token,
 					endTime: p.launchpad_end_date,
-					status: p.launchpad_status,
+					status: p.status,
 				}))
 				setProjects(formattedProjects)
 			} catch (error) {
@@ -83,8 +83,8 @@ const Launchpad = () => {
 							filter={filter}
 							setFilter={setFilter}
 							options={[
-								{ value: 'approve', label: 'Approved' },
 								{ value: 'pending', label: 'Pending' },
+								{ value: 'approve', label: 'Approved' },
 								{ value: 'deny', label: 'Denied' },
 							]}
 						/>

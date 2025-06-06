@@ -5,16 +5,16 @@ export async function POST(request: Request) {
 	try {
 		const { status = "pending" } = await request.json();
 		console.log("Fetching projects with status:", status);
-		const projects = await prismaClient.launchpad.findMany({
+		const projects = await prismaClient.charity.findMany({
 			where: { status },
-			orderBy: { launchpad_end_date: "asc" },
+			orderBy: { charity_end_date: "asc" },
 			select: {
-				launchpad_id: true,
-				launchpad_token: true,
-				launchpad_name: true,
-				launchpad_logo: true,
-				launchpad_short_des: true,
-				launchpad_end_date: true,
+				charity_id: true,
+				charity_token_symbol: true,
+				charity_name: true,
+				charity_logo: true,
+				charity_short_des: true,
+				charity_end_date: true,
 				status: true,
 			},
 		});

@@ -6,7 +6,7 @@ export async function GET(request: Request) {
 		// Lấy URL từ request
 		const { searchParams } = new URL(request.url);
 		const projectOwnerId = searchParams.get("project_owner_id");
-		console.log("projectOwnerId:", projectOwnerId);
+		// console.log("projectOwnerId:", projectOwnerId);
 
 		if (!projectOwnerId) {
 			return NextResponse.json(

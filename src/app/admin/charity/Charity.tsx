@@ -1,72 +1,15 @@
 'use client'
-import React from 'react'
+import React, { act } from 'react'
 import SplitText from '@/components/UI/text-effect/SplitText'
 import AdminRowCard from '@/components/admin/AdminRowCard'
 import Myproject from '@/public/Myproject.svg' // Adjust the import path as necessary
-import { useState } from 'react' // Adjust the import path as necessary
+import { useEffect, useState } from 'react' // Adjust the import path as necessary
 import LeftNavBar from '@/components/admin/LeftNavBar' // Adjust the import path as necessary
 import Button from '@/components/UI/button/Button' // Adjust the import path as necessary
 import router from 'next/router' // Adjust the import path as necessary
-
-const adminprojects = [
-	{
-		id: '1',
-		title: 'Name 1',
-		image: Myproject,
-		shortDescription: 'Short description 1',
-		tokenSymbol: 'BNB',
-		endTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-	},
-	{
-		id: '2',
-		title: 'Name 2',
-		image: Myproject,
-		shortDescription: 'Short description 2',
-		tokenSymbol: 'BNB',
-		endTime: new Date(Date.now() + 36 * 60 * 60 * 1000).toISOString(),
-	},
-	{
-		id: '3',
-		title: 'Name 3',
-		image: Myproject,
-		shortDescription: 'Short description 3',
-		tokenSymbol: 'BNB',
-		endTime: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
-	},
-	{
-		id: '4',
-		title: 'Name 4',
-		image: Myproject,
-		shortDescription: 'Short description 4',
-		tokenSymbol: 'BNB',
-		endTime: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
-	},
-	{
-		id: '5',
-		title: 'Name 5',
-		image: Myproject,
-		shortDescription: 'Short description 5',
-		tokenSymbol: 'BNB',
-		endTime: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(),
-	},
-	{
-		id: '6',
-		title: 'Name 6',
-		image: Myproject,
-		shortDescription: 'Short description 6',
-		tokenSymbol: 'BNB',
-		endTime: new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString(),
-	},
-	{
-		id: '7',
-		title: 'Name 7',
-		image: Myproject,
-		shortDescription: 'Short description 7',
-		tokenSymbol: 'BNB',
-		endTime: new Date(Date.now() + 96 * 60 * 60 * 1000).toISOString(),
-	},
-	// Add more if needed
-]
+import FilterStatus from '@/components/admin/Filter'
+import axios from 'axios' // Adjust the import path as necessary
+import { log } from 'console'
 
 const Charity = () => {
 	const [visibleCount, setVisibleCount] = useState(6)
@@ -74,8 +17,39 @@ const Charity = () => {
 	const handleShowMore = () => {
 		setVisibleCount((prev) => prev + 6)
 	}
-	const visibleProjects = adminprojects.slice(0, visibleCount)
-	const hasMore = visibleCount < adminprojects.length
+	const [filter, setFilter] = useState<string>('pending')
+	const [projects, setProjects] = useState<any[]>([])
+	const [loading, setLoading] = useState(false)
+	useEffect(() => {
+		const fetchProjects = async () => {
+			setLoading(true)
+			try {
+				const response = await axios.post('/api/admin/charity', {
+					status: filter,
+				})
+
+				const data = response.data
+				const formattedProjects = data.projects.map((p: any) => ({
+					id: p.charity_id,
+					title: p.charity_name,
+					image: p.charity_logo,
+					shortDescription: p.charity_short_des,
+					tokenSymbol: p.charity_token_symbol,
+					endTime: p.charity_end_date,
+					status: p.status,
+				}))
+				console.log('Fetched projects:', formattedProjects)
+				setProjects(formattedProjects)
+			} catch (error) {
+				console.error('Failed to load projects:', error)
+			}
+		}
+		fetchProjects()
+		setLoading(false)
+	}, [filter])
+
+	const visibleProjects = projects.slice(0, visibleCount)
+	const hasMore = visibleCount < projects.length
 	return (
 		<div className="min-h-screen font-exo">
 			<div className=" text-center z-20 pt-40">
@@ -105,18 +79,62 @@ const Charity = () => {
 					<LeftNavBar activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
 				</div>
 
-				<div className=" h-full flex flex-col">
-					<div className="h-full">
-						<AdminRowCard
-							adminprojects={visibleProjects}
-							showCountdown={true}
-							countdownDuration={24}
-							className="custom-class"
-							onEdit={(projectId) => {
-								router.push(`/admin/charity-detail/${projectId}`)
-							}}
-							path="/admin/charity-detail"
+				<div className=" h-full flex flex-col w-full">
+					<div className="flex justify-end w-full mb-4">
+						<FilterStatus
+							filter={filter}
+							setFilter={setFilter}
+							options={[
+								{ value: 'pending', label: 'Pending' },
+								{ value: 'approve', label: 'Approved' },
+								{ value: 'deny', label: 'Denied' },
+							]}
 						/>
+					</div>
+					<div className="h-full">
+						{visibleProjects.length > 0 ? (
+							<AdminRowCard
+								adminprojects={visibleProjects}
+								showCountdown={true}
+								countdownDuration={24}
+								className="custom-class"
+								onEdit={async (projectId, action) => {
+									if (action === 'approve' || action === 'deny') {
+										try {
+											await axios.post('/api/admin/charity/action', {
+												projectId,
+												action,
+											})
+											alert(`Project ${action} successfully`)
+											setProjects((prev) =>
+												prev.filter((p) => p.id !== projectId)
+											)
+										} catch (error) {
+											console.error(error)
+											alert('Failed to update project status')
+										}
+									} else {
+										router.push(`/admin/charity-detail/${projectId}`)
+									}
+								}}
+								path="/admin/charity-detail"
+							/>
+						) : (
+							<div className=" text-center z-20 pt-5">
+								<SplitText
+									text="No project available"
+									className="text-sm text-white"
+									delay={2}
+									animationFrom={{
+										opacity: 0,
+										transform: 'translate3d(0,50px,0)',
+									}}
+									animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
+									threshold={0.2}
+									rootMargin="-50px"
+								/>
+							</div>
+						)}
 						{hasMore && (
 							<div className="align-center flex flex-col justify-center items-center p-8">
 								<Button

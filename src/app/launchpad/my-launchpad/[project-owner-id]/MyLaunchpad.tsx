@@ -35,8 +35,6 @@ const MyProject = () => {
 				const response = await axios.get(
 					`/api/launchpad/my-launchpad?project_owner_id=${project_owner_id}`
 				)
-				console.log('Response data:', response.data)
-				console.log('Fetched projects:', response.data.data)
 				setProjects(response.data.data)
 			} catch (error) {
 				console.error('Failed to load projects:', error)
