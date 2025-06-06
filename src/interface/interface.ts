@@ -32,6 +32,7 @@ export interface Launchpad {
 	launchpad_end_date: string; // ISO string
 	project_owner_id: string;
 	deposits?: Deposit[];
+	status?: "pending" | "approved" | "denied";
 	user?: User;
 }
 
@@ -63,10 +64,12 @@ export interface Charity {
 	charity_end_date: string; // ISO string
 	license_certificate?: string;
 	evidence: string[];
+	charity_email: string;
 	repre_name: string;
 	repre_phone: string;
 	repre_id: string;
 	repre_faceid: string;
+	status: "pending" | "approved" | "denied";
 	user?: User;
 	donations?: Donation[];
 	totalDonationAmount?: number; // Total amount donated to this charity

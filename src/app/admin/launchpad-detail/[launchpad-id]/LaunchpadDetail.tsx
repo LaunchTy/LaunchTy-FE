@@ -68,6 +68,20 @@ const LaunchpadDetail = () => {
 		fetchProjects()
 	}, [launchpad_id])
 
+	const onEdit = async (launchpad_id: string, action: 'approve' | 'deny') => {
+		try {
+			await axios.post('/api/admin/launchpad-detail/action', {
+				launchpad_id,
+				action,
+			})
+			alert(`Project ${action}d successfully`)
+			window.location.reload()
+		} catch (error) {
+			console.error(error)
+			alert('Failed to update project status')
+		}
+	}
+
 	return (
 		<Modal>
 			<div className="relative min-h-screen w-full font-exo pb-10">
@@ -139,20 +153,22 @@ const LaunchpadDetail = () => {
 										currentStep={steps}
 									/>
 								</div>
-								<div className="flex items-center justify-center p-5 gap-3">
-									<Button
-										onClick={() => onEdit?.(project.id, 'approve')}
-										className="bg-gradient text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300"
-									>
-										Approve
-									</Button>
-									<Button
-										onClick={() => onEdit?.(project.id, 'deny')}
-										className="bg-red-600 text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300"
-									>
-										Deny
-									</Button>
-								</div>
+								{launchpad.status === 'pending' && (
+									<div className="flex items-center justify-center p-5 gap-3">
+										<Button
+											onClick={() => onEdit(launchpad.launchpad_id, 'approve')}
+											className="bg-gradient text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300"
+										>
+											Approve
+										</Button>
+										<Button
+											onClick={() => onEdit(launchpad.launchpad_id, 'deny')}
+											className="bg-red-600 text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300"
+										>
+											Deny
+										</Button>
+									</div>
+								)}
 							</div>
 						</div>
 					</>

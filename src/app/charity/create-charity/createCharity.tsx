@@ -134,7 +134,13 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 			}
 
 			// Validate required fields
-			if (!projectName || !shortDescription || !longDescription || !representativeName || !phoneNumber) {
+			if (
+				!projectName ||
+				!shortDescription ||
+				!longDescription ||
+				!representativeName ||
+				!phoneNumber
+			) {
 				throw new Error('Please fill in all required fields')
 			}
 
@@ -173,7 +179,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 				charity_x: socialLinks.twitter || '',
 				charity_ig: socialLinks.instagram || '',
 				charity_website: socialLinks.website || '',
-				charity_whitepaper: "", // Add whitepaper field to your form if needed
+				charity_whitepaper: '', // Add whitepaper field to your form if needed
 				charity_img: images,
 				charity_start_date: new Date().toISOString(),
 				charity_end_date: new Date().toISOString(),
@@ -183,7 +189,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 				repre_phone: phoneNumber,
 				repre_id: personalId,
 				repre_faceid: faceId,
-				wallet_address: walletAddress
+				wallet_address: walletAddress,
 			}
 
 			console.log('Sending charity data:', charityData);
@@ -207,59 +213,68 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify(charityData),
-			}).catch(error => {
-				console.error('Network error during fetch:', error);
-				throw new Error('Network error while connecting to server');
-			});
+			}).catch((error) => {
+				console.error('Network error during fetch:', error)
+				throw new Error('Network error while connecting to server')
+			})
 
-			console.log('Response status:', response.status);
-			console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+			console.log('Response status:', response.status)
+			console.log(
+				'Response headers:',
+				Object.fromEntries(response.headers.entries())
+			)
 
-			let data;
+			let data
 			try {
-				const text = await response.text();
-				console.log('Raw response text:', text);
-				
+				const text = await response.text()
+				console.log('Raw response text:', text)
+
 				if (!text) {
-					console.error('Empty response received from server');
-					throw new Error('Server returned empty response');
+					console.error('Empty response received from server')
+					throw new Error('Server returned empty response')
 				}
 
 				try {
-					data = JSON.parse(text);
-					console.log('Parsed response data:', data);
+					data = JSON.parse(text)
+					console.log('Parsed response data:', data)
 				} catch (parseError: unknown) {
-					console.error('Error parsing JSON response:', parseError);
-					console.error('Raw response:', text);
-					throw new Error(`Server returned invalid JSON response: ${parseError instanceof Error ? parseError.message : 'Unknown parsing error'}`);
+					console.error('Error parsing JSON response:', parseError)
+					console.error('Raw response:', text)
+					throw new Error(
+						`Server returned invalid JSON response: ${parseError instanceof Error ? parseError.message : 'Unknown parsing error'}`
+					)
 				}
 			} catch (error) {
-				console.error('Error reading response:', error);
-				throw new Error(`Failed to read server response: ${error instanceof Error ? error.message : 'Unknown error'}`);
+				console.error('Error reading response:', error)
+				throw new Error(
+					`Failed to read server response: ${error instanceof Error ? error.message : 'Unknown error'}`
+				)
 			}
 
 			if (!response.ok) {
-				const errorMessage = data?.error || data?.details || 'Failed to create charity';
+				const errorMessage =
+					data?.error || data?.details || 'Failed to create charity'
 				console.error('Server error:', {
 					status: response.status,
 					statusText: response.statusText,
 					error: errorMessage,
-					data
-				});
-				throw new Error(errorMessage);
+					data,
+				})
+				throw new Error(errorMessage)
 			}
 
 			if (!data.success) {
-				const errorMessage = data?.error || data?.details || 'Failed to create charity';
+				const errorMessage =
+					data?.error || data?.details || 'Failed to create charity'
 				console.error('Server returned error:', {
 					success: data.success,
 					error: errorMessage,
-					data
-				});
-				throw new Error(errorMessage);
+					data,
+				})
+				throw new Error(errorMessage)
 			}
 
-			console.log('Charity created successfully:', data);
+			console.log('Charity created successfully:', data)
 
 			if (isEditing) {
 				router.push(`/charity/${id}`)
