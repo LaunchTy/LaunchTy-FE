@@ -257,7 +257,7 @@ export default function WarningModal({
 									</motion.div>
 								</div>
 
-								<div className="flex justify-center gap-3">
+								{/* <div className="flex justify-center gap-3">
 									{showCancelButton && (
 										<motion.button
 											whileHover={{ scale: 1.02 }}
@@ -277,7 +277,7 @@ export default function WarningModal({
 									>
 										{confirmText}
 									</motion.button>
-								</div>
+								</div> */}
 							</div>
 						</motion.div>
 					</div>

@@ -143,7 +143,7 @@ export default function LockModal({
 									</motion.div>
 								</div>
 
-								{showUnlockButton && (
+								{/* {showUnlockButton && (
 									<div className="flex justify-center gap-3">
 										<motion.button
 											whileHover={{ scale: 1.02 }}
@@ -155,7 +155,7 @@ export default function LockModal({
 											Unlock Page
 										</motion.button>
 									</div>
-								)}
+								)} */}
 							</div>
 						</motion.div>
 					</div>

@@ -10,6 +10,7 @@ import {
 	useSpring,
 } from 'framer-motion'
 import Image from 'next/image'
+import { BaseProject } from '@/interface/interface'
 interface Project {
 	id: string
 	title: string
@@ -22,7 +23,7 @@ interface Project {
 }
 
 interface ProjectSectionProps {
-	projects: Project[]
+	projects: BaseProject[]
 	className?: string
 	onEdit?: (projectId: string) => void
 	showCountdown?: boolean
@@ -36,28 +37,28 @@ const ProjectSection = ({
 	countdownDuration = 12, // in hours
 	onEdit,
 }: ProjectSectionProps) => {
-	const sectionRef = useRef<HTMLElement>(null)
-	const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-	const mouseX = useMotionValue(0)
-	const mouseY = useMotionValue(0)
+	// const sectionRef = useRef<HTMLElement>(null)
+	// const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+	// const mouseX = useMotionValue(0)
+	// const mouseY = useMotionValue(0)
 	const [countdowns, setCountdowns] = useState<{ [key: string]: string }>({})
 
-	const smoothX = useSpring(mouseX, { damping: 50, stiffness: 300 })
-	const smoothY = useSpring(mouseY, { damping: 50, stiffness: 300 })
+	// const smoothX = useSpring(mouseX, { damping: 50, stiffness: 300 })
+	// const smoothY = useSpring(mouseY, { damping: 50, stiffness: 300 })
 
-	const { scrollYProgress } = useScroll({
-		target: sectionRef,
-		offset: ['start end', 'end start'],
-	})
+	// const { scrollYProgress } = useScroll({
+	// 	target: sectionRef,
+	// 	offset: ['start end', 'end start'],
+	// })
 
-	const borderRadius = useTransform(
-		scrollYProgress,
-		[0, 0.2],
-		['0.375rem', '1rem']
-	)
+	// const borderRadius = useTransform(
+	// 	scrollYProgress,
+	// 	[0, 0.2],
+	// 	['0.375rem', '1rem']
+	// )
 
-	const opacity = useTransform(scrollYProgress, [0, 0.2], [0, 1])
-	const scale = useTransform(scrollYProgress, [0, 0.2], [0.8, 1])
+	// const opacity = useTransform(scrollYProgress, [0, 0.2], [0, 1])
+	// const scale = useTransform(scrollYProgress, [0, 0.2], [0.8, 1])
 
 	useEffect(() => {
 		if (!showCountdown) return
@@ -86,13 +87,13 @@ const ProjectSection = ({
 		const updateCountdowns = () => {
 			const newCountdowns: { [key: string]: string } = {}
 			projects.forEach((project) => {
-				if (project.endTime) {
-					newCountdowns[project.id] = calculateTimeLeft(project.endTime)
+				if (project.endDate) {
+					newCountdowns[project.id || ''] = calculateTimeLeft(project.endDate)
 				} else {
 					// Fallback to countdownDuration if no endTime is provided
 					const end = new Date()
 					end.setHours(end.getHours() + countdownDuration)
-					newCountdowns[project.id] = calculateTimeLeft(end.toISOString())
+					newCountdowns[project.id || ''] = calculateTimeLeft(end.toISOString())
 				}
 			})
 			setCountdowns(newCountdowns)
@@ -107,28 +108,28 @@ const ProjectSection = ({
 		return () => clearInterval(interval)
 	}, [showCountdown, countdownDuration, projects])
 
-	useEffect(() => {
-		const handleMouseMove = (e: MouseEvent) => {
-			const { clientX, clientY } = e
-			const sectionRect = sectionRef.current?.getBoundingClientRect()
+	// useEffect(() => {
+	// 	const handleMouseMove = (e: MouseEvent) => {
+	// 		const { clientX, clientY } = e
+	// 		const sectionRect = sectionRef.current?.getBoundingClientRect()
 
-			if (sectionRect) {
-				const x = clientX - sectionRect.left
-				const y = clientY - sectionRect.top
+	// 		if (sectionRect) {
+	// 			const x = clientX - sectionRect.left
+	// 			const y = clientY - sectionRect.top
 
-				setMousePosition({ x, y })
-				mouseX.set(x)
-				mouseY.set(y)
-			}
-		}
+	// 			setMousePosition({ x, y })
+	// 			mouseX.set(x)
+	// 			mouseY.set(y)
+	// 		}
+	// 	}
 
-		window.addEventListener('mousemove', handleMouseMove)
-		return () => window.removeEventListener('mousemove', handleMouseMove)
-	}, [mouseX, mouseY])
+	// 	window.addEventListener('mousemove', handleMouseMove)
+	// 	return () => window.removeEventListener('mousemove', handleMouseMove)
+	// }, [mouseX, mouseY])
 
 	return (
 		<section
-			ref={sectionRef}
+			// ref={sectionRef}
 			className={`px-20 py-12 font-exo relative overflow-hidden min-h-auto ${className}`}
 		>
 			<div className="flex flex-col gap-6 z-20 relative">
@@ -138,49 +139,55 @@ const ProjectSection = ({
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.4, ease: 'easeOut' }}
-						className="relative z-20 px-5 py-[7px] border border-gray-300 shadow-md glass-component-2 rounded-[40px] flex justify-between items-center flex-wrap"
+						className="relative z-20 px-5 py-4 border border-gray-300 shadow-md glass-component-2 rounded-[40px] grid grid-cols-5 items-center gap-6"
 					>
 						{/* Project Image */}
-						<div className="w-[60px] h-[60px] flex-shrink-0 rounded-full overflow-hidden">
-							<Image
-								src={project.image}
-								alt={project.title}
-								width={4000}
-								height={4000}
-								className="object-cover w-full h-full"
-							/>
+						<div className="flex gap-10">
+							<div className="w-[60px] h-[60px]  rounded-full overflow-hidden">
+								<Image
+									src={
+										project.images ? project.images[0] : '/default-project.png'
+									}
+									alt={project.name || 'Project Image'}
+									width={4000}
+									height={4000}
+									className="object-cover w-full h-full"
+								/>
+							</div>
+							<div className="flex flex-col">
+								<h2 className="text-lg font-semibold text-white">
+									{project.name || 'Unnamed Project'}
+								</h2>
+								<p className="text-white text-sm line-clamp-2">
+									{project.shortDescription}
+								</p>
+							</div>
 						</div>
 
 						{/* Project info */}
 						{/* Cột 2: Tên + mô tả */}
-						<div className="flex flex-col">
-							<h2 className="text-lg font-semibold text-white">
-								{project.title}
-							</h2>
-							<p className="text-white text-sm line-clamp-2">
-								{project.shortDescription}
-							</p>
-						</div>
 
 						{/* Cột 3: Token */}
-						<div className="text-white text-sm">
-							<span className="font-medium">Token:</span> {project.tokenSymbol}
+						<div className="text-white text-sm flex justify-start w-56">
+							<span className="font-medium">Token:</span>{' '}
+							{project.launchpad_token}
 						</div>
 
 						{/* Cột 4: Total Invested */}
 						<div className="text-white text-sm">
 							<span className="font-medium">Total Invested:</span>{' '}
-							{typeof project.totalInvest === 'number'
+							{/* {typeof project.totalInvest === 'number'
 								? project.totalInvest.toLocaleString()
-								: '--'}{' '}
-							{project.tokenSymbol}
+								: '--'} */}
+							000 {''}
+							{project.launchpad_token}
 						</div>
 
 						{/* Cột 5: Ends In */}
 						<div className="text-white text-sm">
 							<span className="font-medium">Ends In:</span>{' '}
-							{showCountdown && countdowns[project.id]
-								? countdowns[project.id]
+							{showCountdown && countdowns[project.id || '']
+								? countdowns[project.id || '']
 								: '--'}
 						</div>
 
@@ -188,8 +195,8 @@ const ProjectSection = ({
 						<div className="flex justify-end">
 							{onEdit && (
 								<Button
-									onClick={() => onEdit(project.id)}
-									className="font-bold bg-gradient text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300"
+									onClick={() => onEdit(project.id || '')}
+									className="font-bold bg-gradient text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 w-28"
 								>
 									Edit
 								</Button>
@@ -200,7 +207,7 @@ const ProjectSection = ({
 			</div>
 
 			{/* Light effect */}
-			<motion.div
+			{/* <motion.div
 				className="absolute w-[400px] h-[400px] rounded-full bg-gradient-to-r from-purple-500/30 to-blue-500/30 blur-[80px] opacity-70 pointer-events-none z-10"
 				style={{
 					x: smoothX,
@@ -208,7 +215,7 @@ const ProjectSection = ({
 					translateX: '-50%',
 					translateY: '-50%',
 				}}
-			/>
+			/> */}
 		</section>
 	)
 }

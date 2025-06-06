@@ -1,23 +1,37 @@
 import { NextResponse } from "next/server";
 import prismaClient from "@/prisma";
 
-export async function GET(request: Request) {
+export async function POST(request: Request) {
 	try {
-		// Lấy URL từ request
-		const { searchParams } = new URL(request.url);
-		const projectOwnerId = searchParams.get("project_owner_id");
-		// console.log("projectOwnerId:", projectOwnerId);
+		// const { searchParams } = new URL(request.url);
+		// const projectOwnerId = searchParams.get("project_owner_id");
 
-		if (!projectOwnerId) {
+		const body = await request.json();
+		const { wallet_address } = body;
+
+		if (!wallet_address) {
 			return NextResponse.json(
-				{ success: false, error: "Missing project_owner_id" },
+				{ success: false, error: "Missing wallet_address" },
 				{ status: 400 }
+			);
+		}
+
+		const user = await prismaClient.user.findUnique({
+			where: {
+				wallet_address: wallet_address,
+			},
+		});
+
+		if (user === null) {
+			return NextResponse.json(
+				{ success: false, error: "User not found" },
+				{ status: 404 }
 			);
 		}
 
 		const projects = await prismaClient.launchpad.findMany({
 			where: {
-				project_owner_id: projectOwnerId,
+				project_owner_id: user.user_id,
 			},
 			orderBy: {
 				launchpad_start_date: "desc",
@@ -49,7 +63,7 @@ export async function GET(request: Request) {
 		});
 
 		return NextResponse.json(
-			{ success: true, data: formattedProjects },
+			{ success: true, data: projects },
 			{ status: 200 }
 		);
 	} catch (error) {
