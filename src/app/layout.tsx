@@ -19,15 +19,24 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang="en">
-			<body
-				className={`${exo.variable}`} // Added Exo variable
-			>
+			<body className={`${exo.variable}`}>
 				<Web3Provider>
 					<Navbar
 						navItems={[
 							{ name: 'About us', link: '/' },
 							{ name: 'Charity', link: '/charity/charity-homepage' },
-							{ name: 'Launchpad', link: '/launchpad/explore-project' },
+							{ name: 'Launchpad', link: '/launchpad/explore-launchpad' },
+							{
+								name: 'Activities',
+								subItems: [
+									{ name: 'My Launchpad', link: '/launchpad/my-launchpad' },
+									{
+										name: 'My Investment',
+										link: '/launchpad/explore-launchpad-withdraw',
+									},
+									{ name: 'My Charity', link: '/charity/' },
+								],
+							},
 						]}
 					/>
 					{children}
