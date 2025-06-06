@@ -3,13 +3,15 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Logo from '@/public/Logo.png'
 import { cn } from '@/lib/utils'
 import Button from '../UI/button/Button'
 import ConnectWalletButton from '../UI/button/ConnectWalletButton'
 
 import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { useAccount } from 'wagmi'
+import axios from 'axios'
 
 const Navbar = ({
 	navItems,
@@ -27,6 +29,12 @@ const Navbar = ({
 
 	// const { scrollY } = useScroll()
 	const [visible, setVisible] = useState(true)
+	const { isConnected, address } = useAccount()
+	const [overview, setOverview] = useState<{
+		userId: string
+		hasLaunchpad: boolean
+		hasInvestment: boolean
+	} | null>(null)
 
 	useEffect(() => {
 		let lastScrollY = window.scrollY
@@ -48,6 +56,46 @@ const Navbar = ({
 		window.addEventListener('scroll', handleScroll)
 		return () => window.removeEventListener('scroll', handleScroll)
 	}, [])
+
+	useEffect(() => {
+		const fetchOverview = async () => {
+			if (!isConnected || !address) return
+			console.log('Fetching overview for address:', address)
+			try {
+				const res = await axios.post('/api/launchpad/check-user', {
+					wallet_address: address,
+				})
+				console.log('Overview response:', res.data)
+				if (res.data.success) {
+					setOverview(res.data.data)
+				}
+			} catch (error) {
+				console.error('Failed to fetch overview', error)
+				setOverview(null)
+			}
+		}
+
+		fetchOverview()
+	}, [isConnected, address])
+
+	const filteredNavItems = useMemo(() => {
+		const items = [...navItems]
+		if (isConnected && overview) {
+			if (overview.hasLaunchpad) {
+				items.push({
+					name: 'My Launchpad',
+					link: '/launchpad/explore-project',
+				})
+			}
+			if (overview.hasInvestment) {
+				items.push({
+					name: 'My Investment',
+					link: '/launchpad/explore-project',
+				})
+			}
+		}
+		return items
+	}, [navItems, isConnected, overview])
 
 	return (
 		<AnimatePresence>
@@ -71,7 +119,7 @@ const Navbar = ({
 						</Link>
 					</div>
 					<div className="hidden lg:flex items-center space-x-4 gap-3 sm:gap-5">
-						{navItems.map((navItem, idx) => (
+						{filteredNavItems.map((navItem, idx) => (
 							<Link
 								key={`link=${idx}`}
 								href={navItem.link}
@@ -85,12 +133,12 @@ const Navbar = ({
 					</div>
 					<div className={`flex items-center gap-3 sm:gap-5 `}>
 						<div className="relative hidden lg:block">
-							<input
+							{/* <input
 								type="text"
 								placeholder="Search project"
 								className="glass-component-2 rounded-full px-4 sm:px-7 py-2 text-sm sm:text-md font-orbitron focus:outline-none focus:ring-0"
-							/>
-							<svg
+							/> */}
+							{/* <svg
 								className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
 								fill="none"
 								stroke="currentColor"
@@ -103,7 +151,7 @@ const Navbar = ({
 									strokeWidth={2}
 									d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
 								/>
-							</svg>
+							</svg> */}
 						</div>
 						{/* <Button className="hidden lg:block bg-gradient text-white px-4 sm:px-5 py-2 rounded-full shadow-[0_0_10px_rgba(192,74,241,0.6),0_0_20px_rgba(39,159,232,0.4)] hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 text-sm sm:text-md">
 							Connect Wallet
@@ -160,9 +208,10 @@ const Navbar = ({
 									/>
 								</svg>
 							</div>
-							<Button className="bg-gradient text-white px-4 sm:px-5 py-2 rounded-full shadow-[0_0_10px_rgba(192,74,241,0.6),0_0_20px_rgba(39,159,232,0.4)] hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 text-sm sm:text-md">
+							{/* <Button className="bg-gradient text-white px-4 sm:px-5 py-2 rounded-full shadow-[0_0_10px_rgba(192,74,241,0.6),0_0_20px_rgba(39,159,232,0.4)] hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 text-sm sm:text-md">
 								Connect Wallet
-							</Button>
+							</Button> */}
+							<ConnectWalletButton />
 						</div>
 					</div>
 				)}
