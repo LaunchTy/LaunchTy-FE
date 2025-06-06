@@ -15,6 +15,8 @@ import WarningModal from '@/components/UI/modal/WarningModal'
 import LockModal from '@/components/UI/modal/LockModal'
 import AnimatedBlobs from '@/components/UI/background/AnimatedBlobs'
 import { BaseProject, Launchpad } from '@/interface/interface'
+import ErrorModal from '@/components/UI/modal/ErrorModal'
+
 const navItems = [
 	{ id: 'all', label: 'All Projects' },
 	{ id: 'upcoming', label: 'Upcoming' },
@@ -60,6 +62,10 @@ const MyProject = () => {
 	const [loading, setLoading] = useState(true)
 	const [lockOpen, setLockOpen] = useState(false)
 
+	const [errorModalOpen, setErrorModalOpen] = useState(false)
+	const [errorMessage, setErrorMessage] = useState('')
+	const [errorCode, setErrorCode] = useState('')
+
 	const { address } = useAccount()
 
 	useEffect(() => {
@@ -79,8 +85,15 @@ const MyProject = () => {
 					convertLaunchpadToProject
 				)
 				setProjects(projectsData)
-			} catch (error) {
+			} catch (error: any) {
 				console.error('Failed to load projects:', error)
+
+				setErrorCode(error?.response?.status?.toString() || '500')
+				setErrorMessage(
+					error?.response?.data?.message ||
+						'Something went wrong while fetching your projects.'
+				)
+				setErrorModalOpen(true)
 			} finally {
 				setLoading(false)
 			}
@@ -145,6 +158,39 @@ const MyProject = () => {
 					)}
 				</>
 			)}
+			<ErrorModal
+				open={errorModalOpen}
+				onOpenChange={setErrorModalOpen}
+				errorCode={errorCode}
+				errorMessage={errorMessage}
+				onRetry={() => {
+					setErrorModalOpen(false)
+					setLoading(true)
+					// gọi lại API
+					const refetch = async () => {
+						try {
+							const response = await axios.post('/api/launchpad/my-launchpad', {
+								wallet_address: address,
+							})
+							const launchpadsData: Launchpad[] = response.data.data
+							const projectsData: BaseProject[] = launchpadsData.map(
+								convertLaunchpadToProject
+							)
+							setProjects(projectsData)
+						} catch (err: any) {
+							setErrorCode(err?.response?.status?.toString() || '500')
+							setErrorMessage(
+								err?.response?.data?.message ||
+									'Retry failed. Please try again later.'
+							)
+							setErrorModalOpen(true)
+						} finally {
+							setLoading(false)
+						}
+					}
+					refetch()
+				}}
+			/>
 		</div>
 	)
 }
