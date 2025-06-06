@@ -32,7 +32,7 @@ export async function PUT(
         ...(charity_goal && { charity_goal }),
         ...(charity_image && { charity_image }),
         ...(owner_id && {
-          owner: {
+          project_owner: {
             connect: { user_id: owner_id }
           }
         }),
@@ -43,18 +43,11 @@ export async function PUT(
         })
       },
       include: {
-        owner: {
+        project_owner: {
           select: {
             user_id: true,
             wallet_address: true,
-            username: true
-          }
-        },
-        representative: {
-          select: {
-            user_id: true,
-            wallet_address: true,
-            username: true
+            user_name: true
           }
         }
       }

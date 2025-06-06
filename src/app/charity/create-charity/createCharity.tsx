@@ -10,6 +10,7 @@ import Folder from '@/components/UI/shared/Folder'
 import { useCharityStore } from '@/store/charity/CreateCharityStore'
 import ImageManager from '@/components/UI/shared/ImageManager'
 import { useRouter } from 'next/navigation'
+import { useAccount } from 'wagmi'
 
 interface CreateCharityProps {
 	isEditing?: boolean
@@ -52,6 +53,8 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 		faceId,
 		setFaceId,
 	} = useCharityStore()
+	// const { address: walletAddress } = useAccount()
+	const walletAddress = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" // Test wallet address
 
 	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files) {
@@ -126,9 +129,6 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 
 	const onFinalStepCompleted = async () => {
 		try {
-			// Get wallet address from your wallet connection
-			const walletAddress = "0xae923a3821aDB50B4958Bc705B1676B7A99e4d11" // Replace with actual wallet address from your wallet connection
-
 			if (!walletAddress) {
 				throw new Error('Wallet address is required')
 			}
@@ -178,7 +178,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 				charity_start_date: new Date().toISOString(),
 				charity_end_date: new Date().toISOString(),
 				license_certificate: licenseAndCertification,
-				evidence: historyEvidence,
+				evidence: [historyEvidence].filter(Boolean),
 				repre_name: representativeName,
 				repre_phone: phoneNumber,
 				repre_id: personalId,
@@ -187,6 +187,19 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 			}
 
 			console.log('Sending charity data:', charityData);
+			console.log('Required fields check:', {
+				charity_name: !!projectName,
+				charity_short_des: !!shortDescription,
+				charity_long_des: !!longDescription,
+				charity_token_symbol: !!selectedToken,
+				charity_logo: !!logo,
+				charity_start_date: true,
+				charity_end_date: true,
+				repre_name: !!representativeName,
+				repre_phone: !!phoneNumber,
+				repre_faceid: !!faceId,
+				wallet_address: !!walletAddress
+			});
 
 			const response = await fetch('/api/charity/create', {
 				method: 'POST',
@@ -289,101 +302,6 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 			<div
 				className={`mt-14 w-[1200px] h-auto glass-component-3 rounded-2xl p-8 transition-all duration-300 z-20`}
 			>
-				{/* <Stepper
-					className="w-full z-20"
-					initialStep={1}
-					backButtonText="Previous"
-					nextButtonText="Next"
-					onFinalStepCompleted={onFinalStepCompleted}
-				> */}
-				{/* --------------------------------------Token Input And Token Validation----------------------------------------------------- */}
-				{/* <Step>
-						<div className="flex flex-col items-center justify-center w-full gap-5">
-							<span className="text-3xl  text-white mb-4 flex justify-center w-full">
-								Token address
-							</span>
-							<div className="relative w-full">
-								<input
-									id="projectName"
-									value={projectName}
-									onChange={(e) => setProjectName(e.target.value)}
-									placeholder="Enter your token address"
-									className={`p-4 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full`}
-								/>
-							</div>
-						</div>
-					</Step>
-
-					<Step>
-						<div className="flex flex-col items-center justify-center w-full gap-5">
-							<span className="text-3xl  text-white mb-4 flex justify-center w-full">
-								Project token supply
-							</span>
-							<div className="relative w-full">
-								<div className="w-full flex flex-col gap-3 relative">
-									<span className=" text-lg">Token</span>
-									<div className="relative group">
-										<select
-											value={selectedToken}
-											onChange={(e) => setSelectedToken(e.target.value)}
-											className="p-3 pr-10 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none cursor-pointer"
-										>
-											<option value="" disabled>
-												Select staking token
-											</option>
-										</select>
-										<div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none transition-transform duration-300 group-hover:translate-y-0.5">
-											<svg
-												className="w-5 h-5 text-white opacity-80"
-												fill="none"
-												viewBox="0 0 24 24"
-												stroke="currentColor"
-											>
-												<path
-													strokeLinecap="round"
-													strokeLinejoin="round"
-													strokeWidth={2}
-													d="M19 9l-7 7-7-7"
-												/>
-											</svg>
-										</div>
-									</div>
-								</div>
-
-								<div className="w-full flex flex-col p-2 gap-3 mt-4">
-									<span className=" text-lg">Project token supply</span>
-									<div className="flex gap-5">
-										<input
-											type="number"
-											min={1}
-											value={tokenSupply}
-											onChange={(e) => setTokenSupply(e.target.value)}
-											onKeyDown={(e) => {
-												const invalidChars = ['e', 'E', '+', '-', '.', ',']
-												if (
-													invalidChars.includes(e.key) ||
-													(e.key.length === 1 && isNaN(Number(e.key)))
-												) {
-													e.preventDefault()
-												}
-											}}
-											placeholder="Enter project token supply"
-											className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
-    																[&::-webkit-inner-spin-button]:appearance-none 
-    																[&::-webkit-outer-spin-button]:appearance-none"
-										/>
-
-										<Button className="glass-component-3 rounded-xl">
-											Check
-										</Button>
-									</div>
-								</div>
-							</div>
-						</div>
-					</Step> */}
-
-				{/* --------------------------------------Create launchpad form----------------------------------------------------- */}
-
 				<Step>
 					<div className="">
 						{/* <span className="text-xl   flex justify-start w-full">
@@ -552,8 +470,8 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 										</svg>
 										<input
 											type="text"
-											value={socialLinks.discord}
-											onChange={(e) => setSocialLink('discord', e.target.value)}
+											value={socialLinks.github}
+											onChange={(e) => setSocialLink('github', e.target.value)}
 											placeholder="Enter your github here"
 											className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
     															[&::-webkit-inner-spin-button]:appearance-none 

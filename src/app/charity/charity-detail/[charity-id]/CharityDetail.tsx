@@ -14,29 +14,63 @@ import CustomTabs from '@/components/UI/shared/Tabs'
 import Tabs from '@/components/UI/shared/Tabs'
 import { projectDetail } from '@/constants/utils'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import HistoryEvidence from '@/components/charity/charity-detail-section/HistoryEvidence'
 import AddressInfo from '@/components/charity/charity-detail-section/AddressInfo'
 import ProjectImg from '@/public/Project.png'
 import DonorsTable from '@/components/charity/charity-detail-section/DonorsTable'
 import CountdownTimer from '@/components/UI/countdown/CountdownTimer'
+import { useParams } from 'next/navigation'
+import { Charity } from '@/interface/interface'
 
-interface ModalProjectProps {
-	projectDetail: {
-		socials: any[]
-		tokenPools: {
-			id: string
-			name: string
-		}[]
-	}
-}
 const CharityDetail = () => {
 	const [backgroundImage, setBackgroundImage] = useState<string>('')
+	const [charity, setCharity] = useState<Charity | null>(null)
+	const [loading, setLoading] = useState(true)
+	const params = useParams()
+
+	useEffect(() => {
+		const fetchCharity = async () => {
+			try {
+				const response = await fetch(`/api/charity/get/${params['charity-id']}`)
+				const data = await response.json()
+				if (data.success) {
+					setCharity(data.data)
+					if (data.data.charity_img && data.data.charity_img.length > 0) {
+						setBackgroundImage(data.data.charity_img[0])
+					}
+				}
+			} catch (error) {
+				console.error('Error fetching charity:', error)
+			} finally {
+				setLoading(false)
+			}
+		}
+
+		fetchCharity()
+	}, [params['charity-id']])
 
 	// Handler for image changes from the carousel
 	const handleImageChange = (imageSrc: string) => {
 		setBackgroundImage(imageSrc)
 	}
+
+	if (loading) {
+		return <div>Loading...</div>
+	}
+
+	if (!charity) {
+		return <div>Charity not found</div>
+	}
+
+	// Calculate status based on dates
+	const now = new Date()
+	const startDate = new Date(charity.charity_start_date)
+	const endDate = new Date(charity.charity_end_date)
+	let status: 'upcoming' | 'ongoing' | 'finished' = 'finished'
+	if (now < startDate) status = 'upcoming'
+	else if (now >= startDate && now <= endDate) status = 'ongoing'
+
 	return (
 		<Modal>
 			<div className="relative min-h-screen w-full font-exo pb-10">
@@ -62,11 +96,33 @@ const CharityDetail = () => {
 
 				<div className="relative px-20 pt-48 pb-12 z-10">
 					<div className="flex justify-between items-center">
-						<ProjectHeader projectDetail={projectDetail} />
+						<ProjectHeader 
+							projectDetail={{
+								id: charity.charity_id,
+								name: charity.charity_name,
+								shortDescription: charity.charity_short_des,
+								longDescription: charity.charity_long_des,
+								logo: charity.charity_logo,
+								images: charity.charity_img,
+								startDate: charity.charity_start_date,
+								endDate: charity.charity_end_date,
+								facebook: charity.charity_fb,
+								x: charity.charity_x,
+								instagram: charity.charity_ig,
+								website: charity.charity_website,
+								type: 'charity',
+								status,
+								charity_token_symbol: charity.charity_token_symbol,
+								evidence: charity.evidence,
+								repre_name: charity.repre_name,
+								repre_phone: charity.repre_phone,
+								repre_faceid: charity.repre_faceid,
+								totalDonationAmount: charity.totalDonationAmount,
+								donations: charity.donations
+							}} 
+						/>
 						<CountdownTimer
-							endTime={new Date(
-								Date.now() + 7 * 24 * 60 * 60 * 1000
-							).toISOString()}
+							endTime={charity.charity_end_date}
 						/>
 					</div>
 				</div>
@@ -74,16 +130,17 @@ const CharityDetail = () => {
 				<div className="flex items-start justify-center gap-12">
 					<div className="w-10/12">
 						<ThumbNailCarousel
+							projectImages={charity.charity_img.map(img => ({
+								src: img,
+								alt: charity.charity_name,
+								description: charity.charity_name
+							}))}
 							fullWidthBackground={false}
 							onImageChange={handleImageChange}
 						/>
 						<div className="mb-28 mt-10 flex flex-col gap-5 h-auto w-full rounded-xl glass-component-1 p-8 pb-16">
 							<span className="text-[45px] font-bold">Description</span>
-							<span>
-								If you have funded this project, we will be in touch to let you
-								know when the rewards have started distributing and when you can
-								claim them.
-							</span>
+							<span>{charity.charity_long_des}</span>
 						</div>
 					</div>
 				</div>
@@ -91,36 +148,25 @@ const CharityDetail = () => {
 					<div className="w-6/12">
 						<div className="h-[500px]">
 							<HistoryEvidence
-								images={[
-									{
-										src: ProjectImg.src,
-										alt: 'Charity evidence 1',
-									},
-									{
-										src: '/images/charity/evidence2.jpg',
-										alt: 'Charity evidence 2',
-									},
-									{
-										src: '/images/charity/evidence3.jpg',
-										alt: 'Charity evidence 3',
-									},
-								]}
+								images={charity.evidence.map((img, index) => ({
+									src: img,
+									alt: `Charity evidence ${index + 1}`
+								}))}
 							/>
 						</div>
 						<AddressInfo
 							fields={[
 								{
-									label: 'Address',
-									value:
-										'Đường cành lá quận cành cây huyện gió mây thành phố đồi núi',
+									label: 'Representative Name',
+									value: charity.repre_name,
 								},
 								{
 									label: 'Phone',
-									value: 'Hồ Chí Minh',
+									value: charity.repre_phone,
 								},
 								{
-									label: 'Email',
-									value: 'Việt Nam',
+									label: 'Status',
+									value: status,
 								},
 							]}
 						/>
@@ -133,15 +179,15 @@ const CharityDetail = () => {
 							fields={[
 								{
 									label: 'Total charity raised',
-									value: '1,789,000',
+									value: charity.totalDonationAmount?.toString() || '0',
 								},
 								{
 									label: 'Total donors',
-									value: '689,890',
+									value: charity.donations?.length.toString() || '0',
 								},
 								{
-									label: 'Total transaction',
-									value: '689,899',
+									label: 'Token Symbol',
+									value: charity.charity_token_symbol,
 								},
 							]}
 						/>
@@ -150,110 +196,16 @@ const CharityDetail = () => {
 				<div className="flex items-start justify-center gap-12">
 					<div className="w-10/12">
 						<DonorsTable
-							donors={[
-								{
-									ranking: 1,
-									name: 'John Doe',
-									date: '2024-03-15',
-									amount: 5000,
-									currency: 'USD',
-								},
-								{
-									ranking: 2,
-									name: 'Jane Smith',
-									date: '2024-03-14',
-									amount: 3000,
-									currency: 'USD',
-								},
-								{
-									ranking: 3,
-									name: 'Mike Johnson',
-									date: '2024-03-13',
-									amount: 2000,
-									currency: 'USD',
-								},
-								{
-									ranking: 4,
-									name: 'Sarah Wilson',
-									date: '2024-03-12',
-									amount: 1500,
-									currency: 'USD',
-								},
-								{
-									ranking: 5,
-									name: 'David Brown',
-									date: '2024-03-11',
-									amount: 1000,
-									currency: 'USD',
-								},
-								{
-									ranking: 6,
-									name: 'Emily Davis',
-									date: '2024-03-10',
-									amount: 800,
-									currency: 'USD',
-								},
-								{
-									ranking: 7,
-									name: 'Robert Wilson',
-									date: '2024-03-09',
-									amount: 750,
-									currency: 'USD',
-								},
-								{
-									ranking: 8,
-									name: 'Lisa Anderson',
-									date: '2024-03-08',
-									amount: 600,
-									currency: 'USD',
-								},
-								{
-									ranking: 9,
-									name: 'James Taylor',
-									date: '2024-03-07',
-									amount: 500,
-									currency: 'USD',
-								},
-								{
-									ranking: 10,
-									name: 'Emma White',
-									date: '2024-03-06',
-									amount: 450,
-									currency: 'USD',
-								},
-							]}
+							donors={charity.donations?.map((donation, index) => ({
+								ranking: index + 1,
+								name: donation.user?.user_name || 'Anonymous',
+								date: new Date(donation.datetime).toISOString().split('T')[0],
+								amount: donation.amount,
+								currency: 'USD',
+							})) || []}
 						/>
 					</div>
 				</div>
-				<ModalBody>
-					<ModalContent>
-						<div className="z-30">
-							<div className="mb-9 font-orbitron font-bold text-white text-center text-xl">
-								All Pool
-							</div>
-							<div className="max-h-96 overflow-x-hidden overflow-y-auto px-4">
-								{projectDetail.tokenPools.map((pool) => (
-									<div key={pool.id}>
-										<motion.div
-											className="glass-component-1 h-12 mb-6 rounded-xl flex flex-row items-center hover:bg-gray-700 transition-colors duration-300"
-											whileHover={{
-												scale: 1.05,
-											}}
-											whileTap={{ scale: 0.95 }}
-											initial={{ opacity: 0, y: 20 }}
-											animate={{ opacity: 1, y: 0 }}
-											transition={{ duration: 0.3 }}
-										>
-											{/* Add content inside the glass component if needed */}
-											<div className="mx-3 bg-white rounded-full w-8 h-8"></div>
-											<div className="text-white font-bold">{pool.name}</div>
-										</motion.div>
-									</div>
-								))}
-							</div>
-						</div>
-					</ModalContent>
-				</ModalBody>
 			</div>
 		</Modal>
 	)

@@ -6,6 +6,9 @@ export type SocialLinks = {
 	facebook: string
 	twitter: string
 	instagram: string
+	discord: string
+	telegram: string
+	github: string
 }
 
 interface CharityState {
@@ -66,6 +69,9 @@ const initialState = {
 		facebook: '',
 		twitter: '',
 		instagram: '',
+		discord: '',
+		telegram: '',
+		github: '',
 	},
 	logo: null,
 	images: [],

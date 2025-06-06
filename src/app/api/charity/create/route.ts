@@ -33,7 +33,6 @@ export async function POST(req: NextRequest) {
 			!charity_name ||
 			!charity_short_des ||
 			!charity_long_des ||
-			!charity_token_symbol ||
 			!charity_logo ||
 			!charity_start_date ||
 			!charity_end_date ||
