@@ -73,7 +73,15 @@ export async function deployContract(
 		readFileSync("src/app/config/chainConfig.json", { encoding: "utf-8" })
 	);
 	// console.log(`Chain config json: ${chainConfigJSON}`);
-	const nameInConfig = !!nameAlias ? nameAlias : contractName;
+	let nameInConfig = !!nameAlias ? nameAlias : contractName;
+	// console.log(constructorArgs[0]);
+	if (nameInConfig === "MockERC20") {
+		if (constructorArgs[0] != "Mock Token") {
+			nameInConfig = "AcceptedMockERC20";
+			// console.log("svvrplgpsogjsporgjp");
+		}
+	}
+
 	// console.log(`Name in config: ${nameInConfig}`);
 	if (
 		Object.keys(chainConfigJSON[31337]?.contracts)?.findIndex(
@@ -89,6 +97,7 @@ export async function deployContract(
 			).find((obj: any) => obj["symbol"] === "vDOT");
 			vAsset["address"] = contract.address;
 		}
+
 		// else if (nameInConfig === "MockVGLMR") {
 		//   let vAsset: any = (chainConfigJSON[31337]["vAssets"] as object[]).find((obj: any) => obj["symbol"] === "vGLMR")
 		//   vAsset["address"] = contract.address;
@@ -183,6 +192,18 @@ async function run(): Promise<void> {
 	);
 
 	const mockERC20Address = mockERC20.address;
+
+	const acceptERC20 = await deployContract(
+		"MockERC20",
+		signer,
+		undefined,
+		"Mock acceptERC20",
+		"MTacceptERC20",
+		18,
+		convertNumToOnChainFormat(1000000000, 18)
+	);
+
+	const acceptERC20Address = acceptERC20.address;
 
 	// await mockVAssetContract.freeMoneyForEveryone(
 	//     "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
@@ -279,6 +300,10 @@ async function run(): Promise<void> {
 	console.log(
 		"\x1b[36m%s\x1b[0m",
 		`Mock ERC20 contract deployed to ${mockERC20Address}`
+	);
+	console.log(
+		"\x1b[36m%s\x1b[0m",
+		`Accepteed ERC20 contract deployed to ${acceptERC20Address}`
 	);
 	console.log(
 		"\x1b[36m%s\x1b[0m",
