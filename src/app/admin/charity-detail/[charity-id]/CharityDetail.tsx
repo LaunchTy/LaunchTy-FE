@@ -58,6 +58,7 @@ const CharityDetail = () => {
 			return
 		}
 		const fetchProjects = async () => {
+			setLoading(true)
 			try {
 				const response = await axios.get(
 					`/api/admin/charity-detail?charity_id=${charity_id}`

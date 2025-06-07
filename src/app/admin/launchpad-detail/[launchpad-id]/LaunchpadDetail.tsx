@@ -53,6 +53,7 @@ const LaunchpadDetail = () => {
 
 	useEffect(() => {
 		const fetchProjects = async () => {
+			setLoading(true)
 			try {
 				const response = await axios.get(
 					`/api/launchpad/launchpad-detail?launchpad_id=${launchpad_id}`
