@@ -132,7 +132,7 @@ const Navbar = ({
 						))}
 					</div>
 					<div className={`flex items-center gap-3 sm:gap-5 `}>
-						<div className="relative hidden lg:block">
+						{/* <div className="relative hidden lg:block">
 							<input
 								type="text"
 								placeholder="Search project"
@@ -152,7 +152,7 @@ const Navbar = ({
 									d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
 								/>
 							</svg>
-						</div>
+						</div> */}
 						{/* <Button className="hidden lg:block bg-gradient text-white px-4 sm:px-5 py-2 rounded-full shadow-[0_0_10px_rgba(192,74,241,0.6),0_0_20px_rgba(39,159,232,0.4)] hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 text-sm sm:text-md">
 							Connect Wallet
 						</Button> */}
