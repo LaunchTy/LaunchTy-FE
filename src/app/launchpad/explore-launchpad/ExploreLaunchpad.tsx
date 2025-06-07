@@ -12,6 +12,7 @@ import { BaseProject, Launchpad } from '@/interface/interface'
 import AnimatedBlobs from '@/components/UI/background/AnimatedBlobs'
 import { useRouter } from 'next/navigation'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
+import ErrorModal from '@/components/UI/modal/ErrorModal'
 
 const navItems = [
 	{ id: 'all', label: 'All Projects' },
@@ -55,6 +56,9 @@ const ExploreProjectPage = () => {
 	const [showAll, setShowAll] = useState(false)
 	const [loading, setLoading] = useState(true)
 	const [launchpads, setLaunchpads] = useState<BaseProject[]>([])
+	const [errorModalOpen, setErrorModalOpen] = useState(false)
+	const [errorMessage, setErrorMessage] = useState('')
+	const [errorCode, setErrorCode] = useState('')
 	const route = useRouter()
 
 	const handleAddProject = () => {
@@ -64,14 +68,21 @@ const ExploreProjectPage = () => {
 		const fetchProjects = async () => {
 			try {
 				const response = await axios.get(`/api/launchpad/explore-launchpad`)
+				console.log('Response data:', response.data)
 				const launchpadsData: Launchpad[] = response.data.data
 				const projectsData: BaseProject[] = launchpadsData.map(
 					convertLaunchpadToProject
 				)
 				setLaunchpads(projectsData)
 				console.log('Fetched projects:', projectsData)
-			} catch (error) {
-				console.error('Failed to load projects:', error)
+			} catch (err: any) {
+				console.error('Failed to load projects:', err)
+				setErrorCode(err?.response?.status?.toString() || '500')
+				setErrorMessage(
+					err?.response?.data?.message ||
+						'Failed to fetch projects. Please try again later.'
+				)
+				setErrorModalOpen(true)
 			} finally {
 				setLoading(false)
 			}
@@ -139,6 +150,41 @@ const ExploreProjectPage = () => {
 					</div>
 				</>
 			)}
+			<ErrorModal
+				open={errorModalOpen}
+				onOpenChange={setErrorModalOpen}
+				errorCode={errorCode}
+				errorMessage={errorMessage}
+				onRetry={() => {
+					setErrorModalOpen(false)
+					setLoading(true)
+					// gọi lại API
+					const fetchProjects = async () => {
+						try {
+							const response = await axios.get(
+								`/api/launchpad/explore-launchpad`
+							)
+							const launchpadsData: Launchpad[] = response.data.data
+							const projectsData: BaseProject[] = launchpadsData.map(
+								convertLaunchpadToProject
+							)
+							setLaunchpads(projectsData)
+							console.log('Fetched projects:', projectsData)
+						} catch (err: any) {
+							console.error('Failed to load projects:', err)
+							setErrorCode(err?.response?.status?.toString() || '500')
+							setErrorMessage(
+								err?.response?.data?.message ||
+									'Failed to fetch projects. Please try again later.'
+							)
+							setErrorModalOpen(true)
+						} finally {
+							setLoading(false)
+						}
+					}
+					fetchProjects()
+				}}
+			/>
 		</div>
 	)
 }

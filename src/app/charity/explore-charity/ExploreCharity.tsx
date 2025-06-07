@@ -12,6 +12,7 @@ import AnimatedBlobs from '@/components/UI/background/AnimatedBlobs'
 import axios from 'axios'
 import { BaseProject, Charity } from '@/interface/interface'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
+import ErrorModal from '@/components/UI/modal/ErrorModal'
 
 const navItems = [
 	{ id: 'all', label: 'All Projects' },
@@ -57,6 +58,10 @@ const ExploreCharity = () => {
 	const [loading, setLoading] = useState(true)
 	const [charity, setCharity] = useState<BaseProject[]>([])
 
+	const [errorModalOpen, setErrorModalOpen] = useState(false)
+	const [errorMessage, setErrorMessage] = useState('')
+	const [errorCode, setErrorCode] = useState('')
+
 	const filteredProjects = charity.filter((project) => {
 		if (activeTab === 'all') return true
 		return project.status === activeTab
@@ -87,8 +92,14 @@ const ExploreCharity = () => {
 				)
 				setCharity(projectsData)
 				console.log('Fetched projects:', projectsData)
-			} catch (error) {
-				console.error('Failed to load projects:', error)
+			} catch (err: any) {
+				console.error('Failed to load projects:', err)
+				setErrorCode(err?.response?.status?.toString() || '500')
+				setErrorMessage(
+					err?.response?.data?.message ||
+						'Failed to fetch projects. Please try again later.'
+				)
+				setErrorModalOpen(true)
 			} finally {
 				setLoading(false)
 			}
@@ -160,6 +171,39 @@ const ExploreCharity = () => {
 					</div>
 				</>
 			)}
+			<ErrorModal
+				open={errorModalOpen}
+				onOpenChange={setErrorModalOpen}
+				errorCode={errorCode}
+				errorMessage={errorMessage}
+				onRetry={() => {
+					setErrorModalOpen(false)
+					setLoading(true)
+					// gọi lại API
+					const fetchProjects = async () => {
+						try {
+							const response = await axios.get(`/api/charity/explore-charity`)
+							const charityData: Charity[] = response.data.data
+							const projectsData: BaseProject[] = charityData.map(
+								convertCharityToProject
+							)
+							setCharity(projectsData)
+							console.log('Fetched projects:', projectsData)
+						} catch (err: any) {
+							console.error('Failed to load projects:', err)
+							setErrorCode(err?.response?.status?.toString() || '500')
+							setErrorMessage(
+								err?.response?.data?.message ||
+									'Failed to fetch projects. Please try again later.'
+							)
+							setErrorModalOpen(true)
+						} finally {
+							setLoading(false)
+						}
+					}
+					fetchProjects()
+				}}
+			/>
 		</div>
 	)
 }

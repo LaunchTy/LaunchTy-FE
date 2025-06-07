@@ -1,21 +1,17 @@
 'use client'
-import React from 'react'
 import ExploreProject from '@/components/Launchpad/Explore-section/ExploreProject' // Adjust the import path as necessary
-import YourProject from '@/public/YourProject.svg' // Adjust the import path as necessary
-import Button from '@/components/UI/button/Button' // Adjust the import path as necessary
 import Tab from '@/components/Launchpad/Explore-section/Tab' // Adjust the import path as necessary
 import ProjectRowCard from '@/components/Launchpad/MyProject-section/ProjectRowCard' // Adjust the import path as necessary
-import { useState } from 'react' // Adjust the import path as necessary
-import { useEffect } from 'react' // Adjust the import path as necessary
-import axios from 'axios' // Adjust the import path as necessary
-import { useParams } from 'next/navigation'
-import { useAccount } from 'wagmi'
-import LoadingModal from '@/components/UI/modal/LoadingModal'
-import WarningModal from '@/components/UI/modal/WarningModal'
-import LockModal from '@/components/UI/modal/LockModal'
 import AnimatedBlobs from '@/components/UI/background/AnimatedBlobs'
-import { BaseProject, Launchpad } from '@/interface/interface'
+import Button from '@/components/UI/button/Button' // Adjust the import path as necessary
 import ErrorModal from '@/components/UI/modal/ErrorModal'
+import LoadingModal from '@/components/UI/modal/LoadingModal'
+import LockModal from '@/components/UI/modal/LockModal'
+import { BaseProject, Launchpad } from '@/interface/interface'
+import YourProject from '@/public/YourProject.svg' // Adjust the import path as necessary
+import axios from 'axios' // Adjust the import path as necessary
+import { useEffect, useState } from 'react' // Adjust the import path as necessary
+import { useAccount } from 'wagmi'
 
 const navItems = [
 	{ id: 'all', label: 'All Projects' },
@@ -156,41 +152,44 @@ const MyProject = () => {
 							</Button>
 						</div>
 					)}
+					<ErrorModal
+						open={errorModalOpen}
+						onOpenChange={setErrorModalOpen}
+						errorCode={errorCode}
+						errorMessage={errorMessage}
+						onRetry={() => {
+							setErrorModalOpen(false)
+							setLoading(true)
+							// gọi lại API
+							const refetch = async () => {
+								try {
+									const response = await axios.post(
+										'/api/launchpad/my-launchpad',
+										{
+											wallet_address: address,
+										}
+									)
+									const launchpadsData: Launchpad[] = response.data.data
+									const projectsData: BaseProject[] = launchpadsData.map(
+										convertLaunchpadToProject
+									)
+									setProjects(projectsData)
+								} catch (err: any) {
+									setErrorCode(err?.response?.status?.toString() || '500')
+									setErrorMessage(
+										err?.response?.data?.message ||
+											'Retry failed. Please try again later.'
+									)
+									setErrorModalOpen(true)
+								} finally {
+									setLoading(false)
+								}
+							}
+							refetch()
+						}}
+					/>
 				</>
 			)}
-			<ErrorModal
-				open={errorModalOpen}
-				onOpenChange={setErrorModalOpen}
-				errorCode={errorCode}
-				errorMessage={errorMessage}
-				onRetry={() => {
-					setErrorModalOpen(false)
-					setLoading(true)
-					// gọi lại API
-					const refetch = async () => {
-						try {
-							const response = await axios.post('/api/launchpad/my-launchpad', {
-								wallet_address: address,
-							})
-							const launchpadsData: Launchpad[] = response.data.data
-							const projectsData: BaseProject[] = launchpadsData.map(
-								convertLaunchpadToProject
-							)
-							setProjects(projectsData)
-						} catch (err: any) {
-							setErrorCode(err?.response?.status?.toString() || '500')
-							setErrorMessage(
-								err?.response?.data?.message ||
-									'Retry failed. Please try again later.'
-							)
-							setErrorModalOpen(true)
-						} finally {
-							setLoading(false)
-						}
-					}
-					refetch()
-				}}
-			/>
 		</div>
 	)
 }
