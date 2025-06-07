@@ -64,37 +64,36 @@ const MyProject = () => {
 
 	const { address } = useAccount()
 
+	const fetchProjects = async () => {
+		try {
+			setLoading(true)
+			const response = await axios.post('/api/launchpad/my-launchpad', {
+				wallet_address: address,
+			})
+			const launchpadsData: Launchpad[] = response.data.data
+			const projectsData: BaseProject[] = launchpadsData.map(
+				convertLaunchpadToProject
+			)
+			setProjects(projectsData)
+		} catch (error: any) {
+			setErrorCode(error?.response?.status?.toString() || '500')
+			setErrorMessage(
+				error?.response?.data?.message ||
+					'Something went wrong while fetching your projects.'
+			)
+			setErrorModalOpen(true)
+		} finally {
+			setLoading(false)
+		}
+	}
+
 	useEffect(() => {
 		if (!address) {
 			setLockOpen(true)
-		} else {
-			setLockOpen(false)
+			return
 		}
 
-		const fetchProjects = async () => {
-			try {
-				const response = await axios.post('/api/launchpad/my-launchpad', {
-					wallet_address: address,
-				})
-				const launchpadsData: Launchpad[] = response.data.data
-				const projectsData: BaseProject[] = launchpadsData.map(
-					convertLaunchpadToProject
-				)
-				setProjects(projectsData)
-			} catch (error: any) {
-				console.error('Failed to load projects:', error)
-
-				setErrorCode(error?.response?.status?.toString() || '500')
-				setErrorMessage(
-					error?.response?.data?.message ||
-						'Something went wrong while fetching your projects.'
-				)
-				setErrorModalOpen(true)
-			} finally {
-				setLoading(false)
-			}
-		}
-
+		setLockOpen(false)
 		fetchProjects()
 	}, [address])
 
