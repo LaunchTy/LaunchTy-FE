@@ -175,10 +175,10 @@ const ProjectSection = ({
 								{/* Right column: values */}
 								<div className="flex flex-col gap-4 text-left pl-2">
 									<p className="text-sm text-gray-400 text-end">
-										${project.soft_cap || '0.00'}
+										${project.price || 0}
 									</p>
 									<p className="text-sm text-gray-400 text-end">
-										${project.min_stake || '0'}
+										${project.soft_cap || '0.00'}
 									</p>
 									<div className="flex justify-between text-sm">
 										<span>Max:</span>

@@ -34,6 +34,7 @@ export interface Launchpad {
 	deposits?: Deposit[];
 	status?: "pending" | "approved" | "denied";
 	user?: User;
+	price?: number; // Price per token in the launchpad
 }
 
 export interface Deposit {
@@ -102,6 +103,7 @@ export interface BaseProject {
 	whitepaper?: string;
 	type?: "launchpad" | "charity";
 	status?: "upcoming" | "ongoing" | "finished";
+	price?: number;
 
 	//Launchpad
 	token_address?: string;

@@ -35,6 +35,10 @@ const convertLaunchpadToProject = (launchpad: Launchpad): BaseProject => {
 		shortDescription: launchpad.launchpad_short_des,
 		longDescription: launchpad.launchpad_long_des,
 		logo: launchpad.launchpad_logo,
+		min_stake: launchpad.min_stake,
+		max_stake: launchpad.max_stake,
+		price: launchpad.price,
+		soft_cap: launchpad.soft_cap,
 		images:
 			launchpad.launchpad_img.length > 0
 				? launchpad.launchpad_img
