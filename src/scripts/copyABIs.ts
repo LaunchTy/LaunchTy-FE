@@ -2,8 +2,8 @@
 import * as fs from "fs";
 import * as path from "path";
 // Adjust path to Foundry's output ABI JSON
-const contractsDir = path.resolve(__dirname, "../../../LaunchTy-Contract/out");
-const outputDir = path.resolve(__dirname, "../app/abis");
+const contractsDir = path.resolve(__dirname, "../../../Launchty-Contracts/out");
+const outputDir = path.resolve(__dirname, "../app/abi");
 
 // Manually list the contracts
 const contractsToCopy = [
@@ -11,6 +11,7 @@ const contractsToCopy = [
 	"LaunchpadFactory.sol/LaunchpadFactory.json",
 	"CharityFactory.sol/CharityFactory.json",
 	"Charity.sol/Charity.json",
+	"MockERC20.sol/MockERC20.json",
 ];
 
 contractsToCopy.forEach((contractPath) => {

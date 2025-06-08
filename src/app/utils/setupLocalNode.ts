@@ -198,7 +198,7 @@ async function run(): Promise<void> {
 		signer,
 		undefined,
 		"Mock acceptERC20",
-		"MTacceptERC20",
+		"AcceptERC",
 		18,
 		convertNumToOnChainFormat(1000000000, 18)
 	);
