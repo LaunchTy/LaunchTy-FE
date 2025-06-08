@@ -31,9 +31,13 @@ interface CharityState {
 	images: string[]
 	backgroundImage: string
 	licenseAndCertification: string | null
-	historyEvidence: string | null
+	historyEvidence: string[]
 	personalId: string | null
 	faceId: string | null
+
+	// Dates
+	startDate: string
+	endDate: string
 
 	// Actions
 	setProjectName: (name: string) => void
@@ -50,9 +54,11 @@ interface CharityState {
 	setImages: (images: string[]) => void
 	setBackgroundImage: (image: string) => void
 	setLicenseAndCertification: (image: string | null) => void
-	setHistoryEvidence: (image: string | null) => void
+	setHistoryEvidence: (images: string[]) => void
 	setPersonalId: (image: string | null) => void
 	setFaceId: (image: string | null) => void
+	setStartDate: (date: string) => void
+	setEndDate: (date: string) => void
 	resetStore: () => void
 }
 
@@ -77,9 +83,11 @@ const initialState = {
 	images: [],
 	backgroundImage: '',
 	licenseAndCertification: null,
-	historyEvidence: null,
+	historyEvidence: [],
 	personalId: null,
 	faceId: null,
+	startDate: '',
+	endDate: '',
 }
 
 export const useCharityStore = create<CharityState>()(
@@ -94,6 +102,8 @@ export const useCharityStore = create<CharityState>()(
 		setPhoneNumber: (phone) => set({ phoneNumber: phone }),
 		setTokenSupply: (supply) => set({ tokenSupply: supply }),
 		setSelectedToken: (token) => set({ selectedToken: token }),
+		setStartDate: (date) => set({ startDate: date }),
+		setEndDate: (date) => set({ endDate: date }),
 
 		setSocialLink: (platform, url) =>
 			set((state) => ({
@@ -112,7 +122,7 @@ export const useCharityStore = create<CharityState>()(
 
 		setLicenseAndCertification: (image) =>
 			set({ licenseAndCertification: image }),
-		setHistoryEvidence: (image) => set({ historyEvidence: image }),
+		setHistoryEvidence: (images) => set({ historyEvidence: images }),
 		setPersonalId: (image) => set({ personalId: image }),
 		setFaceId: (image) => set({ faceId: image }),
 

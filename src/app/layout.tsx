@@ -34,7 +34,7 @@ export default function RootLayout({
 										name: 'My Investment',
 										link: '/launchpad/explore-launchpad-withdraw',
 									},
-									{ name: 'My Charity', link: '/charity/' },
+									{ name: 'My Charity', link: '/charity/my-charity' },
 								],
 							},
 						]}
