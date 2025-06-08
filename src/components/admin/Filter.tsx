@@ -89,27 +89,12 @@ const FilterStatus: React.FC<FilterStatusProps> = ({
 
 			{/* Dropdown list */}
 			{open && (
-				<ul
-					className="
-            absolute 
-            mt-2 
-            w-full 
-            max-h-60 
-            overflow-auto 
-            rounded-xl 
-            bg-white/30 
-            backdrop-blur-lg 
-            border 
-            border-gray-200 
-            shadow-lg 
-            z-50
-          "
-				>
+				<ul className=" mt-2 bg-[#0b0b1f] rounded-xl shadow-lg py-2 w-40 z-50 absolute max-h-60 ">
 					{options.map((option) => (
 						<li
 							key={option.value}
 							onClick={() => handleSelect(option.value)}
-							className={`
+							className={` text-white hover:bg-[#8132a2] hover:text-white text-sm
                 px-5 
                 py-2 
                 cursor-pointer 

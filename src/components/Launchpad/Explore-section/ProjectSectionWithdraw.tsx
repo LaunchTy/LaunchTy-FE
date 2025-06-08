@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import Image from 'next/image'
 import Button from '@/components/UI/button/Button'
+import { BaseProject } from '@/interface/interface'
 
 interface Project {
 	id: string
@@ -21,7 +22,7 @@ interface Project {
 }
 
 interface ProjectSectionProps {
-	projects: Project[]
+	projects: BaseProject[]
 	className?: string
 	showCountdown?: boolean
 	countdownDuration?: number // in hours
@@ -70,13 +71,13 @@ const ProjectSection = ({
 		const updateCountdowns = () => {
 			const newCountdowns: { [key: string]: string } = {}
 			projects.forEach((project) => {
-				if (project.endTime) {
-					newCountdowns[project.id] = calculateTimeLeft(project.endTime)
+				if (project.endDate) {
+					newCountdowns[project.id || ''] = calculateTimeLeft(project.endDate)
 				} else {
 					// Fallback to countdownDuration if no endTime is provided
 					const end = new Date()
 					end.setHours(end.getHours() + countdownDuration)
-					newCountdowns[project.id] = calculateTimeLeft(end.toISOString())
+					newCountdowns[project.id || ''] = calculateTimeLeft(end.toISOString())
 				}
 			})
 			setCountdowns(newCountdowns)
@@ -120,8 +121,8 @@ const ProjectSection = ({
 							<div className="relative w-full h-[240px] rounded-[3.2rem] bg-white ">
 								<div className="relative w-full h-[200px] rounded-tr-xl rounded-tl-xl overflow-hidden">
 									<Image
-										src={project.image}
-										alt={project.title}
+										src={project.images?.[0] || '/default-image.png'}
+										alt={project.name || 'Project Image'}
 										fill
 										className="object-cover"
 									/>
@@ -129,7 +130,7 @@ const ProjectSection = ({
 								{showCountdown && (
 									<div className="shadow flex items-center justify-center pt-1">
 										<span className="font-mono font-bold text-red-500 tracking-widest text-2xl">
-											{countdowns[project.id] || '00:00:00'}
+											{countdowns[project.id || ''] || '00:00:00'}
 										</span>
 									</div>
 								)}
@@ -139,9 +140,9 @@ const ProjectSection = ({
 								<div className="flex flex-col w-3/4">
 									<h4
 										className="text-lg font-bold mb-1 truncate"
-										title={project.title}
+										title={project.name}
 									>
-										{project.title}
+										{project.name}
 									</h4>
 									<div className="text-sm text-gray-400">
 										Price project token = 19999999 vDot
@@ -149,7 +150,7 @@ const ProjectSection = ({
 								</div>
 								<div className="relative w-12 h-12 rounded-full overflow-hidden">
 									<Image
-										src={project.logo}
+										src={project.logo || '/default-logo.png'}
 										alt="Project Logo"
 										fill
 										className="object-cover"
@@ -165,7 +166,9 @@ const ProjectSection = ({
 									<p className="text-sm text-start">Raise Goal:</p>
 									<div className="flex justify-between text-sm">
 										<span>Min:</span>
-										<span className="text-gray-400">${project.min || '0'}</span>
+										<span className="text-gray-400">
+											${project.min_stake || '0'}
+										</span>
 									</div>
 								</div>
 								{/* Right column: values */}
@@ -174,18 +177,20 @@ const ProjectSection = ({
 										${project.price || '0.00'}
 									</p>
 									<p className="text-sm text-gray-400 text-end">
-										${project.raiseGoal || '0'}
+										${project.soft_cap || '0'}
 									</p>
 									<div className="flex justify-between text-sm">
 										<span>Max:</span>
-										<span className="text-gray-400">${project.max || '0'}</span>
+										<span className="text-gray-400">
+											${project.max_stake || '0'}
+										</span>
 									</div>
 								</div>
 							</div>
 							{/* Amount and Withdraw button */}
 							<div className="m-3 p-3 border border-gray-300 rounded-2xl shadow-md glass-component-1 flex flex-col items-center justify-center gap-4 border-radius-[40px]">
 								<p className="text-lg font-semibold text-white">
-									Amount: {project.amount || '0'} PTToken
+									{/* Amount: {project.token || '0'} PTToken  ===========================GAN BIEN */}
 								</p>
 								<Button className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-[5rem] py-3 rounded-full hover:opacity-90 transition-all duration-300 flex items-center justify-center">
 									Withdraw

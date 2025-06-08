@@ -57,7 +57,6 @@ const MyProject = () => {
 	const [projects, setProjects] = useState<BaseProject[]>([])
 	const [loading, setLoading] = useState(true)
 	const [lockOpen, setLockOpen] = useState(false)
-
 	const [errorModalOpen, setErrorModalOpen] = useState(false)
 	const [errorMessage, setErrorMessage] = useState('')
 	const [errorCode, setErrorCode] = useState('')
