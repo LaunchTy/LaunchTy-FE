@@ -2,14 +2,38 @@
 import AnimatedBlobs from '@/components/UI/background/AnimatedBlobs'
 import Button from '@/components/UI/button/Button'
 import SplitText from '@/components/UI/text-effect/SplitText'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { useCharityStore } from '@/store/charity/CreateCharityStore'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRouter, useParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import ProjectHeader from '@/components/project-component/ProjectHeader'
+import ThumbNailCarousel from '@/components/UI/carousel/ThumbnailCarousel'
+import { Modal, ModalBody, ModalContent } from '@/components/UI/modal/AnimatedModal'
+import DonateArea from '@/components/UI/shared/DonateArea'
+import HistoryEvidence from '@/components/charity/charity-detail-section/HistoryEvidence'
+import AddressInfo from '@/components/charity/charity-detail-section/AddressInfo'
+import CountdownTimer from '@/components/UI/countdown/CountdownTimer'
+import ErrorModal from '@/components/UI/modal/ErrorModal'
+import LoadingModal from '@/components/UI/modal/LoadingModal'
+import LockModal from '@/components/UI/modal/LockModal'
+import { useAccount } from 'wagmi'
+import { Charity } from '@/interface/interface'
 
 const Preview = () => {
     const router = useRouter()
+    const params = useParams()
+    const { address } = useAccount()
+    const [loading, setLoading] = useState(false)
+    const [lockOpen, setLockOpen] = useState(false)
+    const [errorModalOpen, setErrorModalOpen] = useState(false)
+    const [errorMessage, setErrorMessage] = useState('')
+    const [errorCode, setErrorCode] = useState('')
+    const [backgroundImage, setBackgroundImage] = useState<string>('')
+    const [charity, setCharity] = useState<Charity | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+
     const {
         projectName,
         shortDescription,
@@ -18,231 +42,373 @@ const Preview = () => {
         phoneNumber,
         socialLinks,
         logo,
-        backgroundImage,
-        setBackgroundImage,
         images,
         licenseAndCertification,
         historyEvidence,
         personalId,
         faceId,
+        startDate,
+        endDate,
+        selectedToken,
+        tokenSupply,
+        setProjectName,
+        setShortDescription,
+        setLongDescription,
+        setRepresentativeName,
+        setPhoneNumber,
+        setSocialLink,
+        setLogo,
+        setImages,
+        setLicenseAndCertification,
+        setHistoryEvidence,
+        setPersonalId,
+        setFaceId,
+        setStartDate,
+        setEndDate,
+        setSelectedToken,
+        setTokenSupply,
+        resetStore
     } = useCharityStore()
 
-    const [currentImageIndex, setCurrentImageIndex] = useState(0)
+    useEffect(() => {
+        if (!address) {
+            setLockOpen(true)
+            return
+        }
+        setLockOpen(false)
+    }, [address])
 
-    const handleImageChange = (index: number) => {
-        setCurrentImageIndex(index)
+    useEffect(() => {
+        const fetchCharity = async () => {
+            if (!params.charity_id) return
+
+            try {
+                setIsLoading(true)
+                const response = await fetch(`/api/charity/get/${params.charity_id}`)
+                if (!response.ok) {
+                    throw new Error('Failed to fetch charity data')
+                }
+                const data = await response.json()
+                if (data.success) {
+                    setCharity(data.data)
+                    // Update store with fetched data
+                    setProjectName(data.data.charity_name)
+                    setShortDescription(data.data.charity_short_des)
+                    setLongDescription(data.data.charity_long_des)
+                    setRepresentativeName(data.data.repre_name)
+                    setPhoneNumber(data.data.repre_phone)
+                    setSocialLink('facebook', data.data.charity_fb || '')
+                    setSocialLink('twitter', data.data.charity_x || '')
+                    setSocialLink('instagram', data.data.charity_ig || '')
+                    setSocialLink('website', data.data.charity_website || '')
+                    setLogo(data.data.charity_logo)
+                    setImages(data.data.charity_img)
+                    setLicenseAndCertification(data.data.license_certificate)
+                    setHistoryEvidence(data.data.evidence[0] || null)
+                    setPersonalId(data.data.repre_id)
+                    setFaceId(data.data.repre_faceid)
+                    setStartDate(data.data.charity_start_date)
+                    setEndDate(data.data.charity_end_date)
+                    setSelectedToken(data.data.charity_token_symbol)
+                    setTokenSupply(data.data.charity_token_supply?.toString() || '')
+
+                    if (data.data.charity_img && data.data.charity_img.length > 0) {
+                        setBackgroundImage(data.data.charity_img[0])
+                    }
+                } else {
+                    throw new Error(data.error || 'Failed to fetch charity data')
+                }
+            } catch (err: any) {
+                setError(err.message)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        if (params.charity_id) {
+            fetchCharity()
+        }
+    }, [params.charity_id])
+
+    const handleImageChange = (imageSrc: string) => {
+        setBackgroundImage(imageSrc)
     }
 
-    const handleBackgroundImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0]
-            const reader = new FileReader()
-            reader.onloadend = () => {
-                setBackgroundImage(reader.result as string)
+    const handleEdit = () => {
+        resetStore()
+        router.push(`/charity/edit-charity/${params.charity_id}`)
+    }
+
+    const handleSubmit = async () => {
+        try {
+            if (!address) {
+                setLockOpen(true)
+                return
             }
-            reader.readAsDataURL(file)
+
+            setLoading(true)
+
+            const charityData = {
+                charity_name: projectName,
+                charity_short_des: shortDescription,
+                charity_long_des: longDescription,
+                charity_token_symbol: selectedToken || '',
+                charity_token_supply: Number(tokenSupply),
+                charity_logo: logo,
+                charity_fb: socialLinks.facebook || '',
+                charity_x: socialLinks.twitter || '',
+                charity_ig: socialLinks.instagram || '',
+                charity_website: socialLinks.website || '',
+                charity_whitepaper: '',
+                charity_img: images,
+                charity_start_date: startDate,
+                charity_end_date: endDate,
+                license_certificate: licenseAndCertification,
+                evidence: historyEvidence.filter(Boolean),
+                repre_name: representativeName,
+                repre_phone: phoneNumber,
+                repre_id: personalId,
+                repre_faceid: faceId,
+                wallet_address: address,
+            }
+
+            const response = await fetch('/api/charity/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(charityData),
+            })
+
+            if (!response.ok) {
+                const errorData = await response.json()
+                throw new Error(errorData.message || 'Failed to create charity')
+            }
+
+            const data = await response.json()
+
+            if (!data.success) {
+                throw new Error(data.message || 'Failed to create charity')
+            }
+
+            router.push('/charity/explore-charity')
+        } catch (error: any) {
+            console.error('Error creating charity:', error)
+            setErrorCode(error?.response?.status?.toString() || '500')
+            setErrorMessage(error?.message || 'Failed to create charity')
+            setErrorModalOpen(true)
+        } finally {
+            setLoading(false)
         }
     }
 
-    // Convert socialLinks object to array of non-empty links
-    const socialLinksArray = Object.entries(socialLinks)
-        .filter(([_, value]) => value.trim() !== '')
-        .map(([platform, url]) => ({
-            platform,
-            url,
-        }))
+    // Calculate status based on dates
+    const now = new Date()
+    const start = new Date(startDate)
+    const end = new Date(endDate)
+    let status: 'upcoming' | 'ongoing' | 'finished' = 'finished'
+    if (now < start) status = 'upcoming'
+    else if (now >= start && now <= end) status = 'ongoing'
+
+    if (isLoading) {
+        return <LoadingModal open={isLoading} onOpenChange={setIsLoading} />
+    }
+
+    if (error) {
+        return (
+            <ErrorModal
+                open={!!error}
+                onOpenChange={() => setError(null)}
+                errorMessage={error}
+                errorCode="500"
+                onRetry={() => {
+                    setError(null)
+                    router.refresh()
+                }}
+            />
+        )
+    }
+
+    if (lockOpen) {
+        return (
+            <LockModal
+                open={lockOpen}
+                onUnlock={() => setLockOpen(false)}
+                canClose={true}
+                message="Please connect your wallet to view the preview."
+            />
+        )
+    }
 
     return (
-        <div className="relative p-36 flex flex-col justify-center items-center font-exo">
-            <AnimatedBlobs count={4} />
-            {/* Background Image Upload */}
-            <div className="absolute top-4 right-4 z-30">
-                <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleBackgroundImageChange}
-                    className="hidden"
-                    id="backgroundImageUpload"
-                />
-                <label
-                    htmlFor="backgroundImageUpload"
-                    className="cursor-pointer glass-component-3 px-4 py-2 rounded-lg text-white hover:bg-opacity-80 transition-all duration-300"
-                >
-                    Change Background
-                </label>
-            </div>
+        <Modal>
+            <div className="relative min-h-screen w-full font-exo pb-10">
+                <AnimatedBlobs count={6} />
 
-            {/* Project Header */}
-            <div className="w-full max-w-4xl mx-auto text-center z-20 mb-8">
-                <SplitText
-                    text={projectName}
-                    className="text-4xl font-bold text-white mb-4"
-                    delay={50}
-                />
-                <SplitText
-                    text={shortDescription}
-                    className="text-lg text-gray-300"
-                    delay={100}
-                />
-            </div>
-
-            {/* Thumbnail Carousel */}
-            <div className="w-full max-w-4xl mx-auto mb-8 z-20">
-                <div className="relative h-96 rounded-xl overflow-hidden">
-                    {images.length > 0 ? (
-                        <Image
-                            src={images[currentImageIndex]}
-                            alt={`Project image ${currentImageIndex + 1}`}
-                            fill
-                            className="object-cover"
+                {/* Full-width background container */}
+                <AnimatePresence mode="wait">
+                    {backgroundImage && (
+                        <motion.div
+                            key={backgroundImage}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 0.2 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="fixed inset-0 w-full h-2/3 z-0 bg-cover bg-center scale-110"
+                            style={{
+                                backgroundImage: `url(${backgroundImage})`,
+                                filter: 'blur(15px)',
+                            }}
                         />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center glass-component-2">
-                            <span className="text-gray-400">No images uploaded</span>
-                        </div>
                     )}
-                </div>
-                {images.length > 1 && (
-                    <div className="flex gap-2 mt-4 justify-center">
-                        {images.map((_, index) => (
-                            <button
-                                key={index}
-                                onClick={() => handleImageChange(index)}
-                                className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                                    currentImageIndex === index
-                                        ? 'bg-blue-500 scale-125'
-                                        : 'bg-gray-500 hover:bg-gray-400'
-                                }`}
-                            />
-                        ))}
-                    </div>
+                </AnimatePresence>
+
+                {lockOpen ? (
+                    <LockModal
+                        open={lockOpen}
+                        onUnlock={() => setLockOpen(false)}
+                        canClose={true}
+                        message="Please connect your wallet to preview the charity."
+                    />
+                ) : loading ? (
+                    <LoadingModal open={loading} onOpenChange={setLoading} />
+                ) : (
+                    <>
+                        <div className="relative px-20 pt-48 pb-12 z-10">
+                            <div className="flex justify-between items-center">
+                                <ProjectHeader 
+                                    projectDetail={{
+                                        id: params.charity_id as string || 'preview',
+                                        name: projectName,
+                                        shortDescription: shortDescription,
+                                        longDescription: longDescription,
+                                        logo: logo || undefined,
+                                        images: images,
+                                        startDate: startDate,
+                                        endDate: endDate,
+                                        facebook: socialLinks.facebook || undefined,
+                                        x: socialLinks.twitter || undefined,
+                                        instagram: socialLinks.instagram || undefined,
+                                        website: socialLinks.website || undefined,
+                                        type: 'charity',
+                                        status: 'upcoming',
+                                        charity_token_symbol: selectedToken || undefined,
+                                        evidence: historyEvidence,
+                                        repre_name: representativeName || undefined,
+                                        repre_phone: phoneNumber || undefined,
+                                        repre_faceid: faceId || undefined,
+                                        totalDonationAmount: charity?.totalDonationAmount || 0,
+                                        donations: charity?.donations || []
+                                    }} 
+                                />
+                                <CountdownTimer
+                                    endTime={endDate}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex items-start justify-center gap-12">
+                            <div className="w-10/12">
+                                <ThumbNailCarousel
+                                    projectImages={images.map(img => ({
+                                        src: img,
+                                        alt: projectName,
+                                        description: projectName
+                                    }))}
+                                    fullWidthBackground={false}
+                                    onImageChange={handleImageChange}
+                                />
+                                <div className="mb-28 mt-10 flex flex-col gap-5 h-auto w-full rounded-xl glass-component-1 p-8 pb-16">
+                                    <span className="text-[45px] font-bold">Description</span>
+                                    <span>{longDescription}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start justify-center gap-9">
+                            <div className="w-6/12">
+                                <div className="h-[500px]">
+                                    <HistoryEvidence
+                                        images={Array.isArray(historyEvidence) 
+                                            ? historyEvidence
+                                                .filter(Boolean)
+                                                .map((img, index) => ({
+                                                    src: img,
+                                                    alt: `Charity evidence ${index + 1}`
+                                                }))
+                                            : []}
+                                    />
+                                </div>
+                                <AddressInfo
+                                    fields={[
+                                        {
+                                            label: 'Representative Name',
+                                            value: representativeName,
+                                        },
+                                        {
+                                            label: 'Phone',
+                                            value: phoneNumber,
+                                        },
+                                        {
+                                            label: 'Status',
+                                            value: status,
+                                        },
+                                    ]}
+                                />
+                            </div>
+                            <div className="w-4/12 h-fit top-12 flex flex-col">
+                                <div className="h-[500px] flex flex-col gap-5 w-full">
+                                    <DonateArea enabled={false} />
+                                </div>
+                                <AddressInfo
+                                    fields={[
+                                        {
+                                            label: 'Total charity raised',
+                                            value: charity?.totalDonationAmount?.toString() || '0',
+                                        },
+                                        {
+                                            label: 'Total donors',
+                                            value: charity?.donations?.length.toString() || '0',
+                                        },
+                                        {
+                                            label: 'Token Symbol',
+                                            value: selectedToken || 'Not set',
+                                        },
+                                    ]}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex justify-center gap-4 mt-8">
+                            <Button
+                                onClick={handleEdit}
+                                className="glass-component-3 px-8 py-3 rounded-xl text-white hover:bg-opacity-80 transition-all duration-300"
+                            >
+                                Edit Information
+                            </Button>
+                            <Button
+                                onClick={handleSubmit}
+                                className="glass-component-3 px-8 py-3 rounded-xl text-white hover:bg-opacity-80 transition-all duration-300"
+                            >
+                                Submit Charity
+                            </Button>
+                        </div>
+                    </>
                 )}
+
+                <ErrorModal
+                    open={errorModalOpen}
+                    onOpenChange={setErrorModalOpen}
+                    errorCode={errorCode}
+                    errorMessage={errorMessage}
+                    onRetry={() => {
+                        setErrorModalOpen(false)
+                        handleSubmit()
+                    }}
+                />
             </div>
-
-            {/* Project Details */}
-            <div className="w-full max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 z-20">
-                {/* Left Column */}
-                <div className="space-y-6">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="glass-component-2 p-6 rounded-xl"
-                    >
-                        <h3 className="text-xl font-bold text-white mb-4">About</h3>
-                        <p className="text-gray-300 whitespace-pre-wrap">{longDescription}</p>
-                    </motion.div>
-
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="glass-component-2 p-6 rounded-xl"
-                    >
-                        <h3 className="text-xl font-bold text-white mb-4">Contact Information</h3>
-                        <div className="space-y-2">
-                            <p className="text-gray-300">
-                                <span className="font-semibold">Representative:</span> {representativeName}
-                            </p>
-                            <p className="text-gray-300">
-                                <span className="font-semibold">Phone:</span> {phoneNumber}
-                            </p>
-                        </div>
-                    </motion.div>
-                </div>
-
-                {/* Right Column */}
-                <div className="space-y-6">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
-                        className="glass-component-2 p-6 rounded-xl"
-                    >
-                        <h3 className="text-xl font-bold text-white mb-4">Verification Documents</h3>
-                        <div className="grid grid-cols-2 gap-4">
-                            {licenseAndCertification && (
-                                <div className="relative h-32 rounded-lg overflow-hidden">
-                                    <Image
-                                        src={licenseAndCertification}
-                                        alt="License & Certification"
-                                        fill
-                                        className="object-cover"
-                                    />
-                                </div>
-                            )}
-                            {historyEvidence && (
-                                <div className="relative h-32 rounded-lg overflow-hidden">
-                                    <Image
-                                        src={historyEvidence}
-                                        alt="History Evidence"
-                                        fill
-                                        className="object-cover"
-                                    />
-                                </div>
-                            )}
-                            {personalId && (
-                                <div className="relative h-32 rounded-lg overflow-hidden">
-                                    <Image
-                                        src={personalId}
-                                        alt="Personal ID"
-                                        fill
-                                        className="object-cover"
-                                    />
-                                </div>
-                            )}
-                            {faceId && (
-                                <div className="relative h-32 rounded-lg overflow-hidden">
-                                    <Image
-                                        src={faceId}
-                                        alt="Face ID"
-                                        fill
-                                        className="object-cover"
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    </motion.div>
-
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 }}
-                        className="glass-component-2 p-6 rounded-xl"
-                    >
-                        <h3 className="text-xl font-bold text-white mb-4">Social Links</h3>
-                        <div className="space-y-2">
-                            {socialLinksArray.map(({ platform, url }) => (
-                                <a
-                                    key={platform}
-                                    href={url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="block text-blue-400 hover:text-blue-300 transition-colors"
-                                >
-                                    {platform.charAt(0).toUpperCase() + platform.slice(1)}
-                                </a>
-                            ))}
-                        </div>
-                    </motion.div>
-                </div>
-            </div>
-
-            {/* Submit Button */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-                className="mt-8 z-20"
-            >
-                <Button
-                    onClick={() => router.push('/charity/create-charity')}
-                    className="glass-component-3 px-8 py-3 rounded-xl text-white hover:bg-opacity-80 transition-all duration-300"
-                >
-                    Edit Information
-                </Button>
-            </motion.div>
-        </div>
+        </Modal>
     )
 }
 

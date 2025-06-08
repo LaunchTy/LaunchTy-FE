@@ -3,7 +3,7 @@ import AnimatedBlobs from '@/components/UI/background/AnimatedBlobs'
 import Button from '@/components/UI/button/Button'
 import Stepper, { Step } from '@/components/UI/shared/Stepper'
 import SplitText from '@/components/UI/text-effect/SplitText'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Folder from '@/components/UI/shared/Folder'
@@ -11,6 +11,9 @@ import { useCharityStore } from '@/store/charity/CreateCharityStore'
 import ImageManager from '@/components/UI/shared/ImageManager'
 import { useRouter } from 'next/navigation'
 import { useAccount } from 'wagmi'
+import ErrorModal from '@/components/UI/modal/ErrorModal'
+import LoadingModal from '@/components/UI/modal/LoadingModal'
+import LockModal from '@/components/UI/modal/LockModal'
 
 interface CreateCharityProps {
 	isEditing?: boolean
@@ -19,6 +22,13 @@ interface CreateCharityProps {
 
 const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 	const router = useRouter()
+	const { address } = useAccount()
+	const [loading, setLoading] = useState(false)
+	const [lockOpen, setLockOpen] = useState(false)
+	const [errorModalOpen, setErrorModalOpen] = useState(false)
+	const [errorMessage, setErrorMessage] = useState('')
+	const [errorCode, setErrorCode] = useState('')
+
 	const {
 		projectName,
 		setProjectName,
@@ -52,9 +62,19 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 		setPersonalId,
 		faceId,
 		setFaceId,
+		startDate,
+		setStartDate,
+		endDate,
+		setEndDate,
 	} = useCharityStore()
-	// const { address: walletAddress } = useAccount()
-	const walletAddress = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" // Test wallet address
+
+	useEffect(() => {
+		if (!address) {
+			setLockOpen(true)
+			return
+		}
+		setLockOpen(false)
+	}, [address])
 
 	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files) {
@@ -73,21 +93,20 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 		}
 	}
 
-	const handleLicenseUpload = async (
-		e: React.ChangeEvent<HTMLInputElement>
-	) => {
+	const handleLicenseUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files && e.target.files[0]) {
 			const base64Image = await convertToBase64(e.target.files[0])
 			setLicenseAndCertification(base64Image)
 		}
 	}
 
-	const handleHistoryUpload = async (
-		e: React.ChangeEvent<HTMLInputElement>
-	) => {
-		if (e.target.files && e.target.files[0]) {
-			const base64Image = await convertToBase64(e.target.files[0])
-			setHistoryEvidence(base64Image)
+	const handleHistoryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		if (e.target.files) {
+			const files = Array.from(e.target.files)
+			const base64Images = await Promise.all(
+				files.map((file) => convertToBase64(file))
+			)
+			setHistoryEvidence([...historyEvidence, ...base64Images])
 		}
 	}
 
@@ -129,791 +148,703 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 
 	const onFinalStepCompleted = async () => {
 		try {
-			if (!walletAddress) {
-				throw new Error('Wallet address is required')
+			if (!address) {
+				setLockOpen(true)
+				return
 			}
 
-			// Validate required fields
-			if (
-				!projectName ||
-				!shortDescription ||
-				!longDescription ||
-				!representativeName ||
-				!phoneNumber
-			) {
-				throw new Error('Please fill in all required fields')
-			}
-
-			// Validate images
-			if (!logo) {
-				throw new Error('Please upload a logo')
-			}
-
-			if (images.length === 0) {
-				throw new Error('Please upload at least one project image')
-			}
-
-			if (!licenseAndCertification) {
-				throw new Error('Please upload license and certification')
-			}
-
-			if (!historyEvidence) {
-				throw new Error('Please upload history evidence')
-			}
-
-			if (!personalId) {
-				throw new Error('Please upload personal ID')
-			}
-
-			if (!faceId) {
-				throw new Error('Please upload face ID')
-			}
+			setLoading(true)
 
 			const charityData = {
 				charity_name: projectName,
 				charity_short_des: shortDescription,
 				charity_long_des: longDescription,
 				charity_token_symbol: selectedToken || '',
+				charity_token_supply: Number(tokenSupply),
 				charity_logo: logo,
 				charity_fb: socialLinks.facebook || '',
 				charity_x: socialLinks.twitter || '',
 				charity_ig: socialLinks.instagram || '',
 				charity_website: socialLinks.website || '',
-				charity_whitepaper: '', // Add whitepaper field to your form if needed
+				charity_whitepaper: '',
 				charity_img: images,
-				charity_start_date: new Date().toISOString(),
-				charity_end_date: new Date().toISOString(),
+				charity_start_date: startDate,
+				charity_end_date: endDate,
 				license_certificate: licenseAndCertification,
-				evidence: [historyEvidence].filter(Boolean),
+				evidence: historyEvidence,
 				repre_name: representativeName,
 				repre_phone: phoneNumber,
 				repre_id: personalId,
 				repre_faceid: faceId,
-				wallet_address: walletAddress,
+				wallet_address: address,
 			}
 
-			console.log('Sending charity data:', charityData);
-			console.log('Required fields check:', {
-				charity_name: !!projectName,
-				charity_short_des: !!shortDescription,
-				charity_long_des: !!longDescription,
-				charity_token_symbol: !!selectedToken,
-				charity_logo: !!logo,
-				charity_start_date: true,
-				charity_end_date: true,
-				repre_name: !!representativeName,
-				repre_phone: !!phoneNumber,
-				repre_faceid: !!faceId,
-				wallet_address: !!walletAddress
-			});
+			const url = isEditing ? `/api/charity/update/${id}` : '/api/charity/create'
+			const method = isEditing ? 'PUT' : 'POST'
 
-			const response = await fetch('/api/charity/create', {
-				method: 'POST',
+			const response = await fetch(url, {
+				method,
 				headers: {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify(charityData),
-			}).catch((error) => {
-				console.error('Network error during fetch:', error)
-				throw new Error('Network error while connecting to server')
 			})
 
-			console.log('Response status:', response.status)
-			console.log(
-				'Response headers:',
-				Object.fromEntries(response.headers.entries())
-			)
-
-			let data
-			try {
-				const text = await response.text()
-				console.log('Raw response text:', text)
-
-				if (!text) {
-					console.error('Empty response received from server')
-					throw new Error('Server returned empty response')
-				}
-
-				try {
-					data = JSON.parse(text)
-					console.log('Parsed response data:', data)
-				} catch (parseError: unknown) {
-					console.error('Error parsing JSON response:', parseError)
-					console.error('Raw response:', text)
-					throw new Error(
-						`Server returned invalid JSON response: ${parseError instanceof Error ? parseError.message : 'Unknown parsing error'}`
-					)
-				}
-			} catch (error) {
-				console.error('Error reading response:', error)
-				throw new Error(
-					`Failed to read server response: ${error instanceof Error ? error.message : 'Unknown error'}`
-				)
-			}
-
 			if (!response.ok) {
-				const errorMessage =
-					data?.error || data?.details || 'Failed to create charity'
-				console.error('Server error:', {
-					status: response.status,
-					statusText: response.statusText,
-					error: errorMessage,
-					data,
-				})
-				throw new Error(errorMessage)
+				const errorData = await response.json()
+				throw new Error(errorData.message || `Failed to ${isEditing ? 'update' : 'create'} charity`)
 			}
+
+			const data = await response.json()
 
 			if (!data.success) {
-				const errorMessage =
-					data?.error || data?.details || 'Failed to create charity'
-				console.error('Server returned error:', {
-					success: data.success,
-					error: errorMessage,
-					data,
-				})
-				throw new Error(errorMessage)
+				throw new Error(data.message || `Failed to ${isEditing ? 'update' : 'create'} charity`)
 			}
-
-			console.log('Charity created successfully:', data)
 
 			if (isEditing) {
-				router.push(`/charity/${id}`)
+				router.push(`/charity/create-charity/preview/${id}`)
 			} else {
-				router.push('/charity/create-charity/preview')
+				router.push(`/charity/create-charity/preview/${data.data.charity_id}`)
 			}
-		} catch (error) {
-			console.error('Error creating charity:', error)
-			alert(error instanceof Error ? error.message : 'Failed to create charity')
+		} catch (error: any) {
+			console.error(`Error ${isEditing ? 'updating' : 'creating'} charity:`, error)
+			setErrorCode(error?.response?.status?.toString() || '500')
+			setErrorMessage(error?.message || `Failed to ${isEditing ? 'update' : 'create'} charity`)
+			setErrorModalOpen(true)
+		} finally {
+			setLoading(false)
 		}
 	}
 
 	return (
-		<div className="relative p-36 flex flex-col justify-center items-center font-exo">
+		<div className="relative min-h-screen w-full flex flex-col justify-center items-center font-exo p-8">
 			<AnimatedBlobs count={4} />
-			{/* --------------------------------------Title & Subtitle----------------------------------------------------- */}
-			<div className=" text-center z-20">
-				<SplitText
-					text="Fill your project ‘s information"
-					className="text-[45px] font-bold text-white"
-					delay={50}
-					animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
-					animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
-					threshold={0.2}
-					rootMargin="-50px"
+			{lockOpen ? (
+				<LockModal
+					open={lockOpen}
+					onUnlock={() => setLockOpen(false)}
+					canClose={true}
+					message="Please connect your wallet to create a charity."
 				/>
-			</div>
-			<div className="mt-[30px] text-center max-w-5xl mx-auto z-20">
-				<SplitText
-					text="Enter detailed information about your project to help potential stakeholders understand your goals, timeline, and requirements. This comprehensive form is designed to gather all necessary details to showcase your project effectively on our platform "
-					className="content-text text-gray-300"
-					delay={10}
-					animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
-					animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
-					threshold={0.2}
-					rootMargin="-50px"
-				/>
-			</div>
-
-			<div
-				className={`mt-14 w-[1200px] h-auto glass-component-3 rounded-2xl p-8 transition-all duration-300 z-20`}
-			>
-				<Step>
-					<div className="">
-						{/* <span className="text-xl   flex justify-start w-full">
-								Select staking token
-							</span> */}
-
-						<motion.div
-							initial={{ opacity: 0, y: 50 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.5 }}
-							className=" flex items-center justify-center flex-col gap-5"
-						>
-							<div className="w-full flex items-center justify-between p-2 gap-3">
-								{/* Chain indicator */}
-
-								<div className="w-full flex flex-col gap-3 relative">
-									<span className=" text-lg">Project Name</span>
-									<input
-										type="text"
-										value={projectName}
-										onChange={(e) => setProjectName(e.target.value)}
-										placeholder="Enter project name"
-										className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
-    															[&::-webkit-inner-spin-button]:appearance-none 
-    															[&::-webkit-outer-spin-button]:appearance-none"
-									/>
-								</div>
-							</div>
-
-							<div className="w-full flex flex-col p-2 gap-3">
-								<span className="text-lg">Short Description</span>
-								<div className="flex gap-5">
-									<textarea
-										id="shortDescription"
-										value={shortDescription}
-										onChange={(e) => setShortDescription(e.target.value)}
-										placeholder="Brief overview of your launchpad (100 words max)"
-										className="p-4  text-white rounded-xl glass-component-2 h-32 resize-none w-full text-sm"
-									/>
-								</div>
-								{/* <div className="text-xs text-gray-400 text-right font-comfortaa">
-										{
-											createProjectStore.shortDescription
-												.trim()
-												.split(/\s+/)
-												.filter(Boolean).length
-										}
-										/100 words
-									</div> */}
-							</div>
-
-							<div className="w-full flex flex-col p-2 gap-3">
-								<span className=" text-lg">Long Description</span>
-								<div className="flex gap-5">
-									<textarea
-										id="longDescription"
-										value={longDescription}
-										onChange={(e) => setLongDescription(e.target.value)}
-										placeholder="Detailed description of your launchpad"
-										className="p-4 rounded-xl glass-component-2 text-white  h-56 resize-none w-full text-sm"
-									/>
-								</div>
-							</div>
-							<div className="w-full flex flex-col p-2 gap-5">
-								<span className=" text-lg">Socials</span>
-								<div className="flex flex-col gap-5">
-									<div className="flex gap-5">
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											width="54"
-											height="54"
-											fill="currentColor"
-											viewBox="0 0 16 16"
-										>
-											<path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm7.5-6.923c-.67.204-1.335.82-1.887 1.855A7.97 7.97 0 0 0 5.145 4H7.5V1.077zM4.09 4a9.267 9.267 0 0 1 .64-1.539 6.7 6.7 0 0 1 .597-.933A7.025 7.025 0 0 0 2.255 4H4.09zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a6.958 6.958 0 0 0-.656 2.5h2.49zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5H4.847zM8.5 5v2.5h2.99a12.495 12.495 0 0 0-.337-2.5H8.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5H4.51zm3.99 0V11h2.653c.187-.765.306-1.615.338-2.5H8.5zM5.145 12c.138.386.295.744.47 1.068.552 1.035 1.218 1.65 1.887 1.855V12H5.145zm.182 2.472a6.696 6.696 0 0 1-.597-.933A9.268 9.268 0 0 1 4.09 12H2.255a7.024 7.024 0 0 0 3.072 2.472zM3.82 11a13.652 13.652 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5H3.82zm6.853 3.472A7.024 7.024 0 0 0 13.745 12H11.91a9.27 9.27 0 0 1-.64 1.539 6.688 6.688 0 0 1-.597.933zM8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855.173-.324.33-.682.468-1.068H8.5zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.65 13.65 0 0 1-.312 2.5zm2.802-3.5a6.959 6.959 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5h2.49zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7.024 7.024 0 0 0-3.072-2.472c.218.284.418.598.597.933zM10.855 4a7.966 7.966 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4h2.355z" />
-										</svg>
-										<input
-											type="text"
-											value={socialLinks.website}
-											onChange={(e) => setSocialLink('website', e.target.value)}
-											placeholder="Enter your website here"
-											className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
-    															[&::-webkit-inner-spin-button]:appearance-none 
-    															[&::-webkit-outer-spin-button]:appearance-none"
-										/>
-									</div>
-								</div>
-								<div className="flex flex-col gap-5">
-									<div className="flex gap-5">
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											width="54"
-											height="54"
-											fill="currentColor"
-											viewBox="0 0 16 16"
-										>
-											<path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.287 5.906c-.778.324-2.334.994-4.666 2.01-.378.15-.577.298-.595.442-.03.243.275.339.69.47l.175.055c.408.133.958.288 1.243.294.26.006.549-.1.868-.32 2.179-1.471 3.304-2.214 3.374-2.23.05-.012.12-.026.166.016.047.041.042.12.037.141-.03.129-1.227 1.241-1.846 1.817-.193.18-.33.307-.358.336a8.154 8.154 0 0 1-.188.186c-.38.366-.664.64.015 1.088.327.216.589.393.85.571.284.194.568.387.936.629.093.06.183.125.27.187.331.236.63.448.997.414.214-.02.435-.22.547-.82.265-1.417.786-4.486.906-5.751a1.426 1.426 0 0 0-.013-.315.337.337 0 0 0-.114-.217.526.526 0 0 0-.31-.093c-.3.005-.763.166-2.984 1.09z" />
-										</svg>
-										<input
-											type="text"
-											value={socialLinks.telegram}
-											onChange={(e) =>
-												setSocialLink('telegram', e.target.value)
-											}
-											placeholder="Enter your telegram here"
-											className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
-    															[&::-webkit-inner-spin-button]:appearance-none 
-    															[&::-webkit-outer-spin-button]:appearance-none"
-										/>
-									</div>
-								</div>
-								<div className="flex flex-col gap-5">
-									<div className="flex gap-5">
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											width="54"
-											height="54"
-											fill="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path d="M13.6823 10.6218L20.2391 3H18.6854L12.9921 9.61788L8.44486 3H3.2002L10.0765 13.0074L3.2002 21H4.75404L10.7663 14.0113L15.5685 21H20.8131L13.6819 10.6218H13.6823ZM11.5541 13.0956L10.8574 12.0991L5.31391 4.16971H7.70053L12.1742 10.5689L12.8709 11.5655L18.6861 19.8835H16.2995L11.5541 13.096V13.0956Z" />
-										</svg>
-										<input
-											type="text"
-											value={socialLinks.twitter}
-											onChange={(e) => setSocialLink('twitter', e.target.value)}
-											placeholder="Enter your twitter here"
-											className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
-    															[&::-webkit-inner-spin-button]:appearance-none 
-    															[&::-webkit-outer-spin-button]:appearance-none"
-										/>
-									</div>
-								</div>
-								<div className="flex flex-col gap-5">
-									<div className="flex gap-5">
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											width="54"
-											height="54"
-											fill="currentColor"
-											viewBox="0 0 16 16"
-										>
-											<path d="M13.545 2.907a13.227 13.227 0 0 0-3.257-1.011.05.05 0 0 0-.052.025c-.141.25-.297.577-.406.833a12.19 12.19 0 0 0-3.658 0 8.258 8.258 0 0 0-.412-.833.051.051 0 0 0-.052-.025c-1.125.194-2.22.534-3.257 1.011a.041.041 0 0 0-.021.018C.356 6.024-.213 9.047.066 12.032c.001.014.01.028.021.037a13.276 13.276 0 0 0 3.995 2.02.05.05 0 0 0 .056-.019c.308-.42.582-.863.818-1.329a.05.05 0 0 0-.01-.059.051.051 0 0 0-.018-.011 8.875 8.875 0 0 1-1.248-.595.05.05 0 0 1-.02-.066.051.051 0 0 1 .015-.019c.084-.063.168-.129.248-.195a.05.05 0 0 1 .051-.007c2.619 1.196 5.454 1.196 8.041 0a.052.052 0 0 1 .053.007c.08.066.164.132.248.195a.051.051 0 0 1-.004.085 8.254 8.254 0 0 1-1.249.594.05.05 0 0 0-.03.03.052.052 0 0 0 .003.041c.24.465.515.909.817 1.329a.05.05 0 0 0 .056.019 13.235 13.235 0 0 0 4.001-2.02.049.049 0 0 0 .021-.037c.334-3.451-.559-6.449-2.366-9.106a.034.034 0 0 0-.02-.019Zm-8.198 7.307c-.789 0-1.438-.724-1.438-1.612 0-.889.637-1.613 1.438-1.613.807 0 1.45.73 1.438 1.613 0 .888-.637 1.612-1.438 1.612Zm5.316 0c-.788 0-1.438-.724-1.438-1.612 0-.889.637-1.613 1.438-1.613.807 0 1.451.73 1.438 1.613 0 .888-.631 1.612-1.438 1.612Z" />
-										</svg>
-										<input
-											type="text"
-											value={socialLinks.discord}
-											onChange={(e) => setSocialLink('discord', e.target.value)}
-											placeholder="Enter your discord here"
-											className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
-    															[&::-webkit-inner-spin-button]:appearance-none 
-    															[&::-webkit-outer-spin-button]:appearance-none"
-										/>
-									</div>
-								</div>
-								<div className="flex flex-col gap-5">
-									<div className="flex gap-5">
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											width="54"
-											height="54"
-											fill="currentColor"
-											viewBox="0 0 16 16"
-										>
-											<path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
-										</svg>
-										<input
-											type="text"
-											value={socialLinks.github}
-											onChange={(e) => setSocialLink('github', e.target.value)}
-											placeholder="Enter your github here"
-											className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
-    															[&::-webkit-inner-spin-button]:appearance-none 
-    															[&::-webkit-outer-spin-button]:appearance-none"
-										/>
-									</div>
-								</div>
-							</div>
-							<div className="w-full flex items-center justify-between p-2 gap-3">
-								{/* Chain indicator */}
-
-								<div className="w-full flex flex-col gap-3 relative">
-									<span className=" text-lg">Whitepaper</span>
-									<input
-										type="text"
-										value={projectName}
-										onChange={(e) => setProjectName(e.target.value)}
-										placeholder="Enter your whitepaper link here"
-										className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
-    															[&::-webkit-inner-spin-button]:appearance-none 
-    															[&::-webkit-outer-spin-button]:appearance-none"
-									/>
-								</div>
-							</div>
-							<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
-								{/* Project Images Upload */}
-								<div className="w-full flex flex-col gap-3 p-2">
-									<span className="text-lg">Images</span>
-									<div className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible">
-										<input
-											type="file"
-											id="projectImageUpload"
-											accept="image/*"
-											multiple
-											onChange={handleImageUpload}
-											className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-										/>
-										<Folder
-											color="#00d8ff"
-											size={0.8}
-											items={images.map((image: string, index: number) => (
-												<div
-													key={`folder-image-${index}`}
-													className="w-full h-full flex items-center justify-center"
-												>
-													<Image
-														key={`image-${index}`}
-														src={image}
-														alt={`Image ${index + 1}`}
-														width={512}
-														height={512}
-														className="max-w-full max-h-full object-contain rounded"
-													/>
-												</div>
-											))}
-											maxItems={3}
-										/>
-									</div>
-									{/* Preview and Delete Options */}
-									{/* <div className="flex gap-2 flex-wrap mt-4">
-												{images.map((image, index) => (
-													<div key={index} className="relative w-20 h-20">
-														<Image
-															src={image}
-															alt={`Preview ${index}`}
-															width={80}
-															height={80}
-															className="object-cover rounded"
-														/>
-														<button
-															onClick={() => handleImageDelete(index)}
-															className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
-														>
-															X
-														</button>
-													</div>
-												))}
-											</div> */}
-								</div>
-
-								{/* Project Logo Upload */}
-								<div className="w-full flex flex-col gap-3 p-2">
-									<span className="text-lg">Logo</span>
-									<div className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible">
-										<input
-											type="file"
-											id="projectLogoUpload"
-											accept="image/*"
-											onChange={handleLogoUpload}
-											className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-										/>
-										<Folder
-											color="#00d8ff"
-											size={0.8}
-											items={
-												logo
-													? [
-															<div
-																key={'image-${index}'}
-																className="w-full h-full flex items-center justify-center"
-															>
-																<Image
-																	src={logo}
-																	alt="Logo"
-																	width={512}
-																	height={512}
-																	className="max-w-full max-h-full object-contain rounded"
-																/>
-															</div>,
-														]
-													: []
-											}
-											maxItems={1}
-										/>
-									</div>
-								</div>
-								<div className="w-full flex flex-col gap-3 p-2">
-									<span className="text-lg">Liscense & Certification</span>
-									<div className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible">
-										<input
-											type="file"
-											id="projectLogoUpload"
-											accept="image/*"
-											onChange={handleLicenseUpload}
-											className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-										/>
-										<Folder
-											color="#00d8ff"
-											size={0.8}
-											items={
-												logo
-													? [
-															<div
-																key={'image-${index}'}
-																className="w-full h-full flex items-center justify-center"
-															>
-																<Image
-																	src={logo}
-																	alt="Logo"
-																	width={512}
-																	height={512}
-																	className="max-w-full max-h-full object-contain rounded"
-																/>
-															</div>,
-														]
-													: []
-											}
-											maxItems={1}
-										/>
-									</div>
-								</div>
-								<div className="w-full flex flex-col gap-3 p-2">
-									<span className="text-lg">History Evidence</span>
-									<div className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible">
-										<input
-											type="file"
-											id="projectLogoUpload"
-											accept="image/*"
-											onChange={handleHistoryUpload}
-											className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-										/>
-										<Folder
-											color="#00d8ff"
-											size={0.8}
-											items={
-												logo
-													? [
-															<div
-																key={'image-${index}'}
-																className="w-full h-full flex items-center justify-center"
-															>
-																<Image
-																	src={logo}
-																	alt="Logo"
-																	width={512}
-																	height={512}
-																	className="max-w-full max-h-full object-contain rounded"
-																/>
-															</div>,
-														]
-													: []
-											}
-											maxItems={1}
-										/>
-									</div>
-								</div>
-							</div>
-							<div className="w-full flex items-center justify-between p-2 gap-3">
-								{/* Chain indicator */}
-
-								<div className="w-full flex flex-col gap-3 relative">
-									<span className=" text-lg">Representative Name</span>
-									<input
-										type="text"
-										value={representativeName}
-										onChange={(e) => setRepresentativeName(e.target.value)}
-										placeholder="Enter Representative name"
-										className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
-    															[&::-webkit-inner-spin-button]:appearance-none 
-    															[&::-webkit-outer-spin-button]:appearance-none"
-									/>
-								</div>
-							</div>
-							<div className="w-full flex items-center justify-between p-2 gap-3">
-								{/* Chain indicator */}
-
-								<div className="w-full flex flex-col gap-3 relative">
-									<span className=" text-lg">Phone Number</span>
-									<input
-										type="text"
-										value={phoneNumber}
-										onChange={(e) => setPhoneNumber(e.target.value)}
-										placeholder="Enter phone number"
-										className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
-    															[&::-webkit-inner-spin-button]:appearance-none 
-    															[&::-webkit-outer-spin-button]:appearance-none"
-									/>
-								</div>
-							</div>
-							<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
-								{/* Project Images Upload */}
-								<div className="w-full flex flex-col gap-3 p-2">
-									<span className="text-lg">Personal ID or Passport</span>
-									<div className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible">
-										<input
-											type="file"
-											id="projectImageUpload"
-											accept="image/*"
-											multiple
-											onChange={handlePersonalIdUpload}
-											className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-										/>
-										<Folder
-											color="#00d8ff"
-											size={0.8}
-											items={images.map((image: string, index: number) => (
-												<div
-													key={`folder-image-${index}`}
-													className="w-full h-full flex items-center justify-center"
-												>
-													<Image
-														key={`image-${index}`}
-														src={image}
-														alt={`Image ${index + 1}`}
-														width={512}
-														height={512}
-														className="max-w-full max-h-full object-contain rounded"
-													/>
-												</div>
-											))}
-											maxItems={3}
-										/>
-									</div>
-									{/* Preview and Delete Options */}
-									{/* <div className="flex gap-2 flex-wrap mt-4">
-												{images.map((image, index) => (
-													<div key={index} className="relative w-20 h-20">
-														<Image
-															src={image}
-															alt={`Preview ${index}`}
-															width={80}
-															height={80}
-															className="object-cover rounded"
-														/>
-														<button
-															onClick={() => handleImageDelete(index)}
-															className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
-														>
-															X
-														</button>
-													</div>
-												))}
-											</div> */}
-								</div>
-
-								{/* Project Logo Upload */}
-								<div className="w-full flex flex-col gap-3 p-2">
-									<span className="text-lg">Face ID</span>
-									<div className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible">
-										<input
-											type="file"
-											id="projectLogoUpload"
-											accept="image/*"
-											onChange={handleFaceIdUpload}
-											className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-										/>
-										<Folder
-											color="#00d8ff"
-											size={0.8}
-											items={
-												logo
-													? [
-															<div
-																key={'image-${index}'}
-																className="w-full h-full flex items-center justify-center"
-															>
-																<Image
-																	src={logo}
-																	alt="Logo"
-																	width={512}
-																	height={512}
-																	className="max-w-full max-h-full object-contain rounded"
-																/>
-															</div>,
-														]
-													: []
-											}
-											maxItems={1}
-										/>
-									</div>
-								</div>
-							</div>
-							<div className="w-full ">
-								<ImageManager
-									images={[
-										...images.map((base64: string, index: number) => ({
-											id: `project-${index}`,
-											base64,
-											name: `Project Image ${index + 1}`,
-											type: 'project',
-										})),
-										...(licenseAndCertification
-											? [
-													{
-														id: 'license',
-														base64: licenseAndCertification,
-														name: 'License & Certification',
-														type: 'license',
-													},
-												]
-											: []),
-										...(historyEvidence
-											? [
-													{
-														id: 'history',
-														base64: historyEvidence,
-														name: 'History Evidence',
-														type: 'history',
-													},
-												]
-											: []),
-										...(personalId
-											? [
-													{
-														id: 'personalId',
-														base64: personalId,
-														name: 'Personal ID',
-														type: 'personalId',
-													},
-												]
-											: []),
-										...(faceId
-											? [
-													{
-														id: 'faceId',
-														base64: faceId,
-														name: 'Face ID',
-														type: 'faceId',
-													},
-												]
-											: []),
-									]}
-									logo={
-										logo
-											? {
-													base64: logo,
-													name: 'Project Logo',
-												}
-											: null
-									}
-									onDeleteImage={(id) => {
-										const [type, index] = id.split('-')
-										if (type === 'project') {
-											removeImage(parseInt(index))
-										} else if (type === 'license') {
-											setLicenseAndCertification(null)
-										} else if (type === 'history') {
-											setHistoryEvidence(null)
-										} else if (type === 'personalId') {
-											setPersonalId(null)
-										} else if (type === 'faceId') {
-											setFaceId(null)
-										}
-									}}
-									onDeleteLogo={handleLogoDelete}
-									title="Manage Project Media"
-									buttonText="Manage Uploaded Images"
-									emptyText="No images uploaded yet"
-									showLogoTab={true}
-									tabs={[
-										{
-											id: 'project',
-											label: 'Project Images',
-										},
-										{
-											id: 'license',
-											label: 'License & Certification',
-										},
-										{
-											id: 'history',
-											label: 'History Evidence',
-										},
-										{
-											id: 'personalId',
-											label: 'Personal ID',
-										},
-										{
-											id: 'faceId',
-											label: 'Face ID',
-										},
-									]}
-									defaultTab="project"
-								/>
-							</div>
-							<div className="w-full flex justify-center mt-8">
-								<Button
-									onClick={onFinalStepCompleted}
-									className="glass-component-3 rounded-xl px-8 py-3 text-lg font-semibold hover:bg-opacity-80 transition-all duration-300"
-								>
-									{isEditing ? 'Update Charity' : 'Create Charity'}
-								</Button>
-							</div>
-						</motion.div>
+			) : loading ? (
+				<LoadingModal open={loading} onOpenChange={setLoading} />
+			) : (
+				<div className="w-full max-w-[1300px] mx-auto mt-32">
+					<div className="text-center z-20">
+						<SplitText
+							text="Fill your project's information"
+							className="text-[45px] font-bold text-white"
+							delay={50}
+							animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
+							animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
+							threshold={0.2}
+							rootMargin="-50px"
+						/>
 					</div>
-				</Step>
-				{/* </Stepper> */}
-			</div>
+					<div className="mt-[30px] text-center max-w-5xl mx-auto z-20">
+						<SplitText
+							text="Enter detailed information about your project to help potential stakeholders understand your goals, timeline, and requirements. This comprehensive form is designed to gather all necessary details to showcase your project effectively on our platform"
+							className="content-text text-gray-300"
+							delay={10}
+							animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
+							animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
+							threshold={0.2}
+							rootMargin="-50px"
+						/>
+					</div>
+
+					<div className="mt-14 w-full h-auto glass-component-3 rounded-2xl p-8 transition-all duration-300 z-20">
+						<Step>
+							<div className="">
+								{/* <span className="text-xl   flex justify-start w-full">
+										Select staking token
+									</span> */}
+
+								<motion.div
+									initial={{ opacity: 0, y: 50 }}
+									animate={{ opacity: 1, y: 0 }}
+									transition={{ duration: 0.5 }}
+									className=" flex items-center justify-center flex-col gap-5"
+								>
+									<div className="w-full flex items-center justify-between p-2 gap-3">
+										{/* Chain indicator */}
+
+										<div className="w-full flex flex-col gap-3 relative">
+											<span className=" text-lg">Project Name</span>
+											<input
+												type="text"
+												value={projectName}
+												onChange={(e) => setProjectName(e.target.value)}
+												placeholder="Enter project name"
+												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+    															[&::-webkit-inner-spin-button]:appearance-none 
+    															[&::-webkit-outer-spin-button]:appearance-none"
+											/>
+										</div>
+									</div>
+
+									<div className="w-full flex flex-col p-2 gap-3">
+										<span className="text-lg">Short Description</span>
+										<div className="flex gap-5">
+											<textarea
+												id="shortDescription"
+												value={shortDescription}
+												onChange={(e) => setShortDescription(e.target.value)}
+												placeholder="Brief overview of your launchpad (100 words max)"
+												className="p-4  text-white rounded-xl glass-component-2 h-32 resize-none w-full text-sm"
+											/>
+										</div>
+										{/* <div className="text-xs text-gray-400 text-right font-comfortaa">
+												{
+													createProjectStore.shortDescription
+														.trim()
+														.split(/\s+/)
+														.filter(Boolean).length
+												}
+												/100 words
+											</div> */}
+									</div>
+
+									<div className="w-full flex flex-col p-2 gap-3">
+										<span className=" text-lg">Long Description</span>
+										<div className="flex gap-5">
+											<textarea
+												id="longDescription"
+												value={longDescription}
+												onChange={(e) => setLongDescription(e.target.value)}
+												placeholder="Detailed description of your launchpad"
+												className="p-4 rounded-xl glass-component-2 text-white  h-56 resize-none w-full text-sm"
+											/>
+										</div>
+									</div>
+									<div className="w-full flex flex-col p-2 gap-5">
+										<span className=" text-lg">Socials</span>
+										<div className="flex flex-col gap-5">
+											<div className="flex gap-5">
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													width="54"
+													height="54"
+													fill="currentColor"
+													viewBox="0 0 16 16"
+												>
+													<path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm7.5-6.923c-.67.204-1.335.82-1.887 1.855A7.97 7.97 0 0 0 5.145 4H7.5V1.077zM4.09 4a9.267 9.267 0 0 1 .64-1.539 6.7 6.7 0 0 1 .597-.933A7.025 7.025 0 0 0 2.255 4H4.09zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a6.958 6.958 0 0 0-.656 2.5h2.49zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5H4.847zM8.5 5v2.5h2.99a12.495 12.495 0 0 0-.337-2.5H8.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5H4.51zm3.99 0V11h2.653c.187-.765.306-1.615.338-2.5H8.5zM5.145 12c.138.386.295.744.47 1.068.552 1.035 1.218 1.65 1.887 1.855V12H5.145zm.182 2.472a6.696 6.696 0 0 1-.597-.933A9.268 9.268 0 0 1 4.09 12H2.255a7.024 7.024 0 0 0 3.072 2.472zM3.82 11a13.652 13.652 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5H3.82zm6.853 3.472A7.024 7.024 0 0 0 13.745 12H11.91a9.27 9.27 0 0 1-.64 1.539 6.688 6.688 0 0 1-.597.933zM8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855.173-.324.33-.682.468-1.068H8.5zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.65 13.65 0 0 1-.312 2.5zm2.802-3.5a6.959 6.959 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5h2.49zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7.024 7.024 0 0 0-3.072-2.472c.218.284.418.598.597.933zM10.855 4a7.966 7.966 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4h2.355z" />
+												</svg>
+												<input
+													type="text"
+													value={socialLinks.website}
+													onChange={(e) => setSocialLink('website', e.target.value)}
+													placeholder="Enter your website here"
+													className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+    															[&::-webkit-inner-spin-button]:appearance-none 
+    															[&::-webkit-outer-spin-button]:appearance-none"
+												/>
+											</div>
+										</div>
+										<div className="flex flex-col gap-5">
+											<div className="flex gap-5">
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													width="54"
+													height="54"
+													fill="currentColor"
+													viewBox="0 0 16 16"
+												>
+													<path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.287 5.906c-.778.324-2.334.994-4.666 2.01-.378.15-.577.298-.595.442-.03.243.275.339.69.47l.175.055c.408.133.958.288 1.243.294.26.006.549-.1.868-.32 2.179-1.471 3.304-2.214 3.374-2.23.05-.012.12-.026.166.016.047.041.042.12.037.141-.03.129-1.227 1.241-1.846 1.817-.193.18-.33.307-.358.336a8.154 8.154 0 0 1-.188.186c-.38.366-.664.64.015 1.088.327.216.589.393.85.571.284.194.568.387.936.629.093.06.183.125.27.187.331.236.63.448.997.414.214-.02.435-.22.547-.82.265-1.417.786-4.486.906-5.751a1.426 1.426 0 0 0-.013-.315.337.337 0 0 0-.114-.217.526.526 0 0 0-.31-.093c-.3.005-.763.166-2.984 1.09z" />
+												</svg>
+												<input
+													type="text"
+													value={socialLinks.telegram}
+													onChange={(e) =>
+														setSocialLink('telegram', e.target.value)
+													}
+													placeholder="Enter your telegram here"
+													className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+    															[&::-webkit-inner-spin-button]:appearance-none 
+    															[&::-webkit-outer-spin-button]:appearance-none"
+												/>
+											</div>
+										</div>
+										<div className="flex flex-col gap-5">
+											<div className="flex gap-5">
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													width="54"
+													height="54"
+													fill="currentColor"
+													viewBox="0 0 24 24"
+												>
+													<path d="M13.6823 10.6218L20.2391 3H18.6854L12.9921 9.61788L8.44486 3H3.2002L10.0765 13.0074L3.2002 21H4.75404L10.7663 14.0113L15.5685 21H20.8131L13.6819 10.6218H13.6823ZM11.5541 13.0956L10.8574 12.0991L5.31391 4.16971H7.70053L12.1742 10.5689L12.8709 11.5655L18.6861 19.8835H16.2995L11.5541 13.096V13.0956Z" />
+												</svg>
+												<input
+													type="text"
+													value={socialLinks.twitter}
+													onChange={(e) => setSocialLink('twitter', e.target.value)}
+													placeholder="Enter your twitter here"
+													className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+    															[&::-webkit-inner-spin-button]:appearance-none 
+    															[&::-webkit-outer-spin-button]:appearance-none"
+												/>
+											</div>
+										</div>
+										<div className="flex flex-col gap-5">
+											<div className="flex gap-5">
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													width="54"
+													height="54"
+													fill="currentColor"
+													viewBox="0 0 16 16"
+												>
+													<path d="M13.545 2.907a13.227 13.227 0 0 0-3.257-1.011.05.05 0 0 0-.052.025c-.141.25-.297.577-.406.833a12.19 12.19 0 0 0-3.658 0 8.258 8.258 0 0 0-.412-.833.051.051 0 0 0-.052-.025c-1.125.194-2.22.534-3.257 1.011a.041.041 0 0 0-.021.018C.356 6.024-.213 9.047.066 12.032c.001.014.01.028.021.037a13.276 13.276 0 0 0 3.995 2.02.05.05 0 0 0 .056-.019c.308-.42.582-.863.818-1.329a.05.05 0 0 0-.01-.059.051.051 0 0 0-.018-.011 8.875 8.875 0 0 1-1.248-.595.05.05 0 0 1-.02-.066.051.051 0 0 1 .015-.019c.084-.063.168-.129.248-.195a.05.05 0 0 1 .051-.007c2.619 1.196 5.454 1.196 8.041 0a.052.052 0 0 1 .053.007c.08.066.164.132.248.195a.051.051 0 0 1-.004.085 8.254 8.254 0 0 1-1.249.594.05.05 0 0 0-.03.03.052.052 0 0 0 .003.041c.24.465.515.909.817 1.329a.05.05 0 0 0 .056.019 13.235 13.235 0 0 0 4.001-2.02.049.049 0 0 0 .021-.037c.334-3.451-.559-6.449-2.366-9.106a.034.034 0 0 0-.02-.019Zm-8.198 7.307c-.789 0-1.438-.724-1.438-1.612 0-.889.637-1.613 1.438-1.613.807 0 1.45.73 1.438 1.613 0 .888-.637 1.612-1.438 1.612Zm5.316 0c-.788 0-1.438-.724-1.438-1.612 0-.889.637-1.613 1.438-1.613.807 0 1.451.73 1.438 1.613 0 .888-.631 1.612-1.438 1.612Z" />
+												</svg>
+												<input
+													type="text"
+													value={socialLinks.discord}
+													onChange={(e) => setSocialLink('discord', e.target.value)}
+													placeholder="Enter your discord here"
+													className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+    															[&::-webkit-inner-spin-button]:appearance-none 
+    															[&::-webkit-outer-spin-button]:appearance-none"
+												/>
+											</div>
+										</div>
+										<div className="flex flex-col gap-5">
+											<div className="flex gap-5">
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													width="54"
+													height="54"
+													fill="currentColor"
+													viewBox="0 0 16 16"
+												>
+													<path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
+												</svg>
+												<input
+													type="text"
+													value={socialLinks.github}
+													onChange={(e) => setSocialLink('github', e.target.value)}
+													placeholder="Enter your github here"
+													className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+    															[&::-webkit-inner-spin-button]:appearance-none 
+    															[&::-webkit-outer-spin-button]:appearance-none"
+												/>
+											</div>
+										</div>
+									</div>
+									<div className="w-full flex items-center justify-between p-2 gap-3">
+										<div className="w-full flex flex-col gap-3 relative">
+											<span className="text-lg">Start Date</span>
+											<input
+												type="datetime-local"
+												value={startDate}
+												onChange={(e) => setStartDate(e.target.value)}
+												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+    															[&::-webkit-inner-spin-button]:appearance-none 
+    															[&::-webkit-outer-spin-button]:appearance-none"
+											/>
+										</div>
+									</div>
+
+									<div className="w-full flex items-center justify-between p-2 gap-3">
+										<div className="w-full flex flex-col gap-3 relative">
+											<span className="text-lg">End Date</span>
+											<input
+												type="datetime-local"
+												value={endDate}
+												onChange={(e) => setEndDate(e.target.value)}
+												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+    															[&::-webkit-inner-spin-button]:appearance-none 
+    															[&::-webkit-outer-spin-button]:appearance-none"
+											/>
+										</div>
+									</div>
+
+									<div className="w-full flex items-center justify-between p-2 gap-3">
+										<div className="w-full flex flex-col gap-3 relative">
+											<span className="text-lg">Token</span>
+											<select
+												value={selectedToken}
+												onChange={(e) => setSelectedToken(e.target.value)}
+												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none"
+											>
+												<option value="">Select a token</option>
+												<option value="USDT">USDT</option>
+												<option value="USDC">USDC</option>
+												<option value="ETH">ETH</option>
+												<option value="BNB">BNB</option>
+											</select>
+										</div>
+									</div>
+
+									<div className="w-full flex items-center justify-between p-2 gap-3">
+										<div className="w-full flex flex-col gap-3 relative">
+											<span className="text-lg">Token Supply</span>
+											<input
+												type="number"
+												value={tokenSupply}
+												onChange={(e) => setTokenSupply(e.target.value)}
+												placeholder="Enter token supply"
+												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+    															[&::-webkit-inner-spin-button]:appearance-none 
+    															[&::-webkit-outer-spin-button]:appearance-none"
+											/>
+										</div>
+									</div>
+									<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+										{/* Project Images Upload */}
+										<div className="w-full flex flex-col gap-3 p-2">
+											<span className="text-lg">Images</span>
+											<div className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible">
+												<input
+													type="file"
+													id="projectImageUpload"
+													accept="image/*"
+													multiple
+													onChange={handleImageUpload}
+													className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+												/>
+												<Folder
+													color="#00d8ff"
+													size={0.8}
+													items={images.map((image: string, index: number) => (
+														<div
+															key={`project-image-${index}`}
+															className="w-full h-full flex items-center justify-center"
+														>
+															<Image
+																src={image}
+																alt={`Project Image ${index + 1}`}
+																width={512}
+																height={512}
+																className="max-w-full max-h-full object-contain rounded"
+															/>
+														</div>
+													))}
+													maxItems={3}
+												/>
+											</div>
+										</div>
+
+										{/* Project Logo Upload */}
+										<div className="w-full flex flex-col gap-3 p-2">
+											<span className="text-lg">Logo</span>
+											<div className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible">
+												<input
+													type="file"
+													id="projectLogoUpload"
+													accept="image/*"
+													onChange={handleLogoUpload}
+													className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+												/>
+												<Folder
+													color="#00d8ff"
+													size={0.8}
+													items={
+														logo
+															? [
+																	<div
+																		key={'image-${index}'}
+																		className="w-full h-full flex items-center justify-center"
+																	>
+																		<Image
+																			src={logo}
+																			alt="Logo"
+																			width={512}
+																			height={512}
+																			className="max-w-full max-h-full object-contain rounded"
+																		/>
+																	</div>,
+																]
+															: []
+													}
+													maxItems={1}
+												/>
+											</div>
+										</div>
+										<div className="w-full flex flex-col gap-3 p-2">
+											<span className="text-lg">License & Certification</span>
+											<div className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible">
+												<input
+													type="file"
+													id="licenseUpload"
+													accept="image/*"
+													onChange={handleLicenseUpload}
+													className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+												/>
+												<Folder
+													color="#00d8ff"
+													size={0.8}
+													items={licenseAndCertification ? [
+														<div
+															key="license"
+															className="w-full h-full flex items-center justify-center"
+														>
+															<Image
+																src={licenseAndCertification}
+																alt="License & Certification"
+																width={512}
+																height={512}
+																className="max-w-full max-h-full object-contain rounded"
+															/>
+														</div>
+													] : []}
+													maxItems={1}
+												/>
+											</div>
+										</div>
+										<div className="w-full flex flex-col gap-3 p-2">
+											<span className="text-lg">History Evidence</span>
+											<div className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible">
+												<input
+													type="file"
+													id="historyUpload"
+													accept="image/*"
+													multiple
+													onChange={handleHistoryUpload}
+													className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+												/>
+												<Folder
+													color="#00d8ff"
+													size={0.8}
+													items={historyEvidence.map((image: string, index: number) => (
+														<div
+															key={`history-image-${index}`}
+															className="w-full h-full flex items-center justify-center"
+														>
+															<Image
+																src={image}
+																alt={`History Evidence ${index + 1}`}
+																width={512}
+																height={512}
+																className="max-w-full max-h-full object-contain rounded"
+															/>
+														</div>
+													))}
+													maxItems={3}
+												/>
+											</div>
+										</div>
+									</div>
+									<div className="w-full flex items-center justify-between p-2 gap-3">
+										{/* Chain indicator */}
+
+										<div className="w-full flex flex-col gap-3 relative">
+											<span className=" text-lg">Representative Name</span>
+											<input
+												type="text"
+												value={representativeName}
+												onChange={(e) => setRepresentativeName(e.target.value)}
+												placeholder="Enter Representative name"
+												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+    															[&::-webkit-inner-spin-button]:appearance-none 
+    															[&::-webkit-outer-spin-button]:appearance-none"
+											/>
+										</div>
+									</div>
+									<div className="w-full flex items-center justify-between p-2 gap-3">
+										{/* Chain indicator */}
+
+										<div className="w-full flex flex-col gap-3 relative">
+											<span className=" text-lg">Phone Number</span>
+											<input
+												type="text"
+												value={phoneNumber}
+												onChange={(e) => setPhoneNumber(e.target.value)}
+												placeholder="Enter phone number"
+												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+    															[&::-webkit-inner-spin-button]:appearance-none 
+    															[&::-webkit-outer-spin-button]:appearance-none"
+											/>
+										</div>
+									</div>
+									<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+										{/* Personal ID Upload */}
+										<div className="w-full flex flex-col gap-3 p-2">
+											<span className="text-lg">Personal ID or Passport</span>
+											<div className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible">
+												<input
+													type="file"
+													id="personalIdUpload"
+													accept="image/*"
+													onChange={handlePersonalIdUpload}
+													className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+												/>
+												<Folder
+													color="#00d8ff"
+													size={0.8}
+													items={personalId ? [
+														<div
+															key="personal-id"
+															className="w-full h-full flex items-center justify-center"
+														>
+															<Image
+																src={personalId}
+																alt="Personal ID"
+																width={512}
+																height={512}
+																className="max-w-full max-h-full object-contain rounded"
+															/>
+														</div>
+													] : []}
+													maxItems={1}
+												/>
+											</div>
+										</div>
+
+										{/* Face ID Upload */}
+										<div className="w-full flex flex-col gap-3 p-2">
+											<span className="text-lg">Face ID</span>
+											<div className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible">
+												<input
+													type="file"
+													id="faceIdUpload"
+													accept="image/*"
+													onChange={handleFaceIdUpload}
+													className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+												/>
+												<Folder
+													color="#00d8ff"
+													size={0.8}
+													items={faceId ? [
+														<div
+															key="face-id"
+															className="w-full h-full flex items-center justify-center"
+														>
+															<Image
+																src={faceId}
+																alt="Face ID"
+																width={512}
+																height={512}
+																className="max-w-full max-h-full object-contain rounded"
+															/>
+														</div>
+													] : []}
+													maxItems={1}
+												/>
+											</div>
+										</div>
+									</div>
+									<div className="w-full ">
+										<ImageManager
+											images={[
+												...images.map((base64: string, index: number) => ({
+													id: `project-${index}`,
+													base64,
+													name: `Project Image ${index + 1}`,
+													type: 'project',
+												})),
+												...(licenseAndCertification ? [{
+													id: 'license',
+													base64: licenseAndCertification,
+													name: 'License & Certification',
+													type: 'license',
+												}] : []),
+												...historyEvidence.map((base64: string, index: number) => ({
+													id: `history-${index}`,
+													base64,
+													name: `History Evidence ${index + 1}`,
+													type: 'history',
+												})),
+												...(personalId
+													? [
+															{
+																id: 'personalId',
+																base64: personalId,
+																name: 'Personal ID',
+																type: 'personalId',
+															},
+														]
+													: []),
+												...(faceId
+													? [
+															{
+																id: 'faceId',
+																base64: faceId,
+																name: 'Face ID',
+																type: 'faceId',
+															},
+														]
+													: []),
+											]}
+											logo={
+												logo
+													? {
+															base64: logo,
+															name: 'Project Logo',
+														}
+													: null
+											}
+											onDeleteImage={(id) => {
+												const [type, index] = id.split('-')
+												if (type === 'project') {
+													removeImage(parseInt(index))
+												} else if (type === 'license') {
+													setLicenseAndCertification(null)
+												} else if (type === 'history') {
+													const newImages = historyEvidence.filter((_, i) => i !== parseInt(index))
+													setHistoryEvidence(newImages)
+												} else if (type === 'personalId') {
+													setPersonalId(null)
+												} else if (type === 'faceId') {
+													setFaceId(null)
+												}
+											}}
+											onDeleteLogo={handleLogoDelete}
+											title="Manage Project Media"
+											buttonText="Manage Uploaded Images"
+											emptyText="No images uploaded yet"
+											showLogoTab={true}
+											tabs={[
+												{
+													id: 'project',
+													label: 'Project Images',
+												},
+												{
+													id: 'license',
+													label: 'License & Certification',
+												},
+												{
+													id: 'history',
+													label: 'History Evidence',
+												},
+												{
+													id: 'personalId',
+													label: 'Personal ID',
+												},
+												{
+													id: 'faceId',
+													label: 'Face ID',
+												},
+											]}
+											defaultTab="project"
+										/>
+									</div>
+									<div className="w-full flex justify-center mt-8">
+										<Button
+											onClick={onFinalStepCompleted}
+											className="glass-component-3 rounded-xl px-8 py-3 text-lg font-semibold hover:bg-opacity-80 transition-all duration-300"
+										>
+											{isEditing ? 'Update Charity' : 'Create Charity'}
+										</Button>
+									</div>
+								</motion.div>
+							</div>
+						</Step>
+						{/* </Stepper> */}
+					</div>
+				</div>
+			)}
+			<ErrorModal
+				open={errorModalOpen}
+				onOpenChange={setErrorModalOpen}
+				errorCode={errorCode}
+				errorMessage={errorMessage}
+				onRetry={() => {
+					setErrorModalOpen(false)
+					onFinalStepCompleted()
+				}}
+			/>
 		</div>
 	)
 }

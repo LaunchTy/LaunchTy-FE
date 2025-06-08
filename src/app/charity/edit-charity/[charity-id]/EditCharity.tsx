@@ -1,12 +1,18 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import CreateCharity from '../../create-charity/createCharity'
 import { useCharityStore } from '@/store/charity/CreateCharityStore'
+import LoadingModal from '@/components/UI/modal/LoadingModal'
+import ErrorModal from '@/components/UI/modal/ErrorModal'
 
 const EditCharity = () => {
-	const { charityId } = useParams()
+	const params = useParams()
+	const charityId = params['charity-id'] as string
+	const [isLoading, setIsLoading] = useState(true)
+	const [error, setError] = useState<string | null>(null)
+	const [isDataLoaded, setIsDataLoaded] = useState(false)
 
 	const {
 		resetStore,
@@ -25,70 +31,116 @@ const EditCharity = () => {
 		setHistoryEvidence,
 		setPersonalId,
 		setFaceId,
+		setStartDate,
+		setEndDate,
 	} = useCharityStore()
 
 	useEffect(() => {
-		resetStore()
-
 		const fetchCharityData = async () => {
+			console.log('Starting to fetch charity data for ID:', charityId)
+			if (!charityId) {
+				console.error('No charity ID provided')
+				return
+			}
+
 			try {
-				const dummyData = {
-					projectName: 'Hope for Children',
-					shortDescription: 'Support education for children in need.',
-					longDescription:
-						'This project focuses on building schools in rural areas...',
-					representativeName: 'Nguyen Thi B',
-					phoneNumber: '0987654321',
-					tokenSupply: '500000',
-					selectedToken: '0xabc123...DEF',
-					socialLinks: {
-						website: 'https://hopeforchildren.org',
-						telegram: 'https://t.me/hopechildren',
-						twitter: 'https://twitter.com/hopechildren',
-						discord: 'https://discord.gg/hopechildren',
-						github: 'https://github.com/hopechildren',
-					},
-					logo: null,
-					images: [],
-					backgroundImage: '',
-					licenseAndCertification: null,
-					historyEvidence: null,
-					personalId: null,
-					faceId: null,
+				setIsLoading(true)
+				setIsDataLoaded(false)
+				resetStore()
+
+				console.log('Fetching from:', `/api/charity/get/${charityId}`)
+				const response = await fetch(`/api/charity/get/${charityId}`)
+				console.log('API Response status:', response.status)
+				
+				if (!response.ok) {
+					throw new Error(`Failed to fetch charity data: ${response.status}`)
 				}
+				
+				const data = await response.json()
+				console.log('API Response data:', data)
 
-				setProjectName(dummyData.projectName)
-				setShortDescription(dummyData.shortDescription)
-				setLongDescription(dummyData.longDescription)
-				setRepresentativeName(dummyData.representativeName)
-				setPhoneNumber(dummyData.phoneNumber)
-				setTokenSupply(dummyData.tokenSupply)
-				setSelectedToken(dummyData.selectedToken)
+				if (data.success) {
+					const charity = data.data
+					console.log('Setting charity data:', charity)
 
-				Object.entries(dummyData.socialLinks).forEach(([key, value]) => {
-					setSocialLink(key as keyof typeof dummyData.socialLinks, value)
-				})
+					setProjectName(charity.charity_name || '')
+					setShortDescription(charity.charity_short_des || '')
+					setLongDescription(charity.charity_long_des || '')
+					setRepresentativeName(charity.repre_name || '')
+					setPhoneNumber(charity.repre_phone || '')
+					setTokenSupply(charity.charity_token_supply?.toString() || '')
+					setSelectedToken(charity.charity_token_symbol || '')
+					setStartDate(charity.charity_start_date || '')
+					setEndDate(charity.charity_end_date || '')
 
-				setLogo(dummyData.logo)
-				setImages(dummyData.images)
-				setBackgroundImage(dummyData.backgroundImage)
-				setLicenseAndCertification(dummyData.licenseAndCertification)
-				setHistoryEvidence(dummyData.historyEvidence)
-				setPersonalId(dummyData.personalId)
-				setFaceId(dummyData.faceId)
+					// Set social links
+					setSocialLink('facebook', charity.charity_fb || '')
+					setSocialLink('twitter', charity.charity_x || '')
+					setSocialLink('instagram', charity.charity_ig || '')
+					setSocialLink('website', charity.charity_website || '')
+
+					setLogo(charity.charity_logo || null)
+					setImages(charity.charity_img || [])
+					setLicenseAndCertification(charity.license_certificate || null)
+					setHistoryEvidence(charity.evidence || [])
+					setPersonalId(charity.repre_id || null)
+					setFaceId(charity.repre_faceid || null)
+
+					if (charity.charity_img && charity.charity_img.length > 0) {
+						setBackgroundImage(charity.charity_img[0])
+					}
+					console.log('All data set successfully')
+					setIsDataLoaded(true)
+				} else {
+					throw new Error(data.error || 'Failed to fetch charity data')
+				}
 			} catch (error) {
-				console.error('Failed to load charity data:', error)
+				console.error('Error in fetchCharityData:', error)
+				setError(error instanceof Error ? error.message : 'Failed to load charity data')
+			} finally {
+				console.log('Setting loading to false')
+				setIsLoading(false)
 			}
 		}
 
 		fetchCharityData()
 	}, [charityId, resetStore])
 
+	console.log('Render state:', { isLoading, error, isDataLoaded })
+
+	if (isLoading) {
+		console.log('Showing loading modal')
+		return <LoadingModal open={isLoading} onOpenChange={setIsLoading} />
+	}
+
+	if (error) {
+		console.log('Showing error modal:', error)
+		return (
+			<ErrorModal
+				open={!!error}
+				onOpenChange={() => setError(null)}
+				errorMessage={error}
+				errorCode="500"
+				onRetry={() => {
+					setError(null)
+					window.location.reload()
+				}}
+			/>
+		)
+	}
+
+	if (!isDataLoaded) {
+		console.log('Data not loaded yet')
+		return <LoadingModal open={true} onOpenChange={() => {}} />
+	}
+
+	console.log('Rendering CreateCharity component')
 	return (
 		<div>
-			<CreateCharity isEditing id={charityId as string} />
+			<CreateCharity isEditing id={charityId} />
 		</div>
 	)
 }
 
 export default EditCharity
+	

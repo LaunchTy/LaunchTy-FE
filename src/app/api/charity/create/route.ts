@@ -50,7 +50,15 @@ export async function POST(req: NextRequest) {
 		let user = await prismaClient.user.findUnique({
 			where: { wallet_address },
 		});
-
+		if (!user) {
+			return NextResponse.json(
+				{
+					success: false,
+					error: "User not found with given wallet address.",
+				},
+				{ status: 404 }
+			);
+		}
 		const charity = await prismaClient.charity.create({
 			data: {
 				charity_name,

@@ -24,7 +24,7 @@ export default function RootLayout({
 					<Navbar
 						navItems={[
 							{ name: 'About us', link: '/' },
-							{ name: 'Charity', link: '/charity/charity-homepage' },
+							{ name: 'Charity', link: '/charity/explore-charity' },
 							{ name: 'Launchpad', link: '/launchpad/explore-launchpad' },
 							{
 								name: 'Activities',

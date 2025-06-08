@@ -3,6 +3,7 @@ import ExploreProject from '@/components/Launchpad/Explore-section/ExploreProjec
 import exploreImage from '@/public/Explore.svg'
 import Tab from '@/components/Launchpad/Explore-section/Tab'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 // import { charityDetail } from '@/constants/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import CharityCard from '@/components/charity/CharityCard'
@@ -53,6 +54,7 @@ const convertCharityToProject = (charity: Charity): BaseProject => {
 }
 
 const ExploreCharity = () => {
+	const router = useRouter()
 	const [activeTab, setActiveTab] = useState('all')
 	const [showAll, setShowAll] = useState(false)
 	const [loading, setLoading] = useState(true)
@@ -166,7 +168,7 @@ const ExploreCharity = () => {
 							titleLine2=""
 							subtitle="Help build a better world by supporting these amazing charities. 100% of donations are sent directly to your charity of choice!"
 							buttonText="Add Project"
-							onButtonClick={() => {}}
+							onButtonClick={() => router.push('/charity/create-charity')}
 						/>
 					</div>
 				</>
