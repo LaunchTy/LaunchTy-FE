@@ -6,10 +6,16 @@ import CharityCard from '../charity/CharityCard'
 import AnimatedBlobs from '../UI/background/AnimatedBlobs'
 import { useAnimation, motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 const ProjectSection = () => {
 	const sectionRef = useRef<HTMLDivElement | null>(null)
 	const [isVisible, setIsVisible] = useState(false)
+	const route = useRouter()
+
+	const handleSubmit = () => {
+		route.push('/charity/explore-charity')
+	}
 
 	useEffect(() => {
 		const handleScroll = () => {
@@ -63,7 +69,9 @@ const ProjectSection = () => {
 			<div className="flex flex-col gap-10 px-5 py-12 xs:p-10  mx-auto relative z-10 max-w-[1200px]">
 				<div className="flex justify-between">
 					<span className="text-[45px] font-bold">Latest project</span>
-					<Button className="bg-gradient w-36 h-12">More Project</Button>
+					<Button className="bg-gradient w-36 h-12" onClick={handleSubmit}>
+						More Project
+					</Button>
 				</div>
 				<div className="w-full">
 					<div className="grid grid-cols-1 gap-5 xs:grid-cols-2 md:grid-cols-3">
