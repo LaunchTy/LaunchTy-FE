@@ -68,6 +68,7 @@ export async function POST(req: NextRequest) {
 				launchpad_start_date: new Date(launchpad_start_date),
 				launchpad_end_date: new Date(launchpad_end_date),
 				project_owner_id: user?.user_id!,
+				status: "pending",
 			},
 		});
 
