@@ -29,6 +29,10 @@ const HeroSection = () => {
 		router.push('/launchpad/explore-launchpad')
 	}
 
+	const handleTransferToCharity = () => {
+		router.push('/charity/charity-homepage')
+	}
+
 	// const [isTitleDone, setIsTitleDone] = useState(false)
 	const title = 'A decentralized crowdfunding platform. LaunchTy'
 	return (
@@ -94,7 +98,7 @@ const HeroSection = () => {
 							</Button>
 							<Button
 								className="w-48 h-12 text-xl bg-gradient"
-								onClick={handleSubmit}
+								onClick={handleTransferToCharity}
 							>
 								Charity
 							</Button>
