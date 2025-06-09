@@ -1,5 +1,7 @@
 'use client'
 
+import { LaunchpadABI, MockERC20ABI } from '@/app/abi'
+import { chainConfig } from '@/app/config'
 import ProjectHeader from '@/components/project-component/ProjectHeader'
 import ProjectProgress from '@/components/project-component/ProjectProgress'
 import AnimatedBlobs from '@/components/UI/background/AnimatedBlobs'
@@ -8,11 +10,18 @@ import { Modal } from '@/components/UI/modal/AnimatedModal'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
 import StakeArea from '@/components/UI/shared/StakeArea'
 import { Launchpad } from '@/interface/interface'
+import useLaunchpadTokenAmountStore from '@/store/launchpad/LaunchpadDetailStore'
 // import { projectDetail } from '@/constants/utils'
 import axios from 'axios'
+import { BigNumber } from 'ethers'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { Address } from 'viem'
+import { readContract, waitForTransactionReceipt } from 'viem/actions'
+import { useAccount, useReadContract, useWriteContract } from 'wagmi'
+import { publicClient } from '../../create-launchpad/preview/Preview'
+import { convertNumToOnChainFormat } from '@/app/utils/decimal'
 interface ModalProjectProps {
 	projectDetail: {
 		socials: any[]
@@ -28,7 +37,21 @@ const LaunchpadDetail = () => {
 	const [launchpad, setLaunchpad] = useState<Launchpad>({} as Launchpad)
 	const [loading, setLoading] = useState(true)
 	const [backgroundImage, setBackgroundImage] = useState<string>('')
+	const { tokenAmount } = useLaunchpadTokenAmountStore()
+	const { writeContractAsync: writeToToken, error: errorToken } =
+		useWriteContract()
+	const { writeContractAsync: writeToDeposit, error: errorDeposit } =
+		useWriteContract()
+	const user = useAccount()
+	const userAddress: Address = user.address as Address
 	const [steps, setSteps] = useState(2)
+
+	// const { data: allowance, error: allowanceError } = useReadContract({
+	// 	abi: LaunchpadABI,
+	// 	address: launchpad_id as Address,
+	// 	functionName: 'allowance',
+	// 	args: [userAddress, launchpad_id as Address],
+	// })
 
 	useEffect(() => {
 		if (!launchpad.launchpad_start_date || !launchpad.launchpad_end_date) return
@@ -62,6 +85,111 @@ const LaunchpadDetail = () => {
 
 		fetchProjects()
 	}, [launchpad_id])
+
+	// useEffect(() => {
+	// 	const fetchAllowance = async () => {
+	// 		if (!launchpad_id || !userAddress) return
+	// 		console.log('allowance: ', allowance)
+	// 	}
+	// 	fetchAllowance()
+	// }, [launchpad_id, userAddress])
+
+	useEffect(() => {
+		if (errorDeposit) {
+			console.error('Deposit transaction failed: ', errorDeposit)
+			return
+		}
+	}, [errorDeposit])
+
+	const handleDeposit = () => {
+		const deposit = async () => {
+			if (!launchpad_id || !tokenAmount) return
+			console.log('Deposit function called with launchpad_id', launchpad_id)
+			//log all the below address
+			// console.log()
+			const acceptedTokenAddress =
+				chainConfig.contracts.AcceptedMockERC20.address
+			const allowance = await readContract(publicClient, {
+				abi: MockERC20ABI,
+				address: acceptedTokenAddress as Address,
+				functionName: 'allowance',
+				args: [userAddress, launchpad_id as Address],
+			})
+
+			console.log('allowancesiogseoigh:', allowance)
+
+			// if (!allowance) {
+			// 	console.error('Failed to fetch allowance')
+			// 	return
+			// }
+			console.log('eoisfjsoigjiroj')
+			const allowanceBN = BigNumber.from(allowance as string)
+			if (allowanceBN.gte(tokenAmount)) {
+				console.log('Allowance is sufficient, no need to approve.')
+			} else {
+				const MockERC20Address = chainConfig.contracts.MockERC20.address
+				const approveHash = await writeToToken({
+					abi: MockERC20ABI,
+					address: acceptedTokenAddress as Address,
+					functionName: 'approve',
+					args: [
+						launchpad_id as Address,
+						convertNumToOnChainFormat(tokenAmount, 18),
+					],
+				})
+				console.log('Approval transaction hash:', approveHash)
+				console.log('Appoved')
+
+				const receipt = await waitForTransactionReceipt(publicClient, {
+					hash: approveHash,
+				})
+
+				const newAllowance = await readContract(publicClient, {
+					abi: MockERC20ABI,
+					address: acceptedTokenAddress as Address,
+					functionName: 'allowance',
+					args: [userAddress, launchpad_id as Address],
+				})
+
+				console.log('New allowance:', newAllowance)
+
+				if (receipt.status !== 'success') {
+					console.error('Approval transaction failed')
+					console.log('Write to Token error: ', errorToken)
+					return
+				}
+			}
+			const hash = await writeToDeposit({
+				abi: LaunchpadABI,
+				address: launchpad_id as Address,
+				functionName: 'deposit',
+				args: [convertNumToOnChainFormat(tokenAmount, 18)],
+			})
+
+			const depositReceipt = await waitForTransactionReceipt(publicClient, {
+				hash,
+			})
+
+			console.log('Deposit transaction receipt:', depositReceipt)
+
+			if (depositReceipt.status !== 'success') {
+				console.error('Deposit transaction failed')
+				console.log('Write to Deposit error: ', errorDeposit)
+				return
+			}
+
+			const userDepositAmount = await readContract(publicClient, {
+				abi: LaunchpadABI,
+				address: launchpad_id as Address,
+				functionName: 'getUserDeposits',
+				args: [userAddress],
+			})
+			console.log('User deposit amount:', userDepositAmount)
+			console.log('Deposit transaction hash:', hash)
+			console.log('Deposit successful')
+		}
+		deposit()
+	}
 
 	// Handler for image changes from the carousel
 	const handleImageChange = (imageSrc: string) => {
@@ -144,7 +272,7 @@ const LaunchpadDetail = () => {
 									/>
 								</div>
 								<div className="">
-									<StakeArea />
+									<StakeArea handleDeposit={handleDeposit} />
 								</div>
 							</div>
 						</div>

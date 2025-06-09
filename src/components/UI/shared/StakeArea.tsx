@@ -1,7 +1,12 @@
 import { useState } from 'react'
 import Button from '../button/Button'
-const StakeArea = () => {
-	const [tokenAmount, setTokenAmount] = useState(0)
+import useLaunchpadTokenAmountStore from '@/store/launchpad/LaunchpadDetailStore'
+
+interface StakeAreaProps {
+	handleDeposit: () => void
+}
+const StakeArea: React.FC<StakeAreaProps> = ({ handleDeposit }) => {
+	const { setTokenAmount } = useLaunchpadTokenAmountStore()
 	return (
 		<div className="mt-6">
 			<div className="glass-component-1 p-4 text-white rounded-xl">
@@ -58,9 +63,7 @@ const StakeArea = () => {
 
 					<Button
 						className="w-full bg-gradient font-extrabold glass-component-1"
-						onClick={() => {
-							alert('Stake button clicked')
-						}}
+						onClick={handleDeposit}
 					>
 						Deposit
 					</Button>
