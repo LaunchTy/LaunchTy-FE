@@ -9,6 +9,7 @@
   - [How It Works 🛠️](#how-it-works-️)
   - [Tech Stack 💻](#tech-stack-)
 - [Installation 📦](#installation-)
+  - [Additional CLI Commands](#additional-cli-commands)
 
 ## Introduction 📕
 
@@ -76,3 +77,18 @@ Follow these steps to set up the project locally:
 
 7. **Run the Application** `sh     npm run dev     ` Access the Application Open
    http://localhost:3000 in your browser.
+
+## Additional CLI Commands
+
+- **Copy Contract Addresses to chainConfig**
+  ```sh
+  tsx src/scripts/copySepoliaAddress.ts
+  ```
+- **Copy ABI to abi folder**
+  ```sh
+  tsx src/scripts/copyABIs.ts
+  ```
+- **Deploy Contracts**
+  ```sh
+   source .env && forge script --chain sepolia script/LaunchpadFactory.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $PK --broadcast --verify -vvvv --via-ir
+  ```
