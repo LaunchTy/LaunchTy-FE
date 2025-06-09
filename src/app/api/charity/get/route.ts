@@ -86,18 +86,11 @@ export async function GET(req: NextRequest) {
     const charities = await prismaClient.charity.findMany({
       where,
       include: {
-        owner: {
+        project_owner: {
           select: {
             user_id: true,
             wallet_address: true,
-            username: true
-          }
-        },
-        representative: {
-          select: {
-            user_id: true,
-            wallet_address: true,
-            username: true
+            user_name: true
           }
         }
       },

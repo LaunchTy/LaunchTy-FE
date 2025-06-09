@@ -22,32 +22,63 @@ import DonorsTable from '@/components/charity/charity-detail-section/DonorsTable
 import CountdownTimer from '@/components/UI/countdown/CountdownTimer'
 import { useParams } from 'next/navigation'
 import { Charity } from '@/interface/interface'
+import { NextResponse } from "next/server";
+import prismaClient from "@/prisma";
+import LoadingModal from '@/components/UI/modal/LoadingModal'
+import ErrorModal from '@/components/UI/modal/ErrorModal'
+import LockModal from '@/components/UI/modal/LockModal'
 
 const CharityDetail = () => {
 	const [backgroundImage, setBackgroundImage] = useState<string>('')
 	const [charity, setCharity] = useState<Charity | null>(null)
+	const [donations, setDonations] = useState<any[]>([])
 	const [loading, setLoading] = useState(true)
+	const [errorModalOpen, setErrorModalOpen] = useState(false)
+	const [errorMessage, setErrorMessage] = useState('')
+	const [errorCode, setErrorCode] = useState('')
+	const [lockOpen, setLockOpen] = useState(false)
 	const params = useParams()
 
 	useEffect(() => {
-		const fetchCharity = async () => {
+		const fetchData = async () => {
 			try {
-				const response = await fetch(`/api/charity/get/${params['charity-id']}`)
-				const data = await response.json()
-				if (data.success) {
-					setCharity(data.data)
-					if (data.data.charity_img && data.data.charity_img.length > 0) {
-						setBackgroundImage(data.data.charity_img[0])
+				// Fetch charity details
+				const charityResponse = await fetch(`/api/charity/get/${params['charity-id']}`)
+				const charityData = await charityResponse.json()
+				
+				// Fetch donations
+				const donationsResponse = await fetch(`/api/donation/get/${params['charity-id']}`)
+				const donationsData = await donationsResponse.json()
+
+				if (charityData.success) {
+					setCharity(charityData.data)
+					if (charityData.data.charity_img && charityData.data.charity_img.length > 0) {
+						setBackgroundImage(charityData.data.charity_img[0])
 					}
+				} else {
+					setErrorCode(charityData.error?.code || '500')
+					setErrorMessage(charityData.error || 'Failed to fetch charity details')
+					setErrorModalOpen(true)
 				}
-			} catch (error) {
-				console.error('Error fetching charity:', error)
+
+				if (donationsData.success) {
+					setDonations(donationsData.data)
+				} else {
+					setErrorCode(donationsData.error?.code || '500')
+					setErrorMessage(donationsData.error || 'Failed to fetch donations')
+					setErrorModalOpen(true)
+				}
+			} catch (error: any) {
+				console.error('Error fetching data:', error)
+				setErrorCode(error?.response?.status?.toString() || '500')
+				setErrorMessage(error?.message || 'An unexpected error occurred')
+				setErrorModalOpen(true)
 			} finally {
 				setLoading(false)
 			}
 		}
 
-		fetchCharity()
+		fetchData()
 	}, [params['charity-id']])
 
 	// Handler for image changes from the carousel
@@ -56,11 +87,19 @@ const CharityDetail = () => {
 	}
 
 	if (loading) {
-		return <div>Loading...</div>
+		return <LoadingModal open={loading} onOpenChange={setLoading} />
 	}
 
 	if (!charity) {
-		return <div>Charity not found</div>
+		return (
+			<ErrorModal
+				open={true}
+				onOpenChange={() => {}}
+				errorCode="404"
+				errorMessage="Charity not found"
+				onRetry={() => window.location.reload()}
+			/>
+		)
 	}
 
 	// Calculate status based on dates
@@ -196,17 +235,27 @@ const CharityDetail = () => {
 				<div className="flex items-start justify-center gap-12">
 					<div className="w-10/12">
 						<DonorsTable
-							donors={charity.donations?.map((donation, index) => ({
+							donors={donations.map((donation, index) => ({
 								ranking: index + 1,
 								name: donation.user?.user_name || 'Anonymous',
 								date: new Date(donation.datetime).toISOString().split('T')[0],
 								amount: donation.amount,
 								currency: 'USD',
-							})) || []}
+							}))}
 						/>
 					</div>
 				</div>
 			</div>
+			<ErrorModal
+				open={errorModalOpen}
+				onOpenChange={setErrorModalOpen}
+				errorCode={errorCode}
+				errorMessage={errorMessage}
+				onRetry={() => {
+					setErrorModalOpen(false)
+					window.location.reload()
+				}}
+			/>
 		</Modal>
 	)
 }
