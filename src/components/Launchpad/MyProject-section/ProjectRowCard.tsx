@@ -192,7 +192,15 @@ const ProjectSection = ({
 						</div>
 
 						{/* Cột 6: Edit Button */}
-						<div className="flex justify-end">
+						<div className="flex justify-end gap-4">
+							<Button
+								onClick={() => console.log('Publish:', project.id)}
+								className="bg-white transition-all duration-300 ease-in-out 
+					hover:opacity-80 hover:shadow-lg hover:scale-105 
+					active:scale-95 active:opacity-90 items-center px-3 py-2 h-auto border-border/50 hover:border-border"
+							>
+								<span className="text-gradient">Publish</span>
+							</Button>
 							{onEdit && (
 								<Button
 									onClick={() => onEdit(project.id || '')}

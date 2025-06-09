@@ -11,6 +11,7 @@ import FilterStatus from '@/components/admin/Filter'
 import axios from 'axios' // Adjust the import path as necessary
 import { log } from 'console'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
+import ErrorModal from '@/components/UI/modal/ErrorModal' // Adjust the import path as necessary
 
 const Charity = () => {
 	const [visibleCount, setVisibleCount] = useState(6)
@@ -20,7 +21,12 @@ const Charity = () => {
 	}
 	const [filter, setFilter] = useState<string>('pending')
 	const [projects, setProjects] = useState<any[]>([])
-	const [loading, setLoading] = useState(false)
+	const [loading, setLoading] = useState(true)
+	const [lockOpen, setLockOpen] = useState(false)
+	const [errorModalOpen, setErrorModalOpen] = useState(false)
+	const [errorMessage, setErrorMessage] = useState('')
+	const [errorCode, setErrorCode] = useState('')
+
 	useEffect(() => {
 		const fetchProjects = async () => {
 			setLoading(true)
@@ -41,8 +47,13 @@ const Charity = () => {
 				}))
 				console.log('Fetched projects:', formattedProjects)
 				setProjects(formattedProjects)
-			} catch (error) {
-				console.error('Failed to load projects:', error)
+			} catch (error: any) {
+				setErrorCode(error?.response?.status?.toString() || '500')
+				setErrorMessage(
+					error?.response?.data?.message ||
+						'Something went wrong while fetching your projects.'
+				)
+				setErrorModalOpen(true)
 			} finally {
 				setLoading(false)
 			}
@@ -156,6 +167,48 @@ const Charity = () => {
 					</div>
 				</div>
 			</div>
+			<ErrorModal
+				open={errorModalOpen}
+				onOpenChange={setErrorModalOpen}
+				errorCode={errorCode}
+				errorMessage={errorMessage}
+				onRetry={() => {
+					setErrorModalOpen(false)
+					setLoading(true)
+					// gọi lại API
+					const refetch = async () => {
+						setLoading(true)
+						try {
+							const response = await axios.post('/api/admin/charity', {
+								status: filter,
+							})
+
+							const data = response.data
+							const formattedProjects = data.projects.map((p: any) => ({
+								id: p.charity_id,
+								title: p.charity_name,
+								image: p.charity_logo,
+								shortDescription: p.charity_short_des,
+								tokenSymbol: p.charity_token_symbol,
+								endTime: p.charity_end_date,
+								status: p.status,
+							}))
+							console.log('Fetched projects:', formattedProjects)
+							setProjects(formattedProjects)
+						} catch (error: any) {
+							setErrorCode(error?.response?.status?.toString() || '500')
+							setErrorMessage(
+								error?.response?.data?.message ||
+									'Something went wrong while fetching your projects.'
+							)
+							setErrorModalOpen(true)
+						} finally {
+							setLoading(false)
+						}
+					}
+					refetch()
+				}}
+			/>
 		</>
 	)
 }
