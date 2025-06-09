@@ -1,19 +1,21 @@
 'use client'
-import React, { useState, useEffect } from 'react'
-import ExploreProject from '@/components/Launchpad/Explore-section/ExploreProject'
-import Tab from '@/components/Launchpad/Explore-section/Tab'
-import ProjectSection from '@/components/Launchpad/Explore-section/ProjectSection'
-import Button from '@/components/UI/button/Button'
+import { LaunchpadABI } from '@/app/abi'
 import ApplySection from '@/components/Launchpad/Explore-section/ApplySection'
-import exploreImage from '@/public/Explore.svg'
-import { motion, useMotionValue, useSpring } from 'framer-motion'
-import axios from 'axios'
-import { BaseProject, Launchpad } from '@/interface/interface'
+import ExploreProject from '@/components/Launchpad/Explore-section/ExploreProject'
+import ProjectSection from '@/components/Launchpad/Explore-section/ProjectSection'
+import Tab from '@/components/Launchpad/Explore-section/Tab'
 import AnimatedBlobs from '@/components/UI/background/AnimatedBlobs'
-import { useRouter } from 'next/navigation'
-import LoadingModal from '@/components/UI/modal/LoadingModal'
+import Button from '@/components/UI/button/Button'
 import ErrorModal from '@/components/UI/modal/ErrorModal'
-
+import LoadingModal from '@/components/UI/modal/LoadingModal'
+import { BaseProject, Launchpad } from '@/interface/interface'
+import { config } from '@/provider/provider'
+import exploreImage from '@/public/Explore.svg'
+import axios from 'axios'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { Address } from 'viem'
+import { readContract } from 'wagmi/actions'
 const navItems = [
 	{ id: 'all', label: 'All Projects' },
 	{ id: 'upcoming', label: 'Upcoming' },
@@ -68,17 +70,43 @@ const ExploreProjectPage = () => {
 	const handleAddProject = () => {
 		route.push('/launchpad/create-launchpad')
 	}
+
 	useEffect(() => {
-		const fetchProjects = async () => {
+		const fetchProjectsWithPrice = async () => {
 			try {
 				const response = await axios.get(`/api/launchpad/explore-launchpad`)
-				console.log('Response data:', response.data)
 				const launchpadsData: Launchpad[] = response.data.data
-				const projectsData: BaseProject[] = launchpadsData.map(
-					convertLaunchpadToProject
+
+				const projectsWithPrice = await Promise.all(
+					launchpadsData.map(async (launchpad) => {
+						const id = launchpad.launchpad_id
+						console.log('Fetching data for ID:', id)
+
+						try {
+							const price = await readContract(config, {
+								address: id as Address,
+								abi: LaunchpadABI,
+								functionName: 'getPricePerToken',
+							})
+							console.log('Price per token:', price)
+
+							return {
+								...convertLaunchpadToProject(launchpad),
+								launchpadAddress: id as Address,
+								pricePerToken: parseFloat((price as string).toString()),
+							}
+						} catch (err) {
+							console.error(`Error fetching data for ID ${id}`, err)
+							return {
+								...convertLaunchpadToProject(launchpad),
+								launchpadAddress: '0x0',
+								pricePerToken: 0,
+							}
+						}
+					})
 				)
-				setLaunchpads(projectsData)
-				console.log('Fetched projects:', projectsData)
+
+				setLaunchpads(projectsWithPrice)
 			} catch (err: any) {
 				console.error('Failed to load projects:', err)
 				setErrorCode(err?.response?.status?.toString() || '500')
@@ -92,7 +120,7 @@ const ExploreProjectPage = () => {
 			}
 		}
 
-		fetchProjects()
+		fetchProjectsWithPrice()
 	}, [])
 
 	const filteredProjects = launchpads.filter((project) => {

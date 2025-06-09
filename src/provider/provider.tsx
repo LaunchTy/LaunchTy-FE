@@ -6,7 +6,7 @@ import { http, WagmiProvider } from 'wagmi'
 import { mainnet, sepolia, polygon, anvil } from 'wagmi/chains'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-const config = getDefaultConfig({
+export const config = getDefaultConfig({
 	appName: 'LaunchTy',
 	projectId: 'YOUR_WALLETCONNECT_PROJECT_ID',
 	chains: [mainnet, sepolia, polygon, anvil],

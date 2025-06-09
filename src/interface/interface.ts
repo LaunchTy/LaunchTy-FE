@@ -114,6 +114,7 @@ export interface BaseProject {
 	soft_cap?: number;
 	hard_cap?: number;
 	project_owner_id?: string;
+	pricePerToken?: number;
 
 	//Charity
 	charity_token_symbol?: string;

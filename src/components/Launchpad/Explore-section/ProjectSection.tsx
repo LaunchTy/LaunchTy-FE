@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import Image from 'next/image'
 import { BaseProject } from '@/interface/interface'
 import { useRouter } from 'next/navigation'
+import { convertNumToOffChainFormat } from '@/app/utils/decimal'
 
 // interface Project {
 // 	id: string
@@ -20,6 +21,7 @@ import { useRouter } from 'next/navigation'
 
 interface ProjectSectionProps {
 	projects: BaseProject[]
+	pricePerToken?: number
 	className?: string
 	showCountdown?: boolean
 	countdownDuration?: number // in hours
@@ -30,23 +32,24 @@ const ProjectSection = ({
 	className = '',
 	showCountdown = true,
 	countdownDuration = 12,
+	pricePerToken = 0,
 }: ProjectSectionProps) => {
 	const sectionRef = useRef<HTMLElement>(null)
 	const [countdowns, setCountdowns] = useState<{ [key: string]: string }>({})
 	const route = useRouter()
-	const { scrollYProgress } = useScroll({
-		target: sectionRef,
-		offset: ['start end', 'end start'],
-	})
+	// const { scrollYProgress } = useScroll({
+	// 	target: sectionRef,
+	// 	offset: ['start end', 'end start'],
+	// })
 
-	const borderRadius = useTransform(
-		scrollYProgress,
-		[0, 0.2],
-		['0.375rem', '1rem']
-	)
+	// const borderRadius = useTransform(
+	// 	scrollYProgress,
+	// 	[0, 0.2],
+	// 	['0.375rem', '1rem']
+	// )
 
-	const opacity = useTransform(scrollYProgress, [0, 0.2], [0, 1])
-	const scale = useTransform(scrollYProgress, [0, 0.2], [0.8, 1])
+	// const opacity = useTransform(scrollYProgress, [0, 0.2], [0, 1])
+	// const scale = useTransform(scrollYProgress, [0, 0.2], [0.8, 1])
 
 	useEffect(() => {
 		if (!showCountdown) return
@@ -142,12 +145,16 @@ const ProjectSection = ({
 										{project.name}
 									</h4>
 									<div className="text-sm text-gray-400">
-										Price project token = 19999999 vDot
+										Price project token =
+										{convertNumToOffChainFormat(
+											(project.pricePerToken ?? 0).toString(),
+											18
+										)}
 									</div>
 								</div>
 								<div className="relative w-12 h-12 rounded-full overflow-hidden">
 									<Image
-										src={project.logo || '/default-logo-path.png'}
+										src="https://s3.coinmarketcap.com/static-gravity/image/fecbf806c893460cbc5241d4e902b039.png"
 										alt="Project Logo"
 										fill
 										className="object-cover"
