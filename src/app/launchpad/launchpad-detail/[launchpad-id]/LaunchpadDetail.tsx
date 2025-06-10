@@ -169,7 +169,7 @@ const LaunchpadDetail = () => {
 			const depositReceipt = await waitForTransactionReceipt(publicClient, {
 				hash,
 			})
-
+			console.log('LaunchpadID: ', launchpad_id)
 			console.log('Deposit transaction receipt:', depositReceipt)
 
 			if (depositReceipt.status !== 'success') {
@@ -187,6 +187,10 @@ const LaunchpadDetail = () => {
 			console.log('User deposit amount:', userDepositAmount)
 			console.log('Deposit transaction hash:', hash)
 			console.log('Deposit successful')
+			// const receipt = await waitForTransactionReceipt(publicClient, {
+			// 	hash: hash,
+			// })
+			// console.log('Deposit transaction receipt:', receipt)
 
 			console.log('Launchpad ID: ', launchpad_id)
 			console.log('userAddress: ', userAddress)

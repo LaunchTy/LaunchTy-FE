@@ -4,28 +4,30 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import Image from 'next/image'
 import Button from '@/components/UI/button/Button'
 import { BaseProject } from '@/interface/interface'
+import { convertNumToOffChainFormat } from '@/app/utils/decimal'
 
-interface Project {
-	id: string
-	title: string
-	image: string
-	logo: string
-	price: string
-	raiseGoal: string
-	min: string
-	max: string
-	timeLeft?: string
-	endTime?: string
-	amount?: string
-	launchpad_start_date?: string
-	launchpad_end_date?: string
-}
+// interface Project {
+// 	id: string
+// 	title: string
+// 	image: string
+// 	logo: string
+// 	price: string
+// 	raiseGoal: string
+// 	min: string
+// 	max: string
+// 	timeLeft?: string
+// 	endTime?: string
+// 	amount?: string
+// 	launchpad_start_date?: string
+// 	launchpad_end_date?: string
+// }
 
 interface ProjectSectionProps {
 	projects: BaseProject[]
 	className?: string
 	showCountdown?: boolean
 	countdownDuration?: number // in hours
+	onButtonClick?: (id: string) => void
 }
 
 const ProjectSection = ({
@@ -33,6 +35,7 @@ const ProjectSection = ({
 	className = '',
 	showCountdown = true,
 	countdownDuration = 12,
+	onButtonClick,
 }: ProjectSectionProps) => {
 	const sectionRef = useRef<HTMLElement>(null)
 	const [countdowns, setCountdowns] = useState<{ [key: string]: string }>({})
@@ -145,7 +148,11 @@ const ProjectSection = ({
 										{project.name}
 									</h4>
 									<div className="text-sm text-gray-400">
-										Price project token = 19999999 vDot
+										Price project token ={' '}
+										{convertNumToOffChainFormat(
+											(project.pricePerToken ?? 0).toString(),
+											18
+										)}
 									</div>
 								</div>
 								<div className="relative w-12 h-12 rounded-full overflow-hidden">
@@ -191,8 +198,17 @@ const ProjectSection = ({
 							<div className="m-3 p-3 border border-gray-300 rounded-2xl shadow-md glass-component-1 flex flex-col items-center justify-center gap-4 border-radius-[40px]">
 								<p className="text-lg font-semibold text-white">
 									{/* Amount: {project.token || '0'} PTToken  ===========================GAN BIEN */}
+									Amount:{' '}
+									{convertNumToOffChainFormat(
+										(project.totalWithdraw ?? 0).toString(),
+										18
+									)}{' '}
+									{project.launchpad_token || ''}
 								</p>
-								<Button className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-[5rem] py-3 rounded-full hover:opacity-90 transition-all duration-300 flex items-center justify-center">
+								<Button
+									onClick={() => onButtonClick?.(project.id || '')}
+									className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-[5rem] py-3 rounded-full hover:opacity-90 transition-all duration-300 flex items-center justify-center"
+								>
 									Withdraw
 								</Button>
 							</div>
