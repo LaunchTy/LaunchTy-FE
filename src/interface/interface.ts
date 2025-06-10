@@ -104,6 +104,7 @@ export interface BaseProject {
 	type?: "launchpad" | "charity";
 	status?: "upcoming" | "ongoing" | "finished";
 	price?: number;
+	totalWithdraw?: number;
 
 	//Launchpad
 	token_address?: string;

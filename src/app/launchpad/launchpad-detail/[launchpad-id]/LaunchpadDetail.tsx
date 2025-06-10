@@ -101,8 +101,8 @@ const LaunchpadDetail = () => {
 		}
 	}, [errorDeposit])
 
-	const handleDeposit = () => {
-		const deposit = async () => {
+	const handleDeposit = async () => {
+		try {
 			if (!launchpad_id || !tokenAmount) return
 			console.log('Deposit function called with launchpad_id', launchpad_id)
 			//log all the below address
@@ -127,7 +127,7 @@ const LaunchpadDetail = () => {
 			if (allowanceBN.gte(tokenAmount)) {
 				console.log('Allowance is sufficient, no need to approve.')
 			} else {
-				const MockERC20Address = chainConfig.contracts.MockERC20.address
+				// const MockERC20Address = chainConfig.contracts.MockERC20.address
 				const approveHash = await writeToToken({
 					abi: MockERC20ABI,
 					address: acceptedTokenAddress as Address,
@@ -187,8 +187,28 @@ const LaunchpadDetail = () => {
 			console.log('User deposit amount:', userDepositAmount)
 			console.log('Deposit transaction hash:', hash)
 			console.log('Deposit successful')
+
+			console.log('Launchpad ID: ', launchpad_id)
+			console.log('userAddress: ', userAddress)
+			console.log('tokenAmount: ', tokenAmount)
+			console.log('hash: ', hash)
+			const response = await axios.post('/api/launchpad/deposit', {
+				launchpad_id: launchpad_id,
+				wallet_address: userAddress,
+				deposit_amount: tokenAmount,
+				tx_hash: hash,
+			})
+			console.log('response: ', response)
+			if (!response) {
+				console.error('Failed to create deposit record in database')
+				alert('Failed to create deposit record in database. Please try again.')
+				return
+			}
+		} catch (error) {
+			console.error('Error during deposit:', error)
+			alert('Error during deposit. Please try again later.')
+			// setLoadingOpen(false) // Hide loading modal
 		}
-		deposit()
 	}
 
 	// Handler for image changes from the carousel
