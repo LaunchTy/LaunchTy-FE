@@ -11,7 +11,32 @@ import { BaseProject, Launchpad } from '@/interface/interface'
 import YourProject from '@/public/YourProject.svg' // Adjust the import path as necessary
 import axios from 'axios' // Adjust the import path as necessary
 import { useEffect, useState } from 'react' // Adjust the import path as necessary
-import { useAccount } from 'wagmi'
+import { useLaunchpadStore } from '@/store/launchpad/CreateLaunchpadStore'
+import ProjectHeader from '@/components/project-component/ProjectHeader'
+import { useRouter } from 'next/navigation'
+import {
+	useAccount,
+	useReadContract,
+	useWatchContractEvent,
+	useWriteContract,
+} from 'wagmi'
+import { WriteContractMutateAsync } from 'wagmi/query'
+import { LaunchpadABI, LaunchpadFactoryABI, MockERC20ABI } from '@/app/abi'
+import { chainConfig } from '@/app/config'
+import { Address, createPublicClient, http } from 'viem'
+import {
+	convertNumToOffChainFormat,
+	convertNumToOnChainFormat,
+} from '@/app/utils/decimal'
+import { to } from '@react-spring/web'
+import { readContract, reset, waitForTransactionReceipt } from 'viem/actions'
+import { anvil, sepolia } from 'viem/chains'
+import { BigNumber } from 'ethers'
+
+export const publicClient = createPublicClient({
+	chain: sepolia,
+	transport: http('https://ethereum-sepolia-rpc.publicnode.com'),
+})
 
 const navItems = [
 	{ id: 'all', label: 'All Projects' },
@@ -24,34 +49,37 @@ const convertLaunchpadToProject = (launchpad: Launchpad): BaseProject => {
 	const now = new Date()
 	const startDate = new Date(launchpad.launchpad_start_date)
 	const endDate = new Date(launchpad.launchpad_end_date)
-	let status: 'upcoming' | 'ongoing' | 'finished' = 'finished'
+	let status: 'upcoming' | 'ongoing' | 'finished'
 	if (now < startDate) status = 'upcoming'
 	else if (now >= startDate && now <= endDate) status = 'ongoing'
+	else status = 'finished'
 
 	return {
 		id: launchpad.launchpad_id,
 		name: launchpad.launchpad_name,
-		shortDescription: launchpad.launchpad_short_des,
-		longDescription: launchpad.launchpad_long_des,
 		launchpad_token: launchpad.launchpad_token,
 		logo: launchpad.launchpad_logo,
-		images:
-			launchpad.launchpad_img.length > 0
-				? launchpad.launchpad_img
-				: ['/default-image.png'],
-		startDate: launchpad.launchpad_start_date,
 		endDate: launchpad.launchpad_end_date,
-		facebook: launchpad.launchpad_fb,
-		x: launchpad.launchpad_x,
-		instagram: launchpad.launchpad_ig,
-		website: launchpad.launchpad_website,
-		whitepaper: launchpad.launchpad_whitepaper,
 		type: 'launchpad',
-		status,
+		totalInvest: launchpad.totalInvest,
+		status: status,
+		status_launchpad: launchpad.status_launchpad,
 	}
 }
 
 const MyProject = () => {
+	const router = useRouter()
+	let tokenAddress = useLaunchpadStore((state) => state.projectTokenAddress)
+	let tokenSupply = useLaunchpadStore((state) => state.tokenSupply)
+	const launchpadToken = useLaunchpadStore((state) => state.launchpadToken)
+	const account = useAccount()
+	const userAddress = account.address
+	const maxStake = useLaunchpadStore((state) => state.maxStakePerInvestor)
+	const minStake = useLaunchpadStore((state) => state.minStakePerInvestor)
+	const softCap = useLaunchpadStore((state) => state.softCap)
+	const hardCap = useLaunchpadStore((state) => state.hardCap)
+	const { writeContractAsync } = useWriteContract()
+
 	const [activeTab, setActiveTab] = useState('all')
 	const [visibleCount, setVisibleCount] = useState(6)
 	const [projects, setProjects] = useState<BaseProject[]>([])
@@ -60,12 +88,15 @@ const MyProject = () => {
 	const [errorModalOpen, setErrorModalOpen] = useState(false)
 	const [errorMessage, setErrorMessage] = useState('')
 	const [errorCode, setErrorCode] = useState('')
-
 	const { address } = useAccount()
+
+	const [loadingOpen, setLoadingOpen] = useState(false)
+	const [successOpen, setSuccessOpen] = useState(false)
 
 	const fetchProjects = async () => {
 		try {
 			setLoading(true)
+			console.log('Fetching projects for address:', address)
 			const response = await axios.post('/api/launchpad/my-launchpad', {
 				wallet_address: address,
 			})
@@ -74,6 +105,7 @@ const MyProject = () => {
 				convertLaunchpadToProject
 			)
 			setProjects(projectsData)
+			console.log('Fetched projects:', projectsData)
 		} catch (error: any) {
 			setErrorCode(error?.response?.status?.toString() || '500')
 			setErrorMessage(
@@ -95,6 +127,235 @@ const MyProject = () => {
 		setLockOpen(false)
 		fetchProjects()
 	}, [address])
+
+	const {
+		data: projectId,
+		isSuccess: isSuccessProjectId,
+		error: isErrorProjectId,
+	} = useReadContract({
+		abi: LaunchpadFactoryABI,
+		address: chainConfig.contracts.LaunchpadFactory.address as Address,
+		functionName: 'getCurrentProjectId',
+	})
+
+	const {
+		data: launchpadAddress,
+		isSuccess: isSuccessLaunchpadAddress,
+		error: isErrorLaunchpadAddress,
+	} = useReadContract({
+		abi: LaunchpadFactoryABI,
+		address: chainConfig.contracts.LaunchpadFactory.address as Address,
+		functionName: 'getLaunchpadAddress',
+		args: [Number(projectId) - 1],
+	})
+
+	const { data: allowance, error: allowanceError } = useReadContract({
+		abi: MockERC20ABI,
+		address: launchpadAddress as Address,
+		functionName: 'allowance',
+		args: [userAddress, launchpadAddress as Address],
+	})
+
+	const handlePublish = async () => {
+		tokenSupply = 1000
+		tokenAddress = chainConfig.contracts.MockERC20.address
+		if (!userAddress) {
+			console.log('account.address: ', account.address)
+			alert('Please connect your wallet to create a launchpad.')
+			return
+		}
+		if (!tokenSupply || !tokenAddress) {
+			alert('Please provide a valid token supply and token address.')
+			return
+		}
+		if (allowanceError) {
+			console.error('Error reading allowance:', allowanceError)
+			alert('Error reading allowance. Please try again later.')
+			return
+		}
+
+		const projectOwnerDepositToken = async () => {
+			try {
+				// if (!allowance || (allowance as BigNumber).gte(tokenSupply)) {
+				// 	console.log('Allowance is sufficient, no need to approve.')
+				// } else {
+				const MockERC20Address = chainConfig.contracts.MockERC20.address
+				console.log('Mockerc20 addressss: ', MockERC20Address)
+				console.log('Launchpad address: ', launchpadAddress)
+				const approveHash = await writeContractAsync({
+					abi: MockERC20ABI,
+					address: MockERC20Address as Address,
+					functionName: 'approve',
+					args: [
+						launchpadAddress as Address,
+						convertNumToOnChainFormat(tokenSupply, 18),
+					],
+				})
+				console.log('Approval transaction hash:', approveHash)
+				console.log('Appoved')
+				//get the allowance after approval
+				const newAllowance = await readContract(publicClient, {
+					abi: MockERC20ABI,
+					address: MockERC20Address as Address,
+					functionName: 'allowance',
+					args: [userAddress, launchpadAddress as Address],
+				})
+				console.log(
+					'New allowance after approval:',
+					convertNumToOffChainFormat((newAllowance as bigint).toString(), 18)
+				)
+				// }
+			} catch (someError) {
+				console.error('Error approving tokenrgergrgerge:', someError)
+				console.log('Error approving token:', allowanceError)
+				alert('Error approving token. Please try again later.')
+				return
+			}
+		}
+
+		projectOwnerDepositToken()
+
+		setLoadingOpen(true) // Show loading modal
+
+		try {
+			const factoryAddress = chainConfig.contracts.LaunchpadFactory
+				.address as Address
+			const tokenAdd = chainConfig.contracts.MockERC20.address as Address
+			const acceptedToken = chainConfig.contracts.AcceptedMockERC20
+				.address as Address
+
+			const hash = await writeContractAsync({
+				abi: LaunchpadFactoryABI,
+				address: factoryAddress,
+				functionName: 'createLaunchpad',
+				args: [
+					tokenAdd,
+					acceptedToken,
+					userAddress,
+					1, //Price per token, set to 1 for simplicity
+					Math.floor(Date.now() / 1000), // Current time in seconds
+					Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // End time in seconds (1 week later)
+					BigInt(convertNumToOnChainFormat(10, 18)), // Soft cap in wei
+					BigInt(convertNumToOnChainFormat(500, 18)), // Hard cap in wei
+					BigInt(convertNumToOnChainFormat(1, 18)), // Min stake in wei
+					BigInt(convertNumToOnChainFormat(500, 18)), // Max stake in wei
+					BigInt(convertNumToOnChainFormat(500, 18)), // Total supply in wei
+				],
+			})
+
+			if (!hash) {
+				console.error('Transaction hash is undefined')
+				return
+			}
+			console.log('Transaction hash:', hash)
+			const receipt = await waitForTransactionReceipt(publicClient, {
+				hash,
+			})
+			console.log('Transaction receipt:', receipt)
+
+			if (!receipt || !receipt.status) {
+				console.error('Transaction failed or receipt is undefined')
+				alert('Transaction failed. Please try again later.')
+				setLoadingOpen(false) // Hide loading modal
+				return
+			}
+
+			const launchpadAddress = await readContract(publicClient, {
+				abi: LaunchpadFactoryABI,
+				address: chainConfig.contracts.LaunchpadFactory.address as Address,
+				functionName: 'getLaunchpadAddress',
+				args: [Number(projectId) - 1],
+			})
+
+			console.log('Launchpad paijfoaifaoiejaofiej', launchpadAddress)
+			// const response = await axios.post('/api/launchpad/create', {
+			// 	token_address: tokenAddress,
+			// 	total_supply: tokenSupply,
+			// 	launchpad_token: launchpadToken,
+			// 	max_stake: maxStake,
+			// 	min_stake: minStake,
+			// 	soft_cap: softCap,
+			// 	hard_cap: hardCap,
+			// 	launchpad_name: projectName,
+			// 	launchpad_logo: logo,
+			// 	launchpad_short_des: shortDescription,
+			// 	launchpad_long_des: longDescription,
+			// 	launchpad_fb: socialLinks?.facebook || null,
+			// 	launchpad_x: socialLinks?.twitter || null,
+			// 	launchpad_ig: socialLinks?.instagram || null,
+			// 	launchpad_website: socialLinks?.website || null,
+			// 	launchpad_whitepaper: whitepaper || null,
+			// 	launchpad_img: images,
+			// 	//
+			// 	launchpad_start_date: startDate.toISOString(),
+			// 	launchpad_end_date: endDate.toISOString(),
+			// 	// launchpad_start_date: new Date().toISOString(),
+			// 	// launchpad_end_date: new Date(
+			// 	// 	Date.now() + 7 * 24 * 60 * 60 * 1000
+			// 	// ).toISOString(),
+			// 	wallet_address: account.address,
+			// })
+			//give api data with real mock value to test the api
+			const response = await axios.post('/api/launchpad/create', {
+				launchpad_id: launchpadAddress,
+				token_address: '0x1234567890abcdef1234567890abcdef12345678',
+				total_supply: 1000000,
+				launchpad_token: 'DEMO',
+				max_stake: 5000,
+				min_stake: 100,
+				soft_cap: 10000,
+				hard_cap: 50000,
+				launchpad_name: 'Demo Project',
+				launchpad_logo: 'https://via.placeholder.com/150',
+				launchpad_short_des: 'Short description for demo project.',
+				launchpad_long_des:
+					'This is a longer and more detailed description of the demo project.',
+				launchpad_fb: 'https://facebook.com/demo',
+				launchpad_x: 'https://twitter.com/demo',
+				launchpad_ig: 'https://instagram.com/demo',
+				launchpad_website: 'https://demo.io/',
+				launchpad_whitepaper: 'https://demo.io/whitepaper.pdf',
+				launchpad_img: [
+					'https://via.placeholder.com/600x300',
+					'https://via.placeholder.com/600x400',
+				],
+				launchpad_start_date: new Date().toISOString(),
+				launchpad_end_date: new Date(
+					Date.now() + 7 * 24 * 60 * 60 * 1000
+				).toISOString(), // 7 ngày sau
+				wallet_address: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
+			})
+			if (!response || response.status !== 201) {
+				console.error('Error submitting launchpad:', response)
+				alert('Error submitting launchpad. Please try again later.')
+				setLoadingOpen(false) // Hide loading modal
+				return
+			}
+
+			// console.log('Launchpad created:', response.data)
+			router.push('/launchpad/my-launchpad')
+			setLoadingOpen(false) // Hide loading modal
+			setSuccessOpen(true) // Show success modal
+		} catch (error) {
+			console.error('Error submitting launchpad:', error)
+			setLoadingOpen(false) // Hide loading modal
+		}
+
+		// Call the API to publish the project
+		const response = await axios.post('/api/launchpad/my-launchpad/publish', {
+			wallet_address: address,
+			launchpad_id: launchpadAddress,
+		})
+		if (response.status === 200) {
+			console.log('Project published successfully:', response.data)
+			router.push('/launchpad/my-launchpad')
+		} else {
+			console.error('Error publishing project:', response.data)
+			alert('Error publishing project. Please try again later.')
+		}
+		setLoadingOpen(false) // Hide loading modal
+		setSuccessOpen(true) // Show success modal
+	}
 
 	const handleShowMore = () => {
 		setVisibleCount((prev) => prev + 6)
@@ -139,6 +400,7 @@ const MyProject = () => {
 						onEdit={(projectId) => {
 							console.log('Edit project:', projectId)
 						}}
+						handlePublish={handlePublish}
 					/>
 					{hasMore && (
 						<div className="align-center flex flex-col justify-center items-center p-8">

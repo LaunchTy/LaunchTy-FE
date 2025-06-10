@@ -20,14 +20,17 @@ interface Project {
 	totalInvest: number
 	endsInDays?: number
 	endTime?: string // Optional end time for countdown
+	status?: 'pending' | 'approve' | 'deny' | 'publish'
 }
 
 interface ProjectSectionProps {
 	projects: BaseProject[]
 	className?: string
 	onEdit?: (projectId: string) => void
+	handlePublish?: (projectId: string) => void
 	showCountdown?: boolean
 	countdownDuration?: number // in hours
+	launchpadStatus?: 'pending' | 'approve' | 'deny' | 'publish'
 }
 
 const ProjectSection = ({
@@ -36,6 +39,10 @@ const ProjectSection = ({
 	showCountdown = true,
 	countdownDuration = 12, // in hours
 	onEdit,
+	handlePublish = (projectId: string) => {
+		console.log(`Publishing project with ID: ${projectId}`)
+	},
+	launchpadStatus,
 }: ProjectSectionProps) => {
 	// const sectionRef = useRef<HTMLElement>(null)
 	// const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
@@ -193,14 +200,16 @@ const ProjectSection = ({
 
 						{/* Cột 6: Edit Button */}
 						<div className="flex justify-end gap-4">
-							<Button
-								onClick={() => console.log('Publish:', project.id)}
-								className="bg-white transition-all duration-300 ease-in-out 
-					hover:opacity-80 hover:shadow-lg hover:scale-105 
-					active:scale-95 active:opacity-90 items-center px-3 py-2 h-auto border-border/50 hover:border-border"
-							>
-								<span className="text-gradient">Publish</span>
-							</Button>
+							{handlePublish && project.status_launchpad === 'approve' && (
+								<Button
+									onClick={() => handlePublish(project.id || '')}
+									className="bg-white transition-all duration-300 ease-in-out 
+				hover:opacity-80 hover:shadow-lg hover:scale-105 
+				active:scale-95 active:opacity-90 items-center px-3 py-2 h-auto border-border/50 hover:border-border"
+								>
+									<span className="text-gradient">Publish</span>
+								</Button>
+							)}
 							{onEdit && (
 								<Button
 									onClick={() => onEdit(project.id || '')}

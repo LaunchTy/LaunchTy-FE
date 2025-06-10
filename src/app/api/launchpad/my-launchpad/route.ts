@@ -53,17 +53,23 @@ export async function POST(request: Request) {
 			);
 
 			return {
-				id: project.launchpad_id,
-				title: project.launchpad_name,
-				image: project.launchpad_logo,
-				tokenSymbol: project.launchpad_token,
-				// totalInvest,
-				endTime: new Date(project.launchpad_end_date).toISOString(),
+				launchpad_id: project.launchpad_id,
+				launchpad_name: project.launchpad_name,
+				launchpad_logo: project.launchpad_logo,
+				launchpad_token: project.launchpad_token,
+				totalInvest,
+				launchpad_start_date: new Date(
+					project.launchpad_start_date
+				).toISOString(),
+				launchpad_end_date: new Date(
+					project.launchpad_end_date
+				).toISOString(),
+				status_launchpad: project.status,
 			};
 		});
-
+		console.log("Formatted projects:", formattedProjects);
 		return NextResponse.json(
-			{ success: true, data: projects },
+			{ success: true, data: formattedProjects },
 			{ status: 200 }
 		);
 	} catch (error) {

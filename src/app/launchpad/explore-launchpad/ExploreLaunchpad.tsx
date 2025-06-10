@@ -53,7 +53,8 @@ const convertLaunchpadToProject = (launchpad: Launchpad): BaseProject => {
 		website: launchpad.launchpad_website,
 		whitepaper: launchpad.launchpad_whitepaper,
 		type: 'launchpad',
-		status,
+		status: status,
+		status_launchpad: launchpad.status_launchpad,
 	}
 }
 
