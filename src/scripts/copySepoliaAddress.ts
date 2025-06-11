@@ -38,15 +38,22 @@ contractData.transactions.forEach((item) => {
 			);
 		}
 	}
-	if (item.contractName === "CharityFactory") {
+	if (item.contractName === "CharityFactory" && item.additionalContracts) {
 		chainConfig[11155111].contracts.CharityFactory.address =
 			item.contractAddress;
 		console.log(`CharityFactory address: ${item.contractAddress}`);
+		if (item.additionalContracts && item.additionalContracts.length > 0) {
+			chainConfig[11155111].contracts.Charity.address =
+				item.additionalContracts[0].address;
+			console.log(
+				`Charity address: ${item.additionalContracts[0].address}`
+			);
+		}
 	}
-	if (item.contractName === "Charity") {
-		chainConfig[11155111].contracts.Charity.address = item.contractAddress;
-		console.log(`Charity address: ${item.contractAddress}`);
-	}
+	// if (item.contractName === "Charity") {
+	// 	chainConfig[11155111].contracts.Charity.address = item.contractAddress;
+	// 	console.log(`Charity address: ${item.contractAddress}`);
+	// }
 	if (item.contractName === "MockERC20") {
 		if (item.arguments && item.arguments[1] === "PTK") {
 			chainConfig[11155111].contracts.MockERC20.address =
