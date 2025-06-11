@@ -21,10 +21,17 @@ import CountdownTimer from '@/components/UI/countdown/CountdownTimer'
 import ErrorModal from '@/components/UI/modal/ErrorModal'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
 import LockModal from '@/components/UI/modal/LockModal'
-import { useAccount } from 'wagmi'
+import { useAccount, useWriteContract } from 'wagmi'
 import { Charity } from '@/interface/interface'
+import { CharityFactoryABI } from '@/app/abi'
+import { chainConfig } from '@/app/config'
+import { Address } from 'viem'
+import { publicClient } from '@/app/launchpad/create-launchpad/preview/Preview'
+import { readContract, waitForTransactionReceipt } from 'viem/actions'
 
 const Preview = () => {
+	const account = useAccount()
+	const userAddress = account.address
 	const router = useRouter()
 	const params = useParams()
 	const { address } = useAccount()
@@ -35,8 +42,9 @@ const Preview = () => {
 	const [errorCode, setErrorCode] = useState('')
 	const [backgroundImage, setBackgroundImage] = useState<string>('')
 	const [charity, setCharity] = useState<Charity | null>(null)
-	const [isLoading, setIsLoading] = useState(true)
+	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
+	const { writeContractAsync } = useWriteContract()
 
 	const {
 		projectName,
@@ -144,6 +152,52 @@ const Preview = () => {
 	}
 
 	const handleSubmit = async () => {
+		if (!userAddress) {
+			setLockOpen(true)
+			return
+		}
+		const acceptedTokenAddress: Address = chainConfig.contracts
+			.AcceptedMockERC20.address as Address
+
+		const hash = await writeContractAsync({
+			address: chainConfig.contracts.CharityFactory.address as Address,
+			abi: CharityFactoryABI,
+			functionName: 'createCharity',
+			args: [
+				acceptedTokenAddress,
+				Math.floor(Date.now() / 1000),
+				Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days from now
+			],
+		})
+
+		const receipt = await waitForTransactionReceipt(publicClient, {
+			hash,
+		})
+		console.log('Transaction hash:', hash)
+		console.log('Receipt: ', receipt)
+
+		if (!receipt) {
+			console.error('Transaction receipt not found', receipt)
+			setError('Transaction receipt not found')
+			return
+		}
+		const currentCharity = await readContract(publicClient, {
+			address: chainConfig.contracts.CharityFactory.address as Address,
+			abi: CharityFactoryABI,
+			functionName: 'getCharityCount',
+			args: [],
+		})
+
+		console.log('Current charity count:', currentCharity)
+
+		const charityAddress = await readContract(publicClient, {
+			address: chainConfig.contracts.CharityFactory.address as Address,
+			abi: CharityFactoryABI,
+			functionName: 'getCharityAddress',
+			args: [currentCharity],
+		})
+
+		console.log('Charity address:', charityAddress)
 		try {
 			if (!address) {
 				setLockOpen(true)
