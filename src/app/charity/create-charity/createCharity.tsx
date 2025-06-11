@@ -93,14 +93,18 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 		}
 	}
 
-	const handleLicenseUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleLicenseUpload = async (
+		e: React.ChangeEvent<HTMLInputElement>
+	) => {
 		if (e.target.files && e.target.files[0]) {
 			const base64Image = await convertToBase64(e.target.files[0])
 			setLicenseAndCertification(base64Image)
 		}
 	}
 
-	const handleHistoryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleHistoryUpload = async (
+		e: React.ChangeEvent<HTMLInputElement>
+	) => {
 		if (e.target.files) {
 			const files = Array.from(e.target.files)
 			const base64Images = await Promise.all(
@@ -179,7 +183,9 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 				wallet_address: address,
 			}
 
-			const url = isEditing ? `/api/charity/update/${id}` : '/api/charity/create'
+			const url = isEditing
+				? `/api/charity/update/${id}`
+				: '/api/charity/create'
 			const method = isEditing ? 'PUT' : 'POST'
 
 			const response = await fetch(url, {
@@ -192,13 +198,18 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 
 			if (!response.ok) {
 				const errorData = await response.json()
-				throw new Error(errorData.message || `Failed to ${isEditing ? 'update' : 'create'} charity`)
+				throw new Error(
+					errorData.message ||
+						`Failed to ${isEditing ? 'update' : 'create'} charity`
+				)
 			}
 
 			const data = await response.json()
 
 			if (!data.success) {
-				throw new Error(data.message || `Failed to ${isEditing ? 'update' : 'create'} charity`)
+				throw new Error(
+					data.message || `Failed to ${isEditing ? 'update' : 'create'} charity`
+				)
 			}
 
 			if (isEditing) {
@@ -207,9 +218,14 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 				router.push(`/charity/create-charity/preview/${data.data.charity_id}`)
 			}
 		} catch (error: any) {
-			console.error(`Error ${isEditing ? 'updating' : 'creating'} charity:`, error)
+			console.error(
+				`Error ${isEditing ? 'updating' : 'creating'} charity:`,
+				error
+			)
 			setErrorCode(error?.response?.status?.toString() || '500')
-			setErrorMessage(error?.message || `Failed to ${isEditing ? 'update' : 'create'} charity`)
+			setErrorMessage(
+				error?.message || `Failed to ${isEditing ? 'update' : 'create'} charity`
+			)
 			setErrorModalOpen(true)
 		} finally {
 			setLoading(false)
@@ -333,7 +349,9 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 												<input
 													type="text"
 													value={socialLinks.website}
-													onChange={(e) => setSocialLink('website', e.target.value)}
+													onChange={(e) =>
+														setSocialLink('website', e.target.value)
+													}
 													placeholder="Enter your website here"
 													className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
     															[&::-webkit-inner-spin-button]:appearance-none 
@@ -379,7 +397,9 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 												<input
 													type="text"
 													value={socialLinks.twitter}
-													onChange={(e) => setSocialLink('twitter', e.target.value)}
+													onChange={(e) =>
+														setSocialLink('twitter', e.target.value)
+													}
 													placeholder="Enter your twitter here"
 													className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
     															[&::-webkit-inner-spin-button]:appearance-none 
@@ -401,7 +421,9 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 												<input
 													type="text"
 													value={socialLinks.discord}
-													onChange={(e) => setSocialLink('discord', e.target.value)}
+													onChange={(e) =>
+														setSocialLink('discord', e.target.value)
+													}
 													placeholder="Enter your discord here"
 													className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
     															[&::-webkit-inner-spin-button]:appearance-none 
@@ -423,7 +445,9 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 												<input
 													type="text"
 													value={socialLinks.github}
-													onChange={(e) => setSocialLink('github', e.target.value)}
+													onChange={(e) =>
+														setSocialLink('github', e.target.value)
+													}
 													placeholder="Enter your github here"
 													className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
     															[&::-webkit-inner-spin-button]:appearance-none 
@@ -575,20 +599,24 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 												<Folder
 													color="#00d8ff"
 													size={0.8}
-													items={licenseAndCertification ? [
-														<div
-															key="license"
-															className="w-full h-full flex items-center justify-center"
-														>
-															<Image
-																src={licenseAndCertification}
-																alt="License & Certification"
-																width={512}
-																height={512}
-																className="max-w-full max-h-full object-contain rounded"
-															/>
-														</div>
-													] : []}
+													items={
+														licenseAndCertification
+															? [
+																	<div
+																		key="license"
+																		className="w-full h-full flex items-center justify-center"
+																	>
+																		<Image
+																			src={licenseAndCertification}
+																			alt="License & Certification"
+																			width={512}
+																			height={512}
+																			className="max-w-full max-h-full object-contain rounded"
+																		/>
+																	</div>,
+																]
+															: []
+													}
 													maxItems={1}
 												/>
 											</div>
@@ -607,20 +635,22 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 												<Folder
 													color="#00d8ff"
 													size={0.8}
-													items={historyEvidence.map((image: string, index: number) => (
-														<div
-															key={`history-image-${index}`}
-															className="w-full h-full flex items-center justify-center"
-														>
-															<Image
-																src={image}
-																alt={`History Evidence ${index + 1}`}
-																width={512}
-																height={512}
-																className="max-w-full max-h-full object-contain rounded"
-															/>
-														</div>
-													))}
+													items={historyEvidence.map(
+														(image: string, index: number) => (
+															<div
+																key={`history-image-${index}`}
+																className="w-full h-full flex items-center justify-center"
+															>
+																<Image
+																	src={image}
+																	alt={`History Evidence ${index + 1}`}
+																	width={512}
+																	height={512}
+																	className="max-w-full max-h-full object-contain rounded"
+																/>
+															</div>
+														)
+													)}
 													maxItems={3}
 												/>
 											</div>
@@ -673,20 +703,24 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 												<Folder
 													color="#00d8ff"
 													size={0.8}
-													items={personalId ? [
-														<div
-															key="personal-id"
-															className="w-full h-full flex items-center justify-center"
-														>
-															<Image
-																src={personalId}
-																alt="Personal ID"
-																width={512}
-																height={512}
-																className="max-w-full max-h-full object-contain rounded"
-															/>
-														</div>
-													] : []}
+													items={
+														personalId
+															? [
+																	<div
+																		key="personal-id"
+																		className="w-full h-full flex items-center justify-center"
+																	>
+																		<Image
+																			src={personalId}
+																			alt="Personal ID"
+																			width={512}
+																			height={512}
+																			className="max-w-full max-h-full object-contain rounded"
+																		/>
+																	</div>,
+																]
+															: []
+													}
 													maxItems={1}
 												/>
 											</div>
@@ -706,20 +740,24 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 												<Folder
 													color="#00d8ff"
 													size={0.8}
-													items={faceId ? [
-														<div
-															key="face-id"
-															className="w-full h-full flex items-center justify-center"
-														>
-															<Image
-																src={faceId}
-																alt="Face ID"
-																width={512}
-																height={512}
-																className="max-w-full max-h-full object-contain rounded"
-															/>
-														</div>
-													] : []}
+													items={
+														faceId
+															? [
+																	<div
+																		key="face-id"
+																		className="w-full h-full flex items-center justify-center"
+																	>
+																		<Image
+																			src={faceId}
+																			alt="Face ID"
+																			width={512}
+																			height={512}
+																			className="max-w-full max-h-full object-contain rounded"
+																		/>
+																	</div>,
+																]
+															: []
+													}
 													maxItems={1}
 												/>
 											</div>
@@ -734,18 +772,24 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 													name: `Project Image ${index + 1}`,
 													type: 'project',
 												})),
-												...(licenseAndCertification ? [{
-													id: 'license',
-													base64: licenseAndCertification,
-													name: 'License & Certification',
-													type: 'license',
-												}] : []),
-												...historyEvidence.map((base64: string, index: number) => ({
-													id: `history-${index}`,
-													base64,
-													name: `History Evidence ${index + 1}`,
-													type: 'history',
-												})),
+												...(licenseAndCertification
+													? [
+															{
+																id: 'license',
+																base64: licenseAndCertification,
+																name: 'License & Certification',
+																type: 'license',
+															},
+														]
+													: []),
+												...historyEvidence.map(
+													(base64: string, index: number) => ({
+														id: `history-${index}`,
+														base64,
+														name: `History Evidence ${index + 1}`,
+														type: 'history',
+													})
+												),
 												...(personalId
 													? [
 															{
@@ -782,7 +826,9 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 												} else if (type === 'license') {
 													setLicenseAndCertification(null)
 												} else if (type === 'history') {
-													const newImages = historyEvidence.filter((_, i) => i !== parseInt(index))
+													const newImages = historyEvidence.filter(
+														(_, i) => i !== parseInt(index)
+													)
 													setHistoryEvidence(newImages)
 												} else if (type === 'personalId') {
 													setPersonalId(null)
