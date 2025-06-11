@@ -22,35 +22,44 @@ import DonorsTable from '@/components/charity/charity-detail-section/DonorsTable
 import CountdownTimer from '@/components/UI/countdown/CountdownTimer'
 import { useParams } from 'next/navigation'
 import { Charity } from '@/interface/interface'
-import { NextResponse } from "next/server";
-import prismaClient from "@/prisma";
+import { NextResponse } from 'next/server'
+import { prismaClient } from '@/prisma'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
 import ErrorModal from '@/components/UI/modal/ErrorModal'
 import LockModal from '@/components/UI/modal/LockModal'
+import useCharityTokenAmountStore from '@/store/launchpad/LaunchpadDetailStore'
+import { useAccount, useWriteContract } from 'wagmi'
+import { chainConfig } from '@/app/config'
+import { Address } from 'viem'
+import { CharityABI, MockERC20ABI } from '@/app/abi'
+import { convertNumToOnChainFormat } from '@/app/utils/decimal'
+import { readContract, waitForTransactionReceipt } from 'viem/actions'
+import { publicClient } from '@/app/launchpad/my-launchpad/MyLaunchpad'
+import { BigNumber } from 'ethers'
 
 // Dummy data for testing
 const dummyCharityData: Charity = {
 	charity_id: 'dummy-charity-1',
 	charity_name: 'Test Charity Organization',
 	charity_short_des: 'A test charity organization for development purposes',
-	charity_long_des: 'This is a detailed description of our test charity organization. We are dedicated to helping those in need and making a positive impact in our community. Our mission is to provide support and resources to those who need it most.',
+	charity_long_des:
+		'This is a detailed description of our test charity organization. We are dedicated to helping those in need and making a positive impact in our community. Our mission is to provide support and resources to those who need it most.',
 	charity_logo: 'https://picsum.photos/200',
 	charity_img: [
 		'https://picsum.photos/800/600',
 		'https://picsum.photos/800/601',
-		'https://picsum.photos/800/602'
+		'https://picsum.photos/800/602',
 	],
 	charity_start_date: new Date().toISOString(),
-	charity_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+	charity_end_date: new Date(
+		Date.now() + 30 * 24 * 60 * 60 * 1000
+	).toISOString(), // 30 days from now
 	charity_fb: 'https://facebook.com/testcharity',
 	charity_x: 'https://twitter.com/testcharity',
 	charity_ig: 'https://instagram.com/testcharity',
 	charity_website: 'https://testcharity.org',
 	charity_token_symbol: 'TEST',
-	evidence: [
-		'https://picsum.photos/400/300',
-		'https://picsum.photos/400/301'
-	],
+	evidence: ['https://picsum.photos/400/300', 'https://picsum.photos/400/301'],
 	repre_name: 'John Doe',
 	repre_phone: '+1234567890',
 	repre_faceid: 'face123',
@@ -58,7 +67,7 @@ const dummyCharityData: Charity = {
 	donations: [],
 	charity_email: 'test@charity.org',
 	repre_id: 'dummy-repre-1',
-	status: 'approved'
+	status: 'approved',
 }
 
 const dummyDonations = [
@@ -66,58 +75,69 @@ const dummyDonations = [
 		id: 1,
 		user: { user_name: 'Alice Smith' },
 		datetime: new Date().toISOString(),
-		amount: 1000
+		amount: 1000,
 	},
 	{
 		id: 2,
 		user: { user_name: 'Bob Johnson' },
 		datetime: new Date().toISOString(),
-		amount: 750
+		amount: 750,
 	},
 	{
 		id: 3,
 		user: { user_name: 'Carol White' },
 		datetime: new Date().toISOString(),
-		amount: 500
-	}
+		amount: 500,
+	},
 ]
 
 const CharityDetail = () => {
+	const account = useAccount()
+	const userAddress = account.address
 	const [backgroundImage, setBackgroundImage] = useState<string>('')
 	const [charity, setCharity] = useState<Charity | null>(null)
 	const [donations, setDonations] = useState<any[]>([])
-	const [loading, setLoading] = useState(true)
+	const [loading, setLoading] = useState(false)
 	const [errorModalOpen, setErrorModalOpen] = useState(false)
 	const [errorMessage, setErrorMessage] = useState('')
 	const [errorCode, setErrorCode] = useState('')
 	const [lockOpen, setLockOpen] = useState(false)
 	const params = useParams()
+	const charityAddress = params['charity-id']
+	const { tokenAmount } = useCharityTokenAmountStore()
+	const { writeContractAsync: writeDonate, error: donateError } =
+		useWriteContract()
+	const { writeContractAsync: writeToToken, error: tokenError } =
+		useWriteContract()
 
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
 				// Set a timeout for the API calls
-				const timeoutPromise = new Promise((_, reject) => 
+				const timeoutPromise = new Promise((_, reject) =>
 					setTimeout(() => reject(new Error('Request timeout')), 5000)
-				);
+				)
 
 				// Fetch charity details with timeout
-				const charityResponse = await Promise.race([
+				const charityResponse = (await Promise.race([
 					fetch(`/api/charity/get/${params['charity-id']}`),
-					timeoutPromise
-				]) as Response;
+					timeoutPromise,
+				])) as Response
 				const charityData = await charityResponse.json()
-				
+
 				// Fetch donations with timeout
-				const donationsResponse = await Promise.race([
+				const donationsResponse = (await Promise.race([
 					fetch(`/api/donation/get/${params['charity-id']}`),
-					timeoutPromise
-				]) as Response;
+					timeoutPromise,
+				])) as Response
 				const donationsData = await donationsResponse.json()
 
 				if (charityData.success) {
 					setCharity(charityData.data)
-					if (charityData.data.charity_img && charityData.data.charity_img.length > 0) {
+					if (
+						charityData.data.charity_img &&
+						charityData.data.charity_img.length > 0
+					) {
 						setBackgroundImage(charityData.data.charity_img[0])
 					}
 				} else {
@@ -148,6 +168,97 @@ const CharityDetail = () => {
 
 		fetchData()
 	}, [params['charity-id']])
+
+	const handleDonate = async () => {
+		if (!userAddress) {
+			setErrorMessage('Please connect your wallet to donate')
+			setErrorCode('401')
+			setErrorModalOpen(true)
+			return
+		}
+		if (tokenAmount <= 0) {
+			setErrorMessage('Please enter a valid donation amount')
+			setErrorCode('400')
+			setErrorModalOpen(true)
+			return
+		}
+		setLoading(true)
+		try {
+			const acceptedTokenAddress =
+				chainConfig.contracts.AcceptedMockERC20.address
+			const allowance = await readContract(publicClient, {
+				abi: MockERC20ABI,
+				address: acceptedTokenAddress as Address,
+				functionName: 'allowance',
+				args: [userAddress, charityAddress as Address],
+			})
+
+			console.log('allowancesiogseoigh:', allowance)
+
+			// if (!allowance) {
+			// 	console.error('Failed to fetch allowance')
+			// 	return
+			// }
+			console.log('eoisfjsoigjiroj')
+			const allowanceBN = BigNumber.from(allowance as string)
+			if (allowanceBN.gte(tokenAmount)) {
+				console.log('Allowance is sufficient, no need to approve.')
+			} else {
+				// const MockERC20Address = chainConfig.contracts.MockERC20.address
+				const approveHash = await writeToToken({
+					abi: MockERC20ABI,
+					address: acceptedTokenAddress as Address,
+					functionName: 'approve',
+					args: [
+						charityAddress as Address,
+						convertNumToOnChainFormat(tokenAmount, 18),
+					],
+				})
+				console.log('Approval transaction hash:', approveHash)
+				console.log('Appoved')
+
+				const receipt = await waitForTransactionReceipt(publicClient, {
+					hash: approveHash,
+				})
+
+				const newAllowance = await readContract(publicClient, {
+					abi: MockERC20ABI,
+					address: acceptedTokenAddress as Address,
+					functionName: 'allowance',
+					args: [userAddress, charityAddress as Address],
+				})
+
+				console.log('New allowance:', newAllowance)
+
+				if (receipt.status !== 'success') {
+					console.error('Approval transaction failed')
+					console.log('Write to Token error: ', tokenError)
+					return
+				}
+			}
+			// const charityAddress = chainConfig.contracts.Charity.address
+			const hash = await writeDonate({
+				address: charityAddress as Address,
+				abi: CharityABI,
+				functionName: 'deposit',
+				args: [convertNumToOnChainFormat(tokenAmount, 18)],
+			})
+
+			const receipt = await waitForTransactionReceipt(publicClient, {
+				hash,
+			})
+
+			console.log('Donation receipt:', receipt)
+
+			if (!receipt.status) {
+				setErrorMessage('Transaction failed. Please try again.')
+				setErrorCode('500')
+				setErrorModalOpen(true)
+				return
+			}
+			setLockOpen(true)
+		} catch (error) {}
+	}
 
 	// Handler for image changes from the carousel
 	const handleImageChange = (imageSrc: string) => {
@@ -203,7 +314,7 @@ const CharityDetail = () => {
 
 				<div className="relative px-20 pt-48 pb-12 z-10">
 					<div className="flex justify-between items-center">
-						<ProjectHeader 
+						<ProjectHeader
 							projectDetail={{
 								id: charity.charity_id,
 								name: charity.charity_name,
@@ -225,22 +336,20 @@ const CharityDetail = () => {
 								repre_phone: charity.repre_phone,
 								repre_faceid: charity.repre_faceid,
 								totalDonationAmount: charity.totalDonationAmount,
-								donations: charity.donations
-							}} 
+								donations: charity.donations,
+							}}
 						/>
-						<CountdownTimer
-							endTime={charity.charity_end_date}
-						/>
+						<CountdownTimer endTime={charity.charity_end_date} />
 					</div>
 				</div>
 
 				<div className="flex items-start justify-center gap-12">
 					<div className="w-10/12">
 						<ThumbNailCarousel
-							projectImages={charity.charity_img.map(img => ({
+							projectImages={charity.charity_img.map((img) => ({
 								src: img,
 								alt: charity.charity_name,
-								description: charity.charity_name
+								description: charity.charity_name,
 							}))}
 							fullWidthBackground={false}
 							onImageChange={handleImageChange}
@@ -257,7 +366,7 @@ const CharityDetail = () => {
 							<HistoryEvidence
 								images={charity.evidence.map((img, index) => ({
 									src: img,
-									alt: `Charity evidence ${index + 1}`
+									alt: `Charity evidence ${index + 1}`,
 								}))}
 							/>
 						</div>
@@ -280,7 +389,7 @@ const CharityDetail = () => {
 					</div>
 					<div className="w-4/12 h-fit top-12 flex flex-col">
 						<div className="h-[500px] flex flex-col gap-5 w-full">
-							<DonateArea enabled={true} />
+							<DonateArea enabled={true} handleDonate={handleDonate} />
 						</div>
 						<AddressInfo
 							fields={[
