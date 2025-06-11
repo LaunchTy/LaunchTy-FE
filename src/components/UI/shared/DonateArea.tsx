@@ -1,7 +1,16 @@
 import { useState } from 'react'
 import Button from '../button/Button'
-const StakeArea = ({ enabled = false }: { enabled: boolean }) => {
-	const [tokenAmount, setTokenAmount] = useState(0)
+import useCharityTokenAmountStore from '@/store/launchpad/LaunchpadDetailStore'
+
+interface CharityAreaProps {
+	enabled?: boolean
+	handleDonate?: () => void
+}
+const StakeArea: React.FC<CharityAreaProps> = ({
+	enabled = false,
+	handleDonate,
+}) => {
+	const { tokenAmount, setTokenAmount } = useCharityTokenAmountStore()
 	const isButtonDisabled = !enabled || tokenAmount <= 0
 	return (
 		<div className="">
@@ -63,7 +72,7 @@ const StakeArea = ({ enabled = false }: { enabled: boolean }) => {
 						}`}
 						disabled={isButtonDisabled}
 						onClick={() => {
-							alert('Donate button clicked')
+							handleDonate()
 						}}
 					>
 						Donate
