@@ -8,12 +8,19 @@ import ProjectRowCard from '@/components/Launchpad/MyProject-section/ProjectRowC
 import { useState } from 'react'
 import { useEffect } from 'react'
 import axios from 'axios'
-import { useAccount } from 'wagmi'
-import { Charity } from '@/interface/interface'
+import { useAccount, useWriteContract } from 'wagmi'
+import { BaseProject, Charity } from '@/interface/interface'
 import AnimatedBlobs from '@/components/UI/background/AnimatedBlobs'
 import ErrorModal from '@/components/UI/modal/ErrorModal'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
 import LockModal from '@/components/UI/modal/LockModal'
+import { CharityFactoryABI } from '@/app/abi'
+import { chainConfig } from '@/app/config'
+import { Address } from 'viem'
+import { readContract, waitForTransactionReceipt } from 'viem/actions'
+import { publicClient } from '@/app/launchpad/create-launchpad/preview/Preview'
+import { useCharityStore } from '@/store/charity/CreateCharityStore'
+import { useRouter, useParams } from 'next/navigation'
 
 const navItems = [
 	{ id: 'all', label: 'All Projects' },
@@ -21,6 +28,28 @@ const navItems = [
 	{ id: 'ongoing', label: 'On Going' },
 	{ id: 'finished', label: 'Finished' },
 ]
+
+const convertCharityToProject = (charity: Charity): BaseProject => {
+	const now = new Date()
+	const startDate = new Date(charity.charity_start_date)
+	const endDate = new Date(charity.charity_end_date)
+
+	let status: 'upcoming' | 'ongoing' | 'finished' = 'finished'
+	if (now < startDate) status = 'upcoming'
+	else if (now >= startDate && now <= endDate) status = 'ongoing'
+
+	return {
+		id: charity.charity_id,
+		name: charity.charity_name,
+		shortDescription: charity.charity_short_des,
+		logo: charity.charity_logo,
+		endDate: charity.charity_end_date,
+		type: 'charity',
+		totalDonationAmount: charity.totalDonationAmount,
+		status: status,
+		status_charity: charity.status_charity,
+	}
+}
 
 const MyCharity = () => {
 	const { address } = useAccount()
@@ -32,6 +61,11 @@ const MyCharity = () => {
 	const [errorModalOpen, setErrorModalOpen] = useState(false)
 	const [errorMessage, setErrorMessage] = useState('')
 	const [errorCode, setErrorCode] = useState('')
+	const account = useAccount()
+	const userAddress = account.address
+	const { writeContractAsync } = useWriteContract()
+	const [error, setError] = useState<string | null>(null)
+	const router = useRouter()
 
 	const fetchProjects = async () => {
 		try {
@@ -39,24 +73,105 @@ const MyCharity = () => {
 			const response = await axios.post('/api/charity/my-charity', {
 				wallet_address: address,
 			})
-			const transformedProjects = response.data.data.map(
-				(charity: Charity) => ({
-					id: charity.charity_id,
-					name: charity.charity_name,
-					images: [charity.charity_logo],
-					shortDescription: charity.charity_short_des,
-					launchpad_token: charity.charity_token_symbol,
-					totalInvest: charity.totalDonationAmount || 0,
-					endDate: charity.charity_end_date,
-				})
+			const charityData: Charity[] = response.data.data
+			const projectsData: BaseProject[] = charityData.map(
+				convertCharityToProject
 			)
-			setProjects(transformedProjects)
+			setProjects(projectsData)
 		} catch (error: any) {
 			setErrorCode(error?.response?.status?.toString() || '500')
 			setErrorMessage(
 				error?.response?.data?.message ||
 					'Something went wrong while fetching your charities.'
 			)
+			setErrorModalOpen(true)
+		} finally {
+			setLoading(false)
+		}
+	}
+
+	const handlePublish = async (projects: BaseProject) => {
+		if (!userAddress) {
+			setLockOpen(true)
+			return
+		}
+		const acceptedTokenAddress: Address = chainConfig.contracts
+			.AcceptedMockERC20.address as Address
+
+		const hash = await writeContractAsync({
+			address: chainConfig.contracts.CharityFactory.address as Address,
+			abi: CharityFactoryABI,
+			functionName: 'createCharity',
+			args: [
+				acceptedTokenAddress,
+				Math.floor(Date.now() / 1000),
+				Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days from now
+			],
+		})
+
+		const receipt = await waitForTransactionReceipt(publicClient, {
+			hash,
+		})
+		console.log('Transaction hash:', hash)
+		console.log('Receipt: ', receipt)
+
+		if (!receipt) {
+			console.error('Transaction receipt not found', receipt)
+			setError('Transaction receipt not found')
+			return
+		}
+		const currentCharity = await readContract(publicClient, {
+			address: chainConfig.contracts.CharityFactory.address as Address,
+			abi: CharityFactoryABI,
+			functionName: 'getCharityCount',
+			args: [],
+		})
+
+		console.log('Current charity count:', currentCharity)
+
+		const charityAddress = await readContract(publicClient, {
+			address: chainConfig.contracts.CharityFactory.address as Address,
+			abi: CharityFactoryABI,
+			functionName: 'getCharityAddress',
+			args: [currentCharity],
+		})
+
+		console.log('Charity address:', charityAddress)
+		try {
+			if (!address) {
+				setLockOpen(true)
+				return
+			}
+
+			setLoading(true)
+
+			// const charityData = {
+			// 	charity_name: projectName,
+			// 	charity_short_des: shortDescription,
+			// 	charity_long_des: longDescription,
+			// 	charity_token_symbol: selectedToken || '',
+			// 	charity_token_supply: Number(tokenSupply),
+			// 	charity_logo: logo,
+			// 	charity_fb: socialLinks.facebook || '',
+			// 	charity_x: socialLinks.twitter || '',
+			// 	charity_ig: socialLinks.instagram || '',
+			// 	charity_website: socialLinks.website || '',
+			// 	charity_whitepaper: '',
+			// 	charity_img: images,
+			// 	charity_start_date: startDate,
+			// 	charity_end_date: endDate,
+			// 	license_certificate: licenseAndCertification,
+			// 	evidence: historyEvidence.filter(Boolean),
+			// 	repre_name: representativeName,
+			// 	repre_phone: phoneNumber,
+			// 	repre_id: personalId,
+			// 	repre_faceid: faceId,
+			// 	wallet_address: address,
+			// }
+		} catch (error: any) {
+			console.error('Error creating charity:', error)
+			setErrorCode(error?.response?.status?.toString() || '500')
+			setErrorMessage(error?.message || 'Failed to create charity')
 			setErrorModalOpen(true)
 		} finally {
 			setLoading(false)
@@ -112,6 +227,8 @@ const MyCharity = () => {
 						onEdit={(projectId) => {
 							console.log('Edit charity:', projectId)
 						}}
+						handlePublish={handlePublish}
+						projectType="charity"
 					/>
 
 					{hasMore && (

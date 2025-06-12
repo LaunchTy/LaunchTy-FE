@@ -152,112 +152,112 @@ const Preview = () => {
 	}
 
 	const handleSubmit = async () => {
-		if (!userAddress) {
-			setLockOpen(true)
-			return
+		// if (!userAddress) {
+		// 	setLockOpen(true)
+		// 	return
+		// }
+		// const acceptedTokenAddress: Address = chainConfig.contracts
+		// 	.AcceptedMockERC20.address as Address
+
+		// const hash = await writeContractAsync({
+		// 	address: chainConfig.contracts.CharityFactory.address as Address,
+		// 	abi: CharityFactoryABI,
+		// 	functionName: 'createCharity',
+		// 	args: [
+		// 		acceptedTokenAddress,
+		// 		Math.floor(Date.now() / 1000),
+		// 		Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days from now
+		// 	],
+		// })
+
+		// const receipt = await waitForTransactionReceipt(publicClient, {
+		// 	hash,
+		// })
+		// console.log('Transaction hash:', hash)
+		// console.log('Receipt: ', receipt)
+
+		// if (!receipt) {
+		// 	console.error('Transaction receipt not found', receipt)
+		// 	setError('Transaction receipt not found')
+		// 	return
+		// }
+		// const currentCharity = await readContract(publicClient, {
+		// 	address: chainConfig.contracts.CharityFactory.address as Address,
+		// 	abi: CharityFactoryABI,
+		// 	functionName: 'getCharityCount',
+		// 	args: [],
+		// })
+
+		// console.log('Current charity count:', currentCharity)
+
+		// const charityAddress = await readContract(publicClient, {
+		// 	address: chainConfig.contracts.CharityFactory.address as Address,
+		// 	abi: CharityFactoryABI,
+		// 	functionName: 'getCharityAddress',
+		// 	args: [currentCharity],
+		// })
+
+		// console.log('Charity address:', charityAddress)
+		// try {
+		// 	if (!address) {
+		// 		setLockOpen(true)
+		// 		return
+		// 	}
+
+		// 	setLoading(true)
+
+		const charityData = {
+			charity_name: projectName,
+			charity_short_des: shortDescription,
+			charity_long_des: longDescription,
+			charity_token_symbol: selectedToken || '',
+			charity_token_supply: Number(tokenSupply),
+			charity_logo: logo,
+			charity_fb: socialLinks.facebook || '',
+			charity_x: socialLinks.twitter || '',
+			charity_ig: socialLinks.instagram || '',
+			charity_website: socialLinks.website || '',
+			charity_whitepaper: '',
+			charity_img: images,
+			charity_start_date: startDate,
+			charity_end_date: endDate,
+			license_certificate: licenseAndCertification,
+			evidence: historyEvidence.filter(Boolean),
+			repre_name: representativeName,
+			repre_phone: phoneNumber,
+			repre_id: personalId,
+			repre_faceid: faceId,
+			wallet_address: address,
 		}
-		const acceptedTokenAddress: Address = chainConfig.contracts
-			.AcceptedMockERC20.address as Address
 
-		const hash = await writeContractAsync({
-			address: chainConfig.contracts.CharityFactory.address as Address,
-			abi: CharityFactoryABI,
-			functionName: 'createCharity',
-			args: [
-				acceptedTokenAddress,
-				Math.floor(Date.now() / 1000),
-				Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days from now
-			],
+		const response = await fetch('/api/charity/create', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(charityData),
 		})
 
-		const receipt = await waitForTransactionReceipt(publicClient, {
-			hash,
-		})
-		console.log('Transaction hash:', hash)
-		console.log('Receipt: ', receipt)
-
-		if (!receipt) {
-			console.error('Transaction receipt not found', receipt)
-			setError('Transaction receipt not found')
-			return
+		if (!response.ok) {
+			const errorData = await response.json()
+			throw new Error(errorData.message || 'Failed to create charity')
 		}
-		const currentCharity = await readContract(publicClient, {
-			address: chainConfig.contracts.CharityFactory.address as Address,
-			abi: CharityFactoryABI,
-			functionName: 'getCharityCount',
-			args: [],
-		})
 
-		console.log('Current charity count:', currentCharity)
+		const data = await response.json()
 
-		const charityAddress = await readContract(publicClient, {
-			address: chainConfig.contracts.CharityFactory.address as Address,
-			abi: CharityFactoryABI,
-			functionName: 'getCharityAddress',
-			args: [currentCharity],
-		})
-
-		console.log('Charity address:', charityAddress)
-		try {
-			if (!address) {
-				setLockOpen(true)
-				return
-			}
-
-			setLoading(true)
-
-			const charityData = {
-				charity_name: projectName,
-				charity_short_des: shortDescription,
-				charity_long_des: longDescription,
-				charity_token_symbol: selectedToken || '',
-				charity_token_supply: Number(tokenSupply),
-				charity_logo: logo,
-				charity_fb: socialLinks.facebook || '',
-				charity_x: socialLinks.twitter || '',
-				charity_ig: socialLinks.instagram || '',
-				charity_website: socialLinks.website || '',
-				charity_whitepaper: '',
-				charity_img: images,
-				charity_start_date: startDate,
-				charity_end_date: endDate,
-				license_certificate: licenseAndCertification,
-				evidence: historyEvidence.filter(Boolean),
-				repre_name: representativeName,
-				repre_phone: phoneNumber,
-				repre_id: personalId,
-				repre_faceid: faceId,
-				wallet_address: address,
-			}
-
-			const response = await fetch('/api/charity/create', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify(charityData),
-			})
-
-			if (!response.ok) {
-				const errorData = await response.json()
-				throw new Error(errorData.message || 'Failed to create charity')
-			}
-
-			const data = await response.json()
-
-			if (!data.success) {
-				throw new Error(data.message || 'Failed to create charity')
-			}
-
-			router.push('/charity/explore-charity')
-		} catch (error: any) {
-			console.error('Error creating charity:', error)
-			setErrorCode(error?.response?.status?.toString() || '500')
-			setErrorMessage(error?.message || 'Failed to create charity')
-			setErrorModalOpen(true)
-		} finally {
-			setLoading(false)
+		if (!data.success) {
+			throw new Error(data.message || 'Failed to create charity')
 		}
+
+		router.push('/charity/explore-charity')
+		// 	} catch (error: any) {
+		// 		console.error('Error creating charity:', error)
+		// 		setErrorCode(error?.response?.status?.toString() || '500')
+		// 		setErrorMessage(error?.message || 'Failed to create charity')
+		// 		setErrorModalOpen(true)
+		// 	} finally {
+		// 		setLoading(false)
+		// 	}
 	}
 
 	// Calculate status based on dates

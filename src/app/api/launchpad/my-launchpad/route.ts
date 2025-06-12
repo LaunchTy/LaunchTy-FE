@@ -59,6 +59,7 @@ export async function POST(request: Request) {
 				total_supply: project.total_supply,
 				launchpad_logo: project.launchpad_logo,
 				launchpad_token: project.launchpad_token,
+				launchpad_short_des: project.launchpad_short_des,
 				totalInvest,
 				launchpad_start_date: new Date(
 					project.launchpad_start_date

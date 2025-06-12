@@ -31,6 +31,7 @@ interface ProjectSectionProps {
 	showCountdown?: boolean
 	countdownDuration?: number // in hours
 	launchpadStatus?: 'pending' | 'approve' | 'deny' | 'publish'
+	projectType: 'charity' | 'launchpad'
 }
 
 const ProjectSection = ({
@@ -41,6 +42,7 @@ const ProjectSection = ({
 	onEdit,
 	handlePublish,
 	launchpadStatus,
+	projectType,
 }: ProjectSectionProps) => {
 	// const sectionRef = useRef<HTMLElement>(null)
 	// const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
@@ -175,18 +177,33 @@ const ProjectSection = ({
 						{/* Cột 3: Token */}
 						<div className="text-white text-sm flex justify-start w-56">
 							<span className="font-medium">Token:</span>{' '}
-							{project.launchpad_token}
+							{projectType === 'launchpad' ? (
+								<>{project.launchpad_token || '--'}</>
+							) : (
+								<>{project.charity_token_symbol || '--'}</>
+							)}
 						</div>
 
-						{/* Cột 4: Total Invested */}
+						{/* Cột 4: Total Invested/Donation */}
 						<div className="text-white text-sm">
+							<span className="font-medium">
+								{projectType === 'launchpad'
+									? 'Total Invested:'
+									: 'Total Donated:'}
+							</span>{' '}
+							{projectType === 'launchpad'
+								? `${project.totalInvest?.toLocaleString() || '0'} ${project.launchpad_token || ''}`
+								: `${project.totalDonationAmount?.toLocaleString() || '0'} ${project.charity_token_symbol || ''}`}
+						</div>
+
+						{/* <div className="text-white text-sm">
 							<span className="font-medium">Total Invested:</span>{' '}
-							{/* {typeof project.totalInvest === 'number'
+							{typeof project.totalInvest === 'number'
 								? project.totalInvest.toLocaleString()
-								: '--'} */}
+								: '--'}
 							000 {''}
 							{project.launchpad_token}
-						</div>
+						</div> */}
 
 						{/* Cột 5: Ends In */}
 						<div className="text-white text-sm">
@@ -196,18 +213,21 @@ const ProjectSection = ({
 								: '--'}
 						</div>
 
-						{/* Cột 6: Edit Button */}
+						{/* Cột 6:  Button */}
 						<div className="flex justify-end gap-4">
-							{handlePublish && project.status_launchpad === 'approve' && (
-								<Button
-									onClick={() => handlePublish(project)}
-									className="bg-white transition-all duration-300 ease-in-out 
-				hover:opacity-80 hover:shadow-lg hover:scale-105 
-				active:scale-95 active:opacity-90 items-center px-3 py-2 h-auto border-border/50 hover:border-border"
-								>
-									<span className="text-gradient">Publish</span>
-								</Button>
-							)}
+							{handlePublish &&
+								(projectType === 'launchpad'
+									? project.status_launchpad === 'approve'
+									: project.status_charity === 'approve') && (
+									<Button
+										onClick={() => handlePublish(project)}
+										className="bg-white transition-all duration-300 ease-in-out 
+					hover:opacity-80 hover:shadow-lg hover:scale-105 
+					active:scale-95 active:opacity-90 items-center px-3 py-2 h-auto border-border/50 hover:border-border"
+									>
+										<span className="text-gradient">Publish</span>
+									</Button>
+								)}
 							{onEdit && (
 								<Button
 									onClick={() => onEdit(project.id || '')}

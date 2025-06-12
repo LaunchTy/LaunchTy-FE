@@ -62,6 +62,7 @@ const convertLaunchpadToProject = (launchpad: Launchpad): BaseProject => {
 		launchpad_token: launchpad.launchpad_token,
 		logo: launchpad.launchpad_logo,
 		endDate: launchpad.launchpad_end_date,
+		shortDescription: launchpad.launchpad_short_des,
 		type: 'launchpad',
 		totalInvest: launchpad.totalInvest,
 		status: status,
@@ -438,6 +439,7 @@ const MyProject = () => {
 							console.log('Edit project:', projectId)
 						}}
 						handlePublish={handlePublish}
+						projectType="launchpad"
 					/>
 					{hasMore && (
 						<div className="align-center flex flex-col justify-center items-center p-8">
