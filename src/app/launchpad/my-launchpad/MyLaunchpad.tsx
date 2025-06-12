@@ -120,7 +120,7 @@ const MyProject = () => {
 
 		setLockOpen(false)
 		fetchProjects()
-	}, [address, projects])
+	}, [address])
 
 	const {
 		data: projectId,
