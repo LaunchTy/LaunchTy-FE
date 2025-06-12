@@ -39,15 +39,17 @@ const MyCharity = () => {
 			const response = await axios.post('/api/charity/my-charity', {
 				wallet_address: address,
 			})
-			const transformedProjects = response.data.data.map((charity: Charity) => ({
-				id: charity.charity_id,
-				name: charity.charity_name,
-				images: [charity.charity_logo],
-				shortDescription: charity.charity_short_des,
-				launchpad_token: charity.charity_token_symbol,
-				totalInvest: charity.totalDonationAmount || 0,
-				endDate: charity.charity_end_date
-			}))
+			const transformedProjects = response.data.data.map(
+				(charity: Charity) => ({
+					id: charity.charity_id,
+					name: charity.charity_name,
+					images: [charity.charity_logo],
+					shortDescription: charity.charity_short_des,
+					launchpad_token: charity.charity_token_symbol,
+					totalInvest: charity.totalDonationAmount || 0,
+					endDate: charity.charity_end_date,
+				})
+			)
 			setProjects(transformedProjects)
 		} catch (error: any) {
 			setErrorCode(error?.response?.status?.toString() || '500')
@@ -139,4 +141,4 @@ const MyCharity = () => {
 	)
 }
 
-export default MyCharity 
+export default MyCharity

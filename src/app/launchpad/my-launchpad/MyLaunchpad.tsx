@@ -120,7 +120,7 @@ const MyProject = () => {
 
 		setLockOpen(false)
 		fetchProjects()
-	}, [address])
+	}, [address, projects])
 
 	const {
 		data: projectId,
@@ -380,7 +380,8 @@ const MyProject = () => {
 		// Call the API to publish the project
 		const response = await axios.post('/api/launchpad/my-launchpad/publish', {
 			wallet_address: address,
-			launchpad_id: launchpadAddress,
+			launchpad_address: launchpadAddress,
+			launchpad_id: projects.id,
 		})
 		if (response.status === 200) {
 			console.log('Project published successfully:', response.data)

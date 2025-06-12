@@ -25,7 +25,7 @@ model Launchpad {
   token_address          String
   total_supply           Int
   launchpad_token        String
-  max_stake              Float
+  max_stake              Float  
   min_stake              Float
   soft_cap               Float
   hard_cap               Float

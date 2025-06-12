@@ -4,9 +4,11 @@ import prismaClient from "@/prisma";
 export async function POST(request: Request) {
 	try {
 		const body = await request.json();
-		const { wallet_address } = body;
-		const { launchpad_id } = body;
+		const { wallet_address, launchpad_address, launchpad_id } = body;
+		// const { launchpad_id } = body;
 		console.log("Wallet address: ", wallet_address);
+		console.log("Launchpad ID: ", launchpad_id);
+		console.log("Request body:", body);
 
 		if (!wallet_address || !launchpad_id) {
 			return NextResponse.json(
@@ -17,7 +19,7 @@ export async function POST(request: Request) {
 
 		const launchpad = await prismaClient.launchpad.findUnique({
 			where: {
-				launchpad_id,
+				launchpad_id: launchpad_id,
 				user: {
 					wallet_address,
 				},
@@ -37,9 +39,14 @@ export async function POST(request: Request) {
 
 		const updated = await prismaClient.launchpad.update({
 			where: {
-				launchpad_id: launchpad.launchpad_id,
+				launchpad_id: launchpad_id,
+				user: {
+					wallet_address,
+				},
+				status: "approve",
 			},
 			data: {
+				launchpad_id: launchpad_address,
 				status: "publish",
 			},
 		});
