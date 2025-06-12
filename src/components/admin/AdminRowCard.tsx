@@ -115,7 +115,7 @@ const AdminRowCard = ({
 			ref={sectionRef}
 			className={`pr-20 font-exo relative overflow-hidden min-h-auto ${className}`}
 		>
-			<div className="flex flex-col gap-5 z-20 relative">
+			<div className="flex flex-col gap-5 z-20 relative pb-12">
 				{adminprojects.map((project, index) => (
 					<motion.div
 						key={project.id}

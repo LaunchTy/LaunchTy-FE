@@ -15,6 +15,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import DonateArea from '@/components/UI/shared/DonateArea'
+import SuccessModal from '@/components/UI/modal/SuccessModal'
 
 interface ModalProjectProps {
 	projectDetail: {
@@ -35,6 +36,7 @@ const CharityDetail = () => {
 	const handleImageChange = (imageSrc: string) => {
 		setBackgroundImage(imageSrc)
 	}
+	const [successOpen, setSuccessOpen] = useState(false)
 
 	useEffect(() => {
 		if (!charity.charity_start_date || !charity.charity_end_date) return
@@ -63,8 +65,11 @@ const CharityDetail = () => {
 				const response = await axios.get(
 					`/api/admin/charity-detail?charity_id=${charity_id}`
 				)
-				console.log('Charity response:', response.data)
-				setCharity(response.data.data)
+				// console.log('Charity response:', response.data)
+				setCharity({
+					...response.data.data,
+					status_charity: response.data.data.status,
+				})
 			} catch (error) {
 				console.error('Failed to load projects:', error)
 			} finally {
@@ -78,12 +83,13 @@ const CharityDetail = () => {
 	const backgroundImageUrl = charity.charity_img?.[0] || ''
 
 	const onEdit = async (charity_id: string, action: 'approve' | 'deny') => {
+		console.log('Editing charity:', charity_id, action)
 		try {
 			await axios.post('/api/admin/charity-detail/action', {
 				charity_id,
 				action,
 			})
-			alert(`Project ${action} successfully`)
+			setSuccessOpen(true)
 			window.location.reload()
 		} catch (error) {
 			console.error(error)
@@ -202,7 +208,7 @@ const CharityDetail = () => {
 								/>
 							</div>
 						</div>
-						{charity.status === 'pending' && (
+						{!loading && charity.status_charity === 'pending' && (
 							<div className="flex items-center justify-center p-5 gap-3">
 								<Button
 									onClick={() => onEdit(charity.charity_id, 'approve')}
@@ -218,6 +224,11 @@ const CharityDetail = () => {
 								</Button>
 							</div>
 						)}
+						<SuccessModal
+							open={successOpen}
+							onOpenChange={setSuccessOpen}
+							showContinueButton={false}
+						/>
 					</>
 				)}
 			</div>

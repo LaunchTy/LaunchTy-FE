@@ -12,6 +12,7 @@ import axios from 'axios' // Adjust the import path as necessary
 import { log } from 'console'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
 import ErrorModal from '@/components/UI/modal/ErrorModal' // Adjust the import path as necessary
+import SuccessModal from '@/components/UI/modal/SuccessModal'
 
 const Charity = () => {
 	const [visibleCount, setVisibleCount] = useState(6)
@@ -26,6 +27,7 @@ const Charity = () => {
 	const [errorModalOpen, setErrorModalOpen] = useState(false)
 	const [errorMessage, setErrorMessage] = useState('')
 	const [errorCode, setErrorCode] = useState('')
+	const [successOpen, setSuccessOpen] = useState(false)
 
 	useEffect(() => {
 		const fetchProjects = async () => {
@@ -120,7 +122,7 @@ const Charity = () => {
 													projectId,
 													action,
 												})
-												alert(`Project ${action} successfully`)
+												setSuccessOpen(true)
 												setProjects((prev) =>
 													prev.filter((p) => p.id !== projectId)
 												)
@@ -208,6 +210,11 @@ const Charity = () => {
 					}
 					refetch()
 				}}
+			/>
+			<SuccessModal
+				open={successOpen}
+				onOpenChange={setSuccessOpen}
+				showContinueButton={false}
 			/>
 		</>
 	)

@@ -72,7 +72,8 @@ export interface Charity {
 	repre_phone: string;
 	repre_id: string;
 	repre_faceid: string;
-	status: "pending" | "approve" | "deny" | "publish";
+	status_charity?: "pending" | "approve" | "deny" | "publish";
+	status: "pending" | "approve" | "deny";
 	user?: User;
 	donations?: Donation[];
 	totalDonationAmount?: number; // Total amount donated to this charity

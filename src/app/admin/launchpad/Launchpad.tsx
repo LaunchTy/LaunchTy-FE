@@ -10,6 +10,7 @@ import router from 'next/router' // Adjust the import path as necessary
 import FilterStatus from '@/components/admin/Filter'
 import axios from 'axios' // Adjust the import path as necessary
 import LoadingModal from '@/components/UI/modal/LoadingModal'
+import SuccessModal from '@/components/UI/modal/SuccessModal'
 
 const Launchpad = () => {
 	const [visibleCount, setVisibleCount] = useState(6)
@@ -20,6 +21,8 @@ const Launchpad = () => {
 	const [filter, setFilter] = useState<string>('pending')
 	const [projects, setProjects] = useState<any[]>([])
 	const [loading, setLoading] = useState(false)
+	const [successOpen, setSuccessOpen] = useState(false)
+
 	useEffect(() => {
 		const fetchProjects = async () => {
 			setLoading(true)
@@ -108,7 +111,10 @@ const Launchpad = () => {
 													projectId,
 													action,
 												})
-												alert(`Project ${action} successfully`)
+												setProjects((prev) =>
+													prev.filter((p) => p.id !== projectId)
+												)
+												setSuccessOpen(true)
 												setProjects((prev) =>
 													prev.filter((p) => p.id !== projectId)
 												)
@@ -155,6 +161,11 @@ const Launchpad = () => {
 					</div>
 				</div>
 			</div>
+			<SuccessModal
+				open={successOpen}
+				onOpenChange={setSuccessOpen}
+				showContinueButton={false}
+			/>
 		</>
 	)
 }

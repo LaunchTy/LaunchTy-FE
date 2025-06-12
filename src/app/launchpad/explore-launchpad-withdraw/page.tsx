@@ -143,7 +143,7 @@ const ExploreProjectPage = () => {
 					}
 				})
 			)
-			setProjects(launchpadsData)
+			setProjects(projectsWithPrice)
 		} catch (error: any) {
 			setErrorCode(error?.response?.status?.toString() || '500')
 			setErrorMessage(

@@ -22,6 +22,7 @@ import { readContract, waitForTransactionReceipt } from 'viem/actions'
 import { useAccount, useReadContract, useWriteContract } from 'wagmi'
 import { publicClient } from '../../create-launchpad/preview/Preview'
 import { convertNumToOnChainFormat } from '@/app/utils/decimal'
+import SuccessModal from '@/components/UI/modal/SuccessModal'
 interface ModalProjectProps {
 	projectDetail: {
 		socials: any[]
@@ -45,6 +46,7 @@ const LaunchpadDetail = () => {
 	const user = useAccount()
 	const userAddress: Address = user.address as Address
 	const [steps, setSteps] = useState(2)
+	const [successOpen, setSuccessOpen] = useState(false)
 
 	// const { data: allowance, error: allowanceError } = useReadContract({
 	// 	abi: LaunchpadABI,
@@ -186,7 +188,6 @@ const LaunchpadDetail = () => {
 			})
 			console.log('User deposit amount:', userDepositAmount)
 			console.log('Deposit transaction hash:', hash)
-			console.log('Deposit successful')
 			// const receipt = await waitForTransactionReceipt(publicClient, {
 			// 	hash: hash,
 			// })
@@ -213,6 +214,7 @@ const LaunchpadDetail = () => {
 			alert('Error during deposit. Please try again later.')
 			// setLoadingOpen(false) // Hide loading modal
 		}
+		setSuccessOpen(true)
 	}
 
 	// Handler for image changes from the carousel
@@ -243,7 +245,7 @@ const LaunchpadDetail = () => {
 								/>
 							)}
 						</AnimatePresence>
-
+						<SuccessModal open={successOpen} onOpenChange={setSuccessOpen} />
 						<div className="relative px-20 pt-48 pb-12 z-10">
 							<ProjectHeader
 								projectDetail={{

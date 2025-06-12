@@ -14,6 +14,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Button from '@/components/UI/button/Button'
+import SuccessModal from '@/components/UI/modal/SuccessModal'
 
 interface ModalProjectProps {
 	projectDetail: {
@@ -34,6 +35,7 @@ const LaunchpadDetail = () => {
 	const handleImageChange = (imageSrc: string) => {
 		setBackgroundImage(imageSrc)
 	}
+	const [successOpen, setSuccessOpen] = useState(false)
 
 	useEffect(() => {
 		if (!launchpad.launchpad_start_date || !launchpad.launchpad_end_date) return
@@ -56,9 +58,12 @@ const LaunchpadDetail = () => {
 			setLoading(true)
 			try {
 				const response = await axios.get(
-					`/api/launchpad/launchpad-detail?launchpad_id=${launchpad_id}`
+					`/api/admin/launchpad-detail?launchpad_id=${launchpad_id}`
 				)
-				setLaunchpad(response.data.data)
+				setLaunchpad({
+					...response.data.data,
+					status_launchpad: response.data.data.status,
+				})
 			} catch (error) {
 				console.error('Failed to load projects:', error)
 			} finally {
@@ -75,7 +80,7 @@ const LaunchpadDetail = () => {
 				launchpad_id,
 				action,
 			})
-			alert(`Project ${action}d successfully`)
+			setSuccessOpen(true)
 			window.location.reload()
 		} catch (error) {
 			console.error(error)
@@ -154,7 +159,7 @@ const LaunchpadDetail = () => {
 										currentStep={steps}
 									/>
 								</div>
-								{launchpad.status === 'pending' && (
+								{!loading && launchpad.status_launchpad === 'pending' && (
 									<div className="flex items-center justify-center p-5 gap-3">
 										<Button
 											onClick={() => onEdit(launchpad.launchpad_id, 'approve')}
@@ -172,6 +177,11 @@ const LaunchpadDetail = () => {
 								)}
 							</div>
 						</div>
+						<SuccessModal
+							open={successOpen}
+							onOpenChange={setSuccessOpen}
+							showContinueButton={false}
+						/>
 					</>
 				)}
 			</div>
