@@ -109,7 +109,9 @@ const ExploreProjectPage = () => {
 				launchpadsData.map(async (launchpad) => {
 					const id = launchpad.launchpad_id
 					console.log('Fetching data for ID:', id)
-
+					const projectsData: BaseProject[] = launchpadsData.map(
+						convertLaunchpadToProject
+					)
 					try {
 						const price = await readContract(publicClient, {
 							address: id as Address,
@@ -117,7 +119,6 @@ const ExploreProjectPage = () => {
 							functionName: 'getPricePerToken',
 						})
 						console.log('Price per token:', price)
-
 						const totalWithdraw = await readContract(publicClient, {
 							address: id as Address,
 							abi: LaunchpadABI,
@@ -125,7 +126,6 @@ const ExploreProjectPage = () => {
 							args: [userAddress],
 						})
 						console.log('Total withdraw:', totalWithdraw)
-
 						return {
 							...convertLaunchpadToProject(launchpad),
 							launchpadAddress: id as Address,
@@ -143,9 +143,7 @@ const ExploreProjectPage = () => {
 					}
 				})
 			)
-			setProjects(projectsWithPrice)
-
-			// setProjects(mappedProjects)
+			setProjects(launchpadsData)
 		} catch (error: any) {
 			setErrorCode(error?.response?.status?.toString() || '500')
 			setErrorMessage(

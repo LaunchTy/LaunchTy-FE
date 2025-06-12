@@ -1,12 +1,10 @@
 import React from 'react'
-import ExploreProject from '@/app/launchpad/explore-launchpad/ExploreLaunchpad'; // Adjust the import path as necessary
+import ExploreProject from '@/app/launchpad/explore-launchpad/ExploreLaunchpad' // Adjust the import path as necessary
 
 export default function page() {
-    return (
-        <div>
-            <ExploreProject />
-        </div >
-    )
+	return (
+		<div>
+			<ExploreProject />
+		</div>
+	)
 }
-
-

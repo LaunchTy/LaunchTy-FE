@@ -32,7 +32,9 @@ export interface Launchpad {
 	launchpad_end_date: string; // ISO string
 	project_owner_id: string;
 	deposits?: Deposit[];
-	status?: "pending" | "approved" | "denied";
+	status_launchpad?: "pending" | "approve" | "deny" | "publish";
+	status?: "upcoming" | "ongoing" | "finished";
+	totalInvest?: number;
 	user?: User;
 	price?: number; // Price per token in the launchpad
 }
@@ -70,7 +72,7 @@ export interface Charity {
 	repre_phone: string;
 	repre_id: string;
 	repre_faceid: string;
-	status: "pending" | "approved" | "denied";
+	status: "pending" | "approve" | "deny" | "publish";
 	user?: User;
 	donations?: Donation[];
 	totalDonationAmount?: number; // Total amount donated to this charity
@@ -116,6 +118,8 @@ export interface BaseProject {
 	hard_cap?: number;
 	project_owner_id?: string;
 	pricePerToken?: number;
+	status_launchpad?: "pending" | "approve" | "deny" | "publish";
+	totalInvest?: number;
 
 	//Charity
 	charity_token_symbol?: string;
