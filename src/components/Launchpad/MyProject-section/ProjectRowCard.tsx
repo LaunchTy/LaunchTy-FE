@@ -11,23 +11,23 @@ import {
 } from 'framer-motion'
 import Image from 'next/image'
 import { BaseProject } from '@/interface/interface'
-interface Project {
-	id: string
-	title: string
-	image: string
-	shortDescription: string
-	tokenSymbol: string
-	totalInvest: number
-	endsInDays?: number
-	endTime?: string // Optional end time for countdown
-	status?: 'pending' | 'approve' | 'deny' | 'publish'
-}
+// interface Project {
+// 	id: string
+// 	title: string
+// 	image: string
+// 	shortDescription: string
+// 	tokenSymbol: string
+// 	totalInvest: number
+// 	endsInDays?: number
+// 	endTime?: string // Optional end time for countdown
+// 	status?: 'pending' | 'approve' | 'deny' | 'publish'
+// }
 
 interface ProjectSectionProps {
 	projects: BaseProject[]
 	className?: string
 	onEdit?: (projectId: string) => void
-	handlePublish?: (projectId: string) => void
+	handlePublish?: (project: BaseProject) => void
 	showCountdown?: boolean
 	countdownDuration?: number // in hours
 	launchpadStatus?: 'pending' | 'approve' | 'deny' | 'publish'
@@ -39,9 +39,7 @@ const ProjectSection = ({
 	showCountdown = true,
 	countdownDuration = 12, // in hours
 	onEdit,
-	handlePublish = (projectId: string) => {
-		console.log(`Publishing project with ID: ${projectId}`)
-	},
+	handlePublish,
 	launchpadStatus,
 }: ProjectSectionProps) => {
 	// const sectionRef = useRef<HTMLElement>(null)
@@ -202,7 +200,7 @@ const ProjectSection = ({
 						<div className="flex justify-end gap-4">
 							{handlePublish && project.status_launchpad === 'approve' && (
 								<Button
-									onClick={() => handlePublish(project.id || '')}
+									onClick={() => handlePublish(project)}
 									className="bg-white transition-all duration-300 ease-in-out 
 				hover:opacity-80 hover:shadow-lg hover:scale-105 
 				active:scale-95 active:opacity-90 items-center px-3 py-2 h-auto border-border/50 hover:border-border"

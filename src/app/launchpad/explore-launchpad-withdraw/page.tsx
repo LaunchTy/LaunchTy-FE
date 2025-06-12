@@ -257,64 +257,6 @@ const ExploreProjectPage = () => {
 			console.log('Withdraw function called with launchpad_id', launchpad_id)
 
 			try {
-				// Check if user is the owner of the contract
-				// const launchpadInfo = await readContract(publicClient, {
-				// 	abi: LaunchpadABI,
-				// 	address: launchpad_id as Address,
-				// 	functionName: 'getLaunchpadInfo',
-				// 	args: [],
-				// })
-
-				// console.log('Launchpad info:', launchpadInfo)
-
-				// Verify if current user is the project owner
-				// if (
-				// 	(launchpadInfo as { projectOwner: string }).projectOwner !==
-				// 	userAddress
-				// ) {
-				// 	console.log(
-				// 		'Project owner address:',
-				// 		(launchpadInfo as { projectOwner: string }).projectOwner
-				// 	)
-				// 	console.error('Only project owner can withdraw funds')
-				// 	return
-				// }
-
-				// Check if softcap is reached
-				// const raisedAmount = await readContract(publicClient, {
-				// 	abi: LaunchpadABI,
-				// 	address: launchpad_id as Address,
-				// 	functionName: 'getRaisedAmount',
-				// 	args: [],
-				// })
-
-				// console.log('Raised amount:', raisedAmount)
-				// console.log('Soft cap:', launchpadInfo.softCap)
-
-				// if (
-				// 	BigNumber.from(raisedAmount).lt(
-				// 		BigNumber.from(launchpadInfo.softCap)
-				// 	)
-				// ) {
-				// 	console.error('Soft cap not reached, cannot withdraw')
-				// 	return
-				// }
-
-				// Check if there are funds to withdraw
-				// const acceptedTokenBalance = await readContract(publicClient, {
-				// 	abi: LaunchpadABI,
-				// 	address: launchpad_id as Address,
-				// 	functionName: 'getAcceptedTokenBalance',
-				// 	args: [],
-				// })
-
-				// console.log('Available funds to withdraw:', acceptedTokenBalance)
-
-				// if (BigNumber.from(acceptedTokenBalance).eq(0)) {
-				// 	console.error('No funds available to withdraw')
-				// 	return
-				// }
-
 				// Execute withdraw transaction
 				const hash = await writeToWithdraw({
 					abi: LaunchpadABI,
@@ -364,7 +306,6 @@ const ExploreProjectPage = () => {
 
 		withdraw()
 	}
-	// }
 
 	const filteredProjects = projects.filter((project) => {
 		if (activeTab === 'all') return true

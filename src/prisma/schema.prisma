@@ -20,30 +20,31 @@ model User {
 }
 
 model Launchpad {
-  launchpad_id         String    @id @default(uuid())
-  token_address        String
-  total_supply         Int
-  launchpad_token      String
-  max_stake            Float
-  min_stake            Float
-  soft_cap             Float
-  hard_cap             Float
-  launchpad_name       String
-  launchpad_logo       String
-  launchpad_short_des  String
-  launchpad_long_des   String
-  launchpad_fb         String?
-  launchpad_x          String?
-  launchpad_ig         String?
-  launchpad_website    String?
-  launchpad_whitepaper String?
-  launchpad_img        String[]
-  launchpad_start_date DateTime
-  launchpad_end_date   DateTime
-  project_owner_id     String
-  status               String    @default("pending")
-  deposits             Deposit[]
-  user                 User      @relation(fields: [project_owner_id], references: [user_id])
+  launchpad_id           String    @id @default(uuid())
+  accepted_token_address String?
+  token_address          String
+  total_supply           Int
+  launchpad_token        String
+  max_stake              Float
+  min_stake              Float
+  soft_cap               Float
+  hard_cap               Float
+  launchpad_name         String
+  launchpad_logo         String
+  launchpad_short_des    String
+  launchpad_long_des     String
+  launchpad_fb           String?
+  launchpad_x            String?
+  launchpad_ig           String?
+  launchpad_website      String?
+  launchpad_whitepaper   String?
+  launchpad_img          String[]
+  launchpad_start_date   DateTime
+  launchpad_end_date     DateTime
+  project_owner_id       String
+  status                 String    @default("pending")
+  deposits               Deposit[]
+  user                   User      @relation(fields: [project_owner_id], references: [user_id])
 }
 
 model Deposit {
@@ -58,30 +59,31 @@ model Deposit {
 }
 
 model Charity {
-  charity_id           String     @id @default(uuid())
-  charity_name         String
-  charity_short_des    String
-  charity_long_des     String
-  charity_token_symbol String
-  charity_logo         String
-  charity_fb           String?
-  charity_x            String?
-  charity_ig           String?
-  charity_website      String?
-  charity_whitepaper   String?
-  charity_img          String[]
-  charity_start_date   DateTime
-  charity_end_date     DateTime
-  license_certificate  String?
-  evidence             String[]
-  charity_email        String?
-  repre_name           String
-  repre_phone          String
-  repre_faceid         String
-  project_owner_id     String?
-  status               String     @default("pending")
-  project_owner        User?      @relation("OwnerUser", fields: [project_owner_id], references: [user_id])
-  donations            Donation[]
+  charity_id             String     @id @default(uuid())
+  accepted_token_address String?
+  charity_name           String
+  charity_short_des      String
+  charity_long_des       String
+  charity_token_symbol   String
+  charity_logo           String
+  charity_fb             String?
+  charity_x              String?
+  charity_ig             String?
+  charity_website        String?
+  charity_whitepaper     String?
+  charity_img            String[]
+  charity_start_date     DateTime
+  charity_end_date       DateTime
+  license_certificate    String?
+  evidence               String[]
+  charity_email          String?
+  repre_name             String
+  repre_phone            String
+  repre_faceid           String
+  project_owner_id       String?
+  status                 String     @default("pending")
+  project_owner          User?      @relation("OwnerUser", fields: [project_owner_id], references: [user_id])
+  donations              Donation[]
 }
 
 model Donation {

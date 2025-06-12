@@ -55,6 +55,8 @@ export async function POST(request: Request) {
 			return {
 				launchpad_id: project.launchpad_id,
 				launchpad_name: project.launchpad_name,
+				token_address: project.token_address,
+				total_supply: project.total_supply,
 				launchpad_logo: project.launchpad_logo,
 				launchpad_token: project.launchpad_token,
 				totalInvest,

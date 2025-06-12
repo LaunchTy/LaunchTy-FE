@@ -32,6 +32,7 @@ import { anvil, sepolia } from 'viem/chains'
 import { BigNumber } from 'ethers'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
 import SuccessModal from '@/components/UI/modal/SuccessModal'
+import { stat } from 'fs'
 
 // export const publicClient = createPublicClient({
 // 	chain: anvil,
@@ -54,7 +55,6 @@ const Preview = () => {
 	let tokenAddress = useLaunchpadStore((state) => state.projectTokenAddress)
 	let tokenSupply = useLaunchpadStore((state) => state.tokenSupply)
 	const launchpadToken = useLaunchpadStore((state) => state.launchpadToken)
-
 	const maxStake = useLaunchpadStore((state) => state.maxStakePerInvestor)
 	const minStake = useLaunchpadStore((state) => state.minStakePerInvestor)
 	const softCap = useLaunchpadStore((state) => state.softCap)
@@ -84,263 +84,264 @@ const Preview = () => {
 		setBackgroundImage(imageSrc)
 	}
 
-	const { writeContractAsync } = useWriteContract()
-	// useWatchContractEvent({
+	// const { writeContractAsync } = useWriteContract()
+	// // useWatchContractEvent({
+	// // 	abi: LaunchpadFactoryABI,
+	// // 	address: chainConfig.contracts.LaunchpadFactory.address as Address,
+	// // 	eventName: 'LaunchpadCreated',
+	// // 	onLogs: (logs) => {
+	// // 		logs.forEach((log) => {
+	// // 			console.log('Event Launchpad created:', log)
+	// // 		})
+	// // 	},
+	// // })
+
+	// const {
+	// 	data: projectId,
+	// 	isSuccess: isSuccessProjectId,
+	// 	error: isErrorProjectId,
+	// } = useReadContract({
 	// 	abi: LaunchpadFactoryABI,
 	// 	address: chainConfig.contracts.LaunchpadFactory.address as Address,
-	// 	eventName: 'LaunchpadCreated',
-	// 	onLogs: (logs) => {
-	// 		logs.forEach((log) => {
-	// 			console.log('Event Launchpad created:', log)
-	// 		})
-	// 	},
+	// 	functionName: 'getCurrentProjectId',
 	// })
 
-	const {
-		data: projectId,
-		isSuccess: isSuccessProjectId,
-		error: isErrorProjectId,
-	} = useReadContract({
-		abi: LaunchpadFactoryABI,
-		address: chainConfig.contracts.LaunchpadFactory.address as Address,
-		functionName: 'getCurrentProjectId',
-	})
+	// const {
+	// 	data: launchpadAddress,
+	// 	isSuccess: isSuccessLaunchpadAddress,
+	// 	error: isErrorLaunchpadAddress,
+	// } = useReadContract({
+	// 	abi: LaunchpadFactoryABI,
+	// 	address: chainConfig.contracts.LaunchpadFactory.address as Address,
+	// 	functionName: 'getLaunchpadAddress',
+	// 	args: [Number(projectId) - 1],
+	// })
 
-	const {
-		data: launchpadAddress,
-		isSuccess: isSuccessLaunchpadAddress,
-		error: isErrorLaunchpadAddress,
-	} = useReadContract({
-		abi: LaunchpadFactoryABI,
-		address: chainConfig.contracts.LaunchpadFactory.address as Address,
-		functionName: 'getLaunchpadAddress',
-		args: [Number(projectId) - 1],
-	})
+	// const { data: allowance, error: allowanceError } = useReadContract({
+	// 	abi: MockERC20ABI,
+	// 	address: launchpadAddress as Address,
+	// 	functionName: 'allowance',
+	// 	args: [userAddress, launchpadAddress as Address],
+	// })
 
-	const { data: allowance, error: allowanceError } = useReadContract({
-		abi: MockERC20ABI,
-		address: launchpadAddress as Address,
-		functionName: 'allowance',
-		args: [userAddress, launchpadAddress as Address],
-	})
+	// useEffect(() => {
+	// 	if (isSuccessProjectId) {
+	// 		console.log(
+	// 			'Upcoming Project id:',
+	// 			convertNumToOffChainFormat((projectId as bigint).toString(), 0)
+	// 		)
+	// 		console.log(
+	// 			'Launchpad deposit amount and address: ',
+	// 			allowance,
+	// 			'             ',
+	// 			launchpadAddress
+	// 		)
+	// 	}
+	// 	if (isErrorProjectId) {
+	// 		console.error('Error reading launchpad data:', isErrorProjectId)
+	// 	}
+	// }, [projectId, isSuccessProjectId, isErrorProjectId])
 
-	useEffect(() => {
-		if (isSuccessProjectId) {
-			console.log(
-				'Upcoming Project id:',
-				convertNumToOffChainFormat((projectId as bigint).toString(), 0)
-			)
-			console.log(
-				'Launchpad deposit amount and address: ',
-				allowance,
-				'             ',
-				launchpadAddress
-			)
+	// useEffect(() => {
+	// 	if (isSuccessLaunchpadAddress) {
+	// 		console.log('Launchpad address:', launchpadAddress as Address)
+	// 	}
+	// 	if (isErrorLaunchpadAddress) {
+	// 		console.error('Error reading launchpad address:', isErrorLaunchpadAddress)
+	// 	}
+	// }, [
+	// 	launchpadAddress,
+	// 	projectId,
+	// 	isSuccessLaunchpadAddress,
+	// 	isErrorLaunchpadAddress,
+	// ])
+
+	const handleSubmit = async () => {
+		// tokenSupply = 1000
+		// tokenAddress = chainConfig.contracts.MockERC20.address
+		// if (!userAddress) {
+		// 	console.log('account.address: ', account.address)
+		// 	alert('Please connect your wallet to create a launchpad.')
+		// 	return
+		// }
+		// if (!tokenSupply || !tokenAddress) {
+		// 	alert('Please provide a valid token supply and token address.')
+		// 	return
+		// }
+		// if (allowanceError) {
+		// 	console.error('Error reading allowance:', allowanceError)
+		// 	alert('Error reading allowance. Please try again later.')
+		// 	return
+		// }
+
+		// const projectOwnerDepositToken = async () => {
+		// 	try {
+		// 		// if (!allowance || (allowance as BigNumber).gte(tokenSupply)) {
+		// 		// 	console.log('Allowance is sufficient, no need to approve.')
+		// 		// } else {
+		// 		const MockERC20Address = chainConfig.contracts.MockERC20.address
+		// 		console.log('Mockerc20 addressss: ', MockERC20Address)
+		// 		console.log('Launchpad address: ', launchpadAddress)
+		// 		const approveHash = await writeContractAsync({
+		// 			abi: MockERC20ABI,
+		// 			address: MockERC20Address as Address,
+		// 			functionName: 'approve',
+		// 			args: [
+		// 				launchpadAddress as Address,
+		// 				convertNumToOnChainFormat(tokenSupply, 18),
+		// 			],
+		// 		})
+		// 		console.log('Approval transaction hash:', approveHash)
+		// 		console.log('Appoved')
+		// 		//get the allowance after approval
+		// 		const newAllowance = await readContract(publicClient, {
+		// 			abi: MockERC20ABI,
+		// 			address: MockERC20Address as Address,
+		// 			functionName: 'allowance',
+		// 			args: [userAddress, launchpadAddress as Address],
+		// 		})
+		// 		console.log(
+		// 			'New allowance after approval:',
+		// 			convertNumToOffChainFormat((newAllowance as bigint).toString(), 18)
+		// 		)
+		// 		// }
+		// 	} catch (someError) {
+		// 		console.error('Error approving tokenrgergrgerge:', someError)
+		// 		console.log('Error approving token:', allowanceError)
+		// 		alert('Error approving token. Please try again later.')
+		// 		return
+		// 	}
+		// }
+
+		// projectOwnerDepositToken()
+
+		setLoadingOpen(true) // Show loading modal
+
+		try {
+			// const factoryAddress = chainConfig.contracts.LaunchpadFactory
+			// 	.address as Address
+			// const tokenAdd = chainConfig.contracts.MockERC20.address as Address
+			// const acceptedToken = chainConfig.contracts.AcceptedMockERC20
+			// 	.address as Address
+
+			// const hash = await writeContractAsync({
+			// 	abi: LaunchpadFactoryABI,
+			// 	address: factoryAddress,
+			// 	functionName: 'createLaunchpad',
+			// 	args: [
+			// 		tokenAdd,
+			// 		acceptedToken,
+			// 		userAddress,
+			// 		1, //Price per token, set to 1 for simplicity
+			// 		Math.floor(Date.now() / 1000), // Current time in seconds
+			// 		Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // End time in seconds (1 week later)
+			// 		BigInt(convertNumToOnChainFormat(10, 18)), // Soft cap in wei
+			// 		BigInt(convertNumToOnChainFormat(500, 18)), // Hard cap in wei
+			// 		BigInt(convertNumToOnChainFormat(1, 18)), // Min stake in wei
+			// 		BigInt(convertNumToOnChainFormat(500, 18)), // Max stake in wei
+			// 		BigInt(convertNumToOnChainFormat(500, 18)), // Total supply in wei
+			// 	],
+			// })
+
+			// if (!hash) {
+			// 	console.error('Transaction hash is undefined')
+			// 	return
+			// }
+			// console.log('Transaction hash:', hash)
+			// const receipt = await waitForTransactionReceipt(publicClient, {
+			// 	hash,
+			// })
+			// console.log('Transaction receipt:', receipt)
+
+			// if (!receipt || !receipt.status) {
+			// 	console.error('Transaction failed or receipt is undefined')
+			// 	alert('Transaction failed. Please try again later.')
+			// 	setLoadingOpen(false) // Hide loading modal
+			// 	return
+			// }
+
+			// const launchpadAddress = await readContract(publicClient, {
+			// 	abi: LaunchpadFactoryABI,
+			// 	address: chainConfig.contracts.LaunchpadFactory.address as Address,
+			// 	functionName: 'getLaunchpadAddress',
+			// 	args: [Number(projectId) - 1],
+			// })
+
+			// console.log('Launchpad paijfoaifaoiejaofiej', launchpadAddress)
+			// const response = await axios.post('/api/launchpad/create', {
+			// 	token_address: tokenAddress,
+			// 	total_supply: tokenSupply,
+			// 	launchpad_token: launchpadToken,
+			// 	max_stake: maxStake,
+			// 	min_stake: minStake,
+			// 	soft_cap: softCap,
+			// 	hard_cap: hardCap,
+			// 	launchpad_name: projectName,
+			// 	launchpad_logo: logo,
+			// 	launchpad_short_des: shortDescription,
+			// 	launchpad_long_des: longDescription,
+			// 	launchpad_fb: socialLinks?.facebook || null,
+			// 	launchpad_x: socialLinks?.twitter || null,
+			// 	launchpad_ig: socialLinks?.instagram || null,
+			// 	launchpad_website: socialLinks?.website || null,
+			// 	launchpad_whitepaper: whitepaper || null,
+			// 	launchpad_img: images,
+			// 	//
+			// 	launchpad_start_date: startDate.toISOString(),
+			// 	launchpad_end_date: endDate.toISOString(),
+			// 	// launchpad_start_date: new Date().toISOString(),
+			// 	// launchpad_end_date: new Date(
+			// 	// 	Date.now() + 7 * 24 * 60 * 60 * 1000
+			// 	// ).toISOString(),
+			// 	wallet_address: account.address,
+			// })
+			//give api data with real mock value to test the api
+			const response = await axios.post('/api/launchpad/create', {
+				// launchpad_id: launchpadAddress,
+				token_address: '0x1234567890abcdef1234567890abcdef12345678',
+				total_supply: 1000000,
+				launchpad_token: 'CHILL',
+				max_stake: 5000,
+				min_stake: 100,
+				soft_cap: 10000,
+				hard_cap: 50000,
+				launchpad_name: 'Demo Project',
+				launchpad_logo: 'https://via.placeholder.com/150',
+				launchpad_short_des:
+					'Nếu thế giới chỉ có một ngày để sống, bạn sẽ làm gì?',
+				launchpad_long_des:
+					'Bạn sẽ không làm gì hay ngồi hoài niệm lại những lần bỏ lỡ ?',
+				launchpad_fb: 'https://facebook.com/demo',
+				launchpad_x: 'https://twitter.com/demo',
+				launchpad_ig: 'https://instagram.com/demo',
+				launchpad_website: 'https://demo.io/',
+				launchpad_whitepaper: 'https://demo.io/whitepaper.pdf',
+				launchpad_img: [
+					'https://via.placeholder.com/600x300',
+					'https://via.placeholder.com/600x400',
+				],
+				launchpad_start_date: new Date().toISOString(),
+				launchpad_end_date: new Date(
+					Date.now() + 7 * 24 * 60 * 60 * 1000
+				).toISOString(), // 7 ngày sau
+				wallet_address: '0x8f07aDC031CF8e12fc66a01A12982fB543AEe86C',
+			})
+			if (!response || response.status !== 201) {
+				console.error('Error submitting launchpad:', response)
+				alert('Error submitting launchpad. Please try again later.')
+				setLoadingOpen(false) // Hide loading modal
+				return
+			}
+
+			// console.log('Launchpad created:', response.data)
+			router.push('/launchpad/my-launchpad')
+			setLoadingOpen(false) // Hide loading modal
+			setSuccessOpen(true) // Show success modal
+		} catch (error) {
+			console.error('Error submitting launchpad:', error)
+			setLoadingOpen(false) // Hide loading modal
 		}
-		if (isErrorProjectId) {
-			console.error('Error reading launchpad data:', isErrorProjectId)
-		}
-	}, [projectId, isSuccessProjectId, isErrorProjectId])
-
-	useEffect(() => {
-		if (isSuccessLaunchpadAddress) {
-			console.log('Launchpad address:', launchpadAddress as Address)
-		}
-		if (isErrorLaunchpadAddress) {
-			console.error('Error reading launchpad address:', isErrorLaunchpadAddress)
-		}
-	}, [
-		launchpadAddress,
-		projectId,
-		isSuccessLaunchpadAddress,
-		isErrorLaunchpadAddress,
-	])
-
-	// const handleSubmit = async () => {
-	// 	tokenSupply = 1000
-	// 	tokenAddress = chainConfig.contracts.MockERC20.address
-	// 	if (!userAddress) {
-	// 		console.log('account.address: ', account.address)
-	// 		alert('Please connect your wallet to create a launchpad.')
-	// 		return
-	// 	}
-	// 	if (!tokenSupply || !tokenAddress) {
-	// 		alert('Please provide a valid token supply and token address.')
-	// 		return
-	// 	}
-	// 	if (allowanceError) {
-	// 		console.error('Error reading allowance:', allowanceError)
-	// 		alert('Error reading allowance. Please try again later.')
-	// 		return
-	// 	}
-
-	// 	const projectOwnerDepositToken = async () => {
-	// 		try {
-	// 			// if (!allowance || (allowance as BigNumber).gte(tokenSupply)) {
-	// 			// 	console.log('Allowance is sufficient, no need to approve.')
-	// 			// } else {
-	// 			const MockERC20Address = chainConfig.contracts.MockERC20.address
-	// 			console.log('Mockerc20 addressss: ', MockERC20Address)
-	// 			console.log('Launchpad address: ', launchpadAddress)
-	// 			const approveHash = await writeContractAsync({
-	// 				abi: MockERC20ABI,
-	// 				address: MockERC20Address as Address,
-	// 				functionName: 'approve',
-	// 				args: [
-	// 					launchpadAddress as Address,
-	// 					convertNumToOnChainFormat(tokenSupply, 18),
-	// 				],
-	// 			})
-	// 			console.log('Approval transaction hash:', approveHash)
-	// 			console.log('Appoved')
-	// 			//get the allowance after approval
-	// 			const newAllowance = await readContract(publicClient, {
-	// 				abi: MockERC20ABI,
-	// 				address: MockERC20Address as Address,
-	// 				functionName: 'allowance',
-	// 				args: [userAddress, launchpadAddress as Address],
-	// 			})
-	// 			console.log(
-	// 				'New allowance after approval:',
-	// 				convertNumToOffChainFormat((newAllowance as bigint).toString(), 18)
-	// 			)
-	// 			// }
-	// 		} catch (someError) {
-	// 			console.error('Error approving tokenrgergrgerge:', someError)
-	// 			console.log('Error approving token:', allowanceError)
-	// 			alert('Error approving token. Please try again later.')
-	// 			return
-	// 		}
-	// 	}
-
-	// 	projectOwnerDepositToken()
-
-	// 	setLoadingOpen(true) // Show loading modal
-
-	// 	try {
-	// 		const factoryAddress = chainConfig.contracts.LaunchpadFactory
-	// 			.address as Address
-	// 		const tokenAdd = chainConfig.contracts.MockERC20.address as Address
-	// 		const acceptedToken = chainConfig.contracts.AcceptedMockERC20
-	// 			.address as Address
-
-	// 		const hash = await writeContractAsync({
-	// 			abi: LaunchpadFactoryABI,
-	// 			address: factoryAddress,
-	// 			functionName: 'createLaunchpad',
-	// 			args: [
-	// 				tokenAdd,
-	// 				acceptedToken,
-	// 				userAddress,
-	// 				1, //Price per token, set to 1 for simplicity
-	// 				Math.floor(Date.now() / 1000), // Current time in seconds
-	// 				Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // End time in seconds (1 week later)
-	// 				BigInt(convertNumToOnChainFormat(10, 18)), // Soft cap in wei
-	// 				BigInt(convertNumToOnChainFormat(500, 18)), // Hard cap in wei
-	// 				BigInt(convertNumToOnChainFormat(1, 18)), // Min stake in wei
-	// 				BigInt(convertNumToOnChainFormat(500, 18)), // Max stake in wei
-	// 				BigInt(convertNumToOnChainFormat(500, 18)), // Total supply in wei
-	// 			],
-	// 		})
-
-	// 		if (!hash) {
-	// 			console.error('Transaction hash is undefined')
-	// 			return
-	// 		}
-	// 		console.log('Transaction hash:', hash)
-	// 		const receipt = await waitForTransactionReceipt(publicClient, {
-	// 			hash,
-	// 		})
-	// 		console.log('Transaction receipt:', receipt)
-
-	// 		if (!receipt || !receipt.status) {
-	// 			console.error('Transaction failed or receipt is undefined')
-	// 			alert('Transaction failed. Please try again later.')
-	// 			setLoadingOpen(false) // Hide loading modal
-	// 			return
-	// 		}
-
-	// 		const launchpadAddress = await readContract(publicClient, {
-	// 			abi: LaunchpadFactoryABI,
-	// 			address: chainConfig.contracts.LaunchpadFactory.address as Address,
-	// 			functionName: 'getLaunchpadAddress',
-	// 			args: [Number(projectId) - 1],
-	// 		})
-
-	// 		console.log('Launchpad paijfoaifaoiejaofiej', launchpadAddress)
-	// 		// const response = await axios.post('/api/launchpad/create', {
-	// 		// 	token_address: tokenAddress,
-	// 		// 	total_supply: tokenSupply,
-	// 		// 	launchpad_token: launchpadToken,
-	// 		// 	max_stake: maxStake,
-	// 		// 	min_stake: minStake,
-	// 		// 	soft_cap: softCap,
-	// 		// 	hard_cap: hardCap,
-	// 		// 	launchpad_name: projectName,
-	// 		// 	launchpad_logo: logo,
-	// 		// 	launchpad_short_des: shortDescription,
-	// 		// 	launchpad_long_des: longDescription,
-	// 		// 	launchpad_fb: socialLinks?.facebook || null,
-	// 		// 	launchpad_x: socialLinks?.twitter || null,
-	// 		// 	launchpad_ig: socialLinks?.instagram || null,
-	// 		// 	launchpad_website: socialLinks?.website || null,
-	// 		// 	launchpad_whitepaper: whitepaper || null,
-	// 		// 	launchpad_img: images,
-	// 		// 	//
-	// 		// 	launchpad_start_date: startDate.toISOString(),
-	// 		// 	launchpad_end_date: endDate.toISOString(),
-	// 		// 	// launchpad_start_date: new Date().toISOString(),
-	// 		// 	// launchpad_end_date: new Date(
-	// 		// 	// 	Date.now() + 7 * 24 * 60 * 60 * 1000
-	// 		// 	// ).toISOString(),
-	// 		// 	wallet_address: account.address,
-	// 		// })
-	// 		//give api data with real mock value to test the api
-	// 		const response = await axios.post('/api/launchpad/create', {
-	// 			launchpad_id: launchpadAddress,
-	// 			token_address: '0x1234567890abcdef1234567890abcdef12345678',
-	// 			total_supply: 1000000,
-	// 			launchpad_token: 'DEMO',
-	// 			max_stake: 5000,
-	// 			min_stake: 100,
-	// 			soft_cap: 10000,
-	// 			hard_cap: 50000,
-	// 			launchpad_name: 'Demo Project',
-	// 			launchpad_logo: 'https://via.placeholder.com/150',
-	// 			launchpad_short_des: 'Short description for demo project.',
-	// 			launchpad_long_des:
-	// 				'This is a longer and more detailed description of the demo project.',
-	// 			launchpad_fb: 'https://facebook.com/demo',
-	// 			launchpad_x: 'https://twitter.com/demo',
-	// 			launchpad_ig: 'https://instagram.com/demo',
-	// 			launchpad_website: 'https://demo.io/',
-	// 			launchpad_whitepaper: 'https://demo.io/whitepaper.pdf',
-	// 			launchpad_img: [
-	// 				'https://via.placeholder.com/600x300',
-	// 				'https://via.placeholder.com/600x400',
-	// 			],
-	// 			launchpad_start_date: new Date().toISOString(),
-	// 			launchpad_end_date: new Date(
-	// 				Date.now() + 7 * 24 * 60 * 60 * 1000
-	// 			).toISOString(), // 7 ngày sau
-	// 			wallet_address: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
-	// 		})
-	// 		if (!response || response.status !== 201) {
-	// 			console.error('Error submitting launchpad:', response)
-	// 			alert('Error submitting launchpad. Please try again later.')
-	// 			setLoadingOpen(false) // Hide loading modal
-	// 			return
-	// 		}
-
-	// 		// console.log('Launchpad created:', response.data)
-	// 		router.push('/launchpad/my-project')
-	// 		setLoadingOpen(false) // Hide loading modal
-	// 		setSuccessOpen(true) // Show success modal
-	// 	} catch (error) {
-	// 		console.error('Error submitting launchpad:', error)
-	// 		setLoadingOpen(false) // Hide loading modal
-	// 	}
-	// }
+	}
 
 	// Convert socialLinks object to an array of non-empty links
 	// const socials = Object.entries(socialLinks)
@@ -426,9 +427,9 @@ const Preview = () => {
 						/>
 					</div>
 					<div>
-						{/* <Button className="w-full bg-gradient" onClick={handleSubmit}>
+						<Button className="w-full bg-gradient" onClick={handleSubmit}>
 							Submit
-						</Button> */}
+						</Button>
 					</div>
 				</div>
 			</div>
