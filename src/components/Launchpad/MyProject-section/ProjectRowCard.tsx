@@ -28,6 +28,7 @@ interface ProjectSectionProps {
 	className?: string
 	onEdit?: (projectId: string) => void
 	handlePublish?: (project: BaseProject) => void
+	onWithdraw?: (projectId: string) => void
 	showCountdown?: boolean
 	countdownDuration?: number // in hours
 	launchpadStatus?: 'pending' | 'approve' | 'deny' | 'publish'
@@ -228,6 +229,14 @@ const ProjectSection = ({
 										<span className="text-gradient">Publish</span>
 									</Button>
 								)}
+							{onWithdraw /*&& project.status_launchpad === 'approve'*/ && (
+								<Button
+									onClick={() => onWithdraw(project.id || '')}
+									className="relative font-bold bg-gradient text-white py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 w-28"
+								>
+									Withdraw
+								</Button>
+							)}
 							{onEdit && (
 								<Button
 									onClick={() => onEdit(project.id || '')}
