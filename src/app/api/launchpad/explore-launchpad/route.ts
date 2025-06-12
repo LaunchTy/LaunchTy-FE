@@ -3,7 +3,9 @@ import prismaClient from "@/prisma";
 
 export async function GET() {
 	try {
-		const launchpads = await prismaClient.launchpad.findMany();
+		const launchpads = await prismaClient.launchpad.findMany({
+			where: { status: "publish" },
+		});
 
 		const deposits = await prismaClient.deposit.findMany({
 			select: {
@@ -12,7 +14,6 @@ export async function GET() {
 			},
 		});
 
-		// Gom tổng deposit theo launchpad_id
 		const depositMap = new Map<string, number>();
 		for (const d of deposits) {
 			const id = d.launchpad_id;
