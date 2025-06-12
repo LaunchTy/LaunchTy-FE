@@ -148,7 +148,7 @@ const ProjectSection = ({
 					>
 						{/* Project Image */}
 						<div className="flex gap-10">
-							<div className="w-[60px] h-[60px]  rounded-full overflow-hidden">
+							<div className="flex-shrink-0 w-[60px] h-[60px] rounded-full overflow-hidden">
 								<Image
 									src={
 										project.images ? project.images[0] : '/default-project.png'
@@ -159,7 +159,7 @@ const ProjectSection = ({
 									className="object-cover w-full h-full"
 								/>
 							</div>
-							<div className="flex flex-col">
+							<div className="flex-1 flex flex-col min-w-0">
 								<h2 className="text-lg font-semibold text-white">
 									{project.name || 'Unnamed Project'}
 								</h2>

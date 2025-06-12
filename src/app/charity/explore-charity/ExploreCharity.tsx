@@ -17,6 +17,7 @@ import ErrorModal from '@/components/UI/modal/ErrorModal'
 
 const navItems = [
 	{ id: 'all', label: 'All Projects' },
+	{ id: 'upcoming', label: 'Upcoming' },
 	{ id: 'ongoing', label: 'On Going' },
 	{ id: 'finished', label: 'Finished' },
 ]

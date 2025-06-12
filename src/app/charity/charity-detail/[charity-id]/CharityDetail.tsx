@@ -23,7 +23,6 @@ import CountdownTimer from '@/components/UI/countdown/CountdownTimer'
 import { useParams } from 'next/navigation'
 import { Charity } from '@/interface/interface'
 import { NextResponse } from 'next/server'
-import { prismaClient } from '@/prisma'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
 import ErrorModal from '@/components/UI/modal/ErrorModal'
 import LockModal from '@/components/UI/modal/LockModal'
@@ -67,7 +66,7 @@ const dummyCharityData: Charity = {
 	donations: [],
 	charity_email: 'test@charity.org',
 	repre_id: 'dummy-repre-1',
-	status: 'approved',
+	status: 'approve',
 }
 
 const dummyDonations = [
