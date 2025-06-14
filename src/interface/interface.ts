@@ -130,6 +130,7 @@ export interface BaseProject {
 	repre_phone?: string;
 	repre_id?: string;
 	repre_faceid?: string;
+	status_charity?: "pending" | "approve" | "deny" | "publish";
 	totalDonationAmount?: number;
 
 	deposits?: Deposit[];
