@@ -8,8 +8,8 @@ import ProjectRowCard from '@/components/Launchpad/MyProject-section/ProjectRowC
 import { useState } from 'react'
 import { useEffect } from 'react'
 import axios from 'axios'
-import { useAccount, useWriteContract } from 'wagmi'
 import { BaseProject, Charity } from '@/interface/interface'
+import { useAccount, useWriteContract } from 'wagmi'
 import AnimatedBlobs from '@/components/UI/background/AnimatedBlobs'
 import ErrorModal from '@/components/UI/modal/ErrorModal'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
@@ -21,6 +21,7 @@ import { readContract, waitForTransactionReceipt } from 'viem/actions'
 import { publicClient } from '@/app/launchpad/create-launchpad/preview/Preview'
 import { useCharityStore } from '@/store/charity/CreateCharityStore'
 import { useRouter, useParams } from 'next/navigation'
+import { CharityABI } from '@/app/abi'
 
 const navItems = [
 	{ id: 'all', label: 'All Projects' },
@@ -63,9 +64,9 @@ const MyCharity = () => {
 	const [errorCode, setErrorCode] = useState('')
 	const account = useAccount()
 	const userAddress = account.address
-	const { writeContractAsync } = useWriteContract()
 	const [error, setError] = useState<string | null>(null)
 	const router = useRouter()
+	const { writeContractAsync: writeWithdrawOwner } = useWriteContract()
 
 	const fetchProjects = async () => {
 		try {
@@ -98,14 +99,14 @@ const MyCharity = () => {
 		const acceptedTokenAddress: Address = chainConfig.contracts
 			.AcceptedMockERC20.address as Address
 
-		const hash = await writeContractAsync({
+		const hash = await writeWithdrawOwner({
 			address: chainConfig.contracts.CharityFactory.address as Address,
 			abi: CharityFactoryABI,
-			functionName: 'createCharity',
+			functionName: 'withdrawFund',
 			args: [
-				acceptedTokenAddress,
-				Math.floor(Date.now() / 1000),
-				Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days from now
+				// 	acceptedTokenAddress,
+				// 	Math.floor(Date.now() / 1000),
+				// 	Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days from now
 			],
 		})
 
@@ -195,6 +196,47 @@ const MyCharity = () => {
 	const visibleProjects = projects.slice(0, visibleCount)
 	const hasMore = visibleCount < projects.length
 
+	const handleWithdraw = async (projectId: Address) => {
+		if (!address) {
+			setLockOpen(true)
+			console.error('Wallet not connected')
+			return
+		}
+		if (!projectId) {
+			console.error('Invalid project ID')
+			return
+		}
+
+		const withDrawableAmount = await readContract(publicClient, {
+			address: projectId,
+			abi: CharityABI,
+			functionName: 'getTotalDonatedAmount',
+		})
+
+		if (!withDrawableAmount) {
+			console.error('Failed to fetch withdrawable amount')
+			return
+		}
+		console.log('Withdrawable amount:', withDrawableAmount)
+
+		const hash: Address = await writeWithdrawOwner({
+			address: projectId,
+			abi: CharityABI,
+			functionName: 'withdrawFund',
+		})
+
+		if (!hash) {
+			console.error('Failed to withdraw')
+			return
+		}
+
+		console.log('Withdraw transaction hash:', hash)
+		const withdrawReceipt = await waitForTransactionReceipt(publicClient, {
+			hash,
+		})
+		console.log('Withdraw transaction receipt:', withdrawReceipt)
+	}
+
 	return (
 		<div className="min-h-screen font-exo">
 			<AnimatedBlobs count={6} />
@@ -226,6 +268,9 @@ const MyCharity = () => {
 						className="custom-class"
 						onEdit={(projectId) => {
 							console.log('Edit charity:', projectId)
+						}}
+						onWithdraw={(projectId) => {
+							handleWithdraw(projectId as Address)
 						}}
 						handlePublish={handlePublish}
 						projectType="charity"
