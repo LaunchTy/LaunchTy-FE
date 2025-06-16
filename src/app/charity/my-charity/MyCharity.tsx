@@ -14,7 +14,7 @@ import AnimatedBlobs from '@/components/UI/background/AnimatedBlobs'
 import ErrorModal from '@/components/UI/modal/ErrorModal'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
 import LockModal from '@/components/UI/modal/LockModal'
-import { CharityFactoryABI } from '@/app/abi'
+import { CharityFactoryABI, LaunchpadABI } from '@/app/abi'
 import { chainConfig } from '@/app/config'
 import { Address } from 'viem'
 import { readContract, waitForTransactionReceipt } from 'viem/actions'
@@ -49,6 +49,7 @@ const convertCharityToProject = (charity: Charity): BaseProject => {
 		totalDonationAmount: charity.totalDonationAmount,
 		status: status,
 		status_charity: charity.status_charity,
+		charity_token_symbol: charity.charity_token_symbol,
 	}
 }
 
@@ -75,10 +76,50 @@ const MyCharity = () => {
 				wallet_address: address,
 			})
 			const charityData: Charity[] = response.data.data
-			const projectsData: BaseProject[] = charityData.map(
-				convertCharityToProject
+			// const projectsData: BaseProject[] = charityData.map(
+			// 	convertCharityToProject
+			// )
+			const charityWithTotalDonate = await Promise.all(
+				charityData.map(async (charity) => {
+					const id = charity.charity_id
+					console.log('Fetching data for ID:', id)
+					// const projectsData: BaseProject[] = launchpadsData.map(
+					// 	convertLaunchpadToProject
+					// )
+					try {
+						// const price = await readContract(publicClient, {
+						// 	address: id as Address,
+						// 	abi: LaunchpadABI,
+						// 	functionName: 'getPricePerToken',
+						// })
+						// console.log('Price per token:', price)
+						const totalDonate = await readContract(publicClient, {
+							address: id as Address,
+							abi: LaunchpadABI,
+							functionName: 'getDonatedAmount',
+							args: [userAddress],
+						})
+						console.log('Total withdraw:', totalDonate)
+						return {
+							...convertCharityToProject(charity),
+							charityAddress: id as Address,
+							// pricePerToken: parseFloat((price as string).toString()),
+							totalDonationAmount: parseFloat(
+								(totalDonate as string).toString()
+							),
+						}
+					} catch (err) {
+						console.error(`Error fetching data for ID ${id}`, err)
+						return {
+							...convertCharityToProject(charity),
+							charityAddress: '0x0',
+							// pricePerToken: 0,
+							totalDonationAmount: 0,
+						}
+					}
+				})
 			)
-			setProjects(projectsData)
+			setProjects(charityWithTotalDonate)
 		} catch (error: any) {
 			setErrorCode(error?.response?.status?.toString() || '500')
 			setErrorMessage(

@@ -11,6 +11,7 @@ import {
 } from 'framer-motion'
 import Image from 'next/image'
 import { BaseProject } from '@/interface/interface'
+import { convertNumToOffChainFormat } from '@/app/utils/decimal'
 // interface Project {
 // 	id: string
 // 	title: string
@@ -148,7 +149,7 @@ const ProjectSection = ({
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.4, ease: 'easeOut' }}
-						className="relative z-20 px-5 py-4 border border-gray-300 shadow-md glass-component-2 rounded-[40px] grid grid-cols-5 items-center gap-6"
+						className="relative z-20 px-5 py-4 border border-gray-300 shadow-md glass-component-2 rounded-[40px] grid grid-cols-5 items-center gap-24"
 					>
 						{/* Project Image */}
 						<div className="flex gap-10">
@@ -172,20 +173,20 @@ const ProjectSection = ({
 								</p>
 							</div>
 						</div>
-
 						{/* Project info */}
 						{/* Cột 2: Tên + mô tả */}
-
 						{/* Cột 3: Token */}
-						<div className="text-white text-sm flex justify-start w-56">
-							<span className="font-medium">Token:</span>{' '}
-							{projectType === 'launchpad' ? (
-								<>{project.launchpad_token || '--'}</>
-							) : (
-								<>{project.charity_token_symbol || '--'}</>
-							)}
+						<div className="text-white text-sm flex gap-1 justify-start w-56">
+							<span className="font-medium">Token: </span>{' '}
+							<span>
+								{' '}
+								{projectType === 'launchpad' ? (
+									<>{project.launchpad_token || '--'}</>
+								) : (
+									<>{project.charity_token_symbol || '--'}</>
+								)}
+							</span>
 						</div>
-
 						{/* Cột 4: Total Invested/Donation */}
 						<div className="text-white text-sm">
 							<span className="font-medium">
@@ -194,8 +195,15 @@ const ProjectSection = ({
 									: 'Total Donated:'}
 							</span>{' '}
 							{projectType === 'launchpad'
-								? `${project.totalInvest?.toLocaleString() || '0'} ${project.launchpad_token || ''}`
-								: `${project.totalDonationAmount?.toLocaleString() || '0'} ${project.charity_token_symbol || ''}`}
+								? `${convertNumToOffChainFormat(
+										(project.totalAmount ?? 0).toString(),
+										18
+									)}
+						${project.launchpad_token || ''}`
+								: `${convertNumToOffChainFormat(
+										(project.totalDonationAmount ?? 0).toString(),
+										18
+									)} ${project.charity_token_symbol || ''}`}
 						</div>
 
 						{/* <div className="text-white text-sm">
@@ -206,7 +214,6 @@ const ProjectSection = ({
 							000 {''}
 							{project.launchpad_token}
 						</div> */}
-
 						{/* Cột 5: Ends In */}
 						<div className="text-white text-sm">
 							<span className="font-medium">Ends In:</span>{' '}
@@ -214,7 +221,6 @@ const ProjectSection = ({
 								? countdowns[project.id || '']
 								: '--'}
 						</div>
-
 						{/* Cột 6:  Button */}
 						<div className="flex justify-end gap-4">
 							{handlePublish &&

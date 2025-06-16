@@ -121,6 +121,7 @@ export interface BaseProject {
 	pricePerToken?: number;
 	status_launchpad?: "pending" | "approve" | "deny" | "publish";
 	totalInvest?: number;
+	totalAmount?: number;
 
 	//Charity
 	charity_token_symbol?: string;
