@@ -41,6 +41,7 @@ const ProjectSection = ({
 	showCountdown = true,
 	countdownDuration = 12, // in hours
 	onEdit,
+	onWithdraw,
 	handlePublish,
 	launchpadStatus,
 	projectType,
