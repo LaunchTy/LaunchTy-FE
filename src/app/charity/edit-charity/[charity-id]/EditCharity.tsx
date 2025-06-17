@@ -21,7 +21,6 @@ const EditCharity = () => {
 		setLongDescription,
 		setRepresentativeName,
 		setPhoneNumber,
-		setTokenSupply,
 		setSelectedToken,
 		setSocialLink,
 		setLogo,
@@ -68,10 +67,26 @@ const EditCharity = () => {
 					setLongDescription(charity.charity_long_des || '')
 					setRepresentativeName(charity.repre_name || '')
 					setPhoneNumber(charity.repre_phone || '')
-					setTokenSupply(charity.charity_token_supply?.toString() || '')
 					setSelectedToken(charity.charity_token_symbol || '')
-					setStartDate(charity.charity_start_date || '')
-					setEndDate(charity.charity_end_date || '')
+					
+					// Convert dates to datetime-local format (YYYY-MM-DDTHH:MM)
+					const formatDateForInput = (dateString: string) => {
+						if (!dateString) return ''
+						const date = new Date(dateString)
+						if (isNaN(date.getTime())) return ''
+						
+						// Format date to YYYY-MM-DDTHH:MM without timezone conversion
+						const year = date.getFullYear()
+						const month = String(date.getMonth() + 1).padStart(2, '0')
+						const day = String(date.getDate()).padStart(2, '0')
+						const hours = String(date.getHours()).padStart(2, '0')
+						const minutes = String(date.getMinutes()).padStart(2, '0')
+						
+						return `${year}-${month}-${day}T${hours}:${minutes}`
+					}
+					
+					setStartDate(formatDateForInput(charity.charity_start_date))
+					setEndDate(formatDateForInput(charity.charity_end_date))
 
 					// Set social links
 					setSocialLink('facebook', charity.charity_fb || '')
@@ -83,7 +98,6 @@ const EditCharity = () => {
 					setImages(charity.charity_img || [])
 					setLicenseAndCertification(charity.license_certificate || null)
 					setHistoryEvidence(charity.evidence || [])
-					setPersonalId(charity.repre_id || null)
 					setFaceId(charity.repre_faceid || null)
 
 					if (charity.charity_img && charity.charity_img.length > 0) {

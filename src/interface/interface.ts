@@ -75,6 +75,7 @@ export interface Charity {
 	status_charity?: "pending" | "approve" | "deny" | "publish";
 	status: "pending" | "approve" | "deny";
 	user?: User;
+	project_owner?: User;
 	donations?: Donation[];
 	totalDonationAmount?: number; // Total amount donated to this charity
 }

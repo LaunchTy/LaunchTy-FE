@@ -157,6 +157,22 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 				return
 			}
 
+			// Client-side validation
+			const missingFields = [];
+			if (!projectName) missingFields.push('Charity Name');
+			if (!shortDescription) missingFields.push('Short Description');
+			if (!longDescription) missingFields.push('Long Description');
+			if (!logo) missingFields.push('Logo');
+			if (!startDate) missingFields.push('Start Date');
+			if (!endDate) missingFields.push('End Date');
+			if (!representativeName) missingFields.push('Representative Name');
+			if (!phoneNumber) missingFields.push('Phone Number');
+			if (!faceId) missingFields.push('Face ID');
+
+			if (missingFields.length > 0) {
+				throw new Error(`Please fill in all required fields: ${missingFields.join(', ')}`);
+			}
+
 			setLoading(true)
 
 			const charityData = {
@@ -164,7 +180,6 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 				charity_short_des: shortDescription,
 				charity_long_des: longDescription,
 				charity_token_symbol: selectedToken || '',
-				charity_token_supply: Number(tokenSupply),
 				charity_logo: logo,
 				charity_fb: socialLinks.facebook || '',
 				charity_x: socialLinks.twitter || '',
@@ -178,7 +193,6 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 				evidence: historyEvidence,
 				repre_name: representativeName,
 				repre_phone: phoneNumber,
-				repre_id: personalId,
 				repre_faceid: faceId,
 				wallet_address: address,
 			}
@@ -198,24 +212,30 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 
 			if (!response.ok) {
 				const errorData = await response.json()
+				console.error('API Error Response:', errorData)
 				throw new Error(
+					errorData.error ||
 					errorData.message ||
-						`Failed to ${isEditing ? 'update' : 'create'} charity`
+					`Failed to ${isEditing ? 'update' : 'create'} charity (Status: ${response.status})`
 				)
 			}
 
 			const data = await response.json()
+			console.log('API Success Response:', data)
 
 			if (!data.success) {
+				console.error('API Success False:', data)
 				throw new Error(
-					data.message || `Failed to ${isEditing ? 'update' : 'create'} charity`
+					data.error ||
+					data.message || 
+					`Failed to ${isEditing ? 'update' : 'create'} charity`
 				)
 			}
 
 			if (isEditing) {
-				router.push(`/charity/create-charity/preview/${id}`)
+				router.push(`/charity/charity-detail/${id}`)
 			} else {
-				router.push(`/charity/create-charity/preview/${data.data.charity_id}`)
+				router.push(`/charity/charity-detail/${data.data.charity_id}`)
 			}
 		} catch (error: any) {
 			console.error(
@@ -286,7 +306,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 										{/* Chain indicator */}
 
 										<div className="w-full flex flex-col gap-3 relative">
-											<span className=" text-lg">Project Name</span>
+											<span className=" text-lg">Project Name *</span>
 											<input
 												type="text"
 												value={projectName}
@@ -300,7 +320,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 									</div>
 
 									<div className="w-full flex flex-col p-2 gap-3">
-										<span className="text-lg">Short Description</span>
+										<span className="text-lg">Short Description *</span>
 										<div className="flex gap-5">
 											<textarea
 												id="shortDescription"
@@ -322,7 +342,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 									</div>
 
 									<div className="w-full flex flex-col p-2 gap-3">
-										<span className=" text-lg">Long Description</span>
+										<span className=" text-lg">Long Description *</span>
 										<div className="flex gap-5">
 											<textarea
 												id="longDescription"
@@ -458,7 +478,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 									</div>
 									<div className="w-full flex items-center justify-between p-2 gap-3">
 										<div className="w-full flex flex-col gap-3 relative">
-											<span className="text-lg">Start Date</span>
+											<span className="text-lg">Start Date *</span>
 											<input
 												type="datetime-local"
 												value={startDate}
@@ -472,7 +492,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 
 									<div className="w-full flex items-center justify-between p-2 gap-3">
 										<div className="w-full flex flex-col gap-3 relative">
-											<span className="text-lg">End Date</span>
+											<span className="text-lg">End Date *</span>
 											<input
 												type="datetime-local"
 												value={endDate}
@@ -498,21 +518,6 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 												<option value="ETH">ETH</option>
 												<option value="BNB">BNB</option>
 											</select>
-										</div>
-									</div>
-
-									<div className="w-full flex items-center justify-between p-2 gap-3">
-										<div className="w-full flex flex-col gap-3 relative">
-											<span className="text-lg">Token Supply</span>
-											<input
-												type="number"
-												value={tokenSupply}
-												onChange={(e) => setTokenSupply(e.target.value)}
-												placeholder="Enter token supply"
-												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
-    															[&::-webkit-inner-spin-button]:appearance-none 
-    															[&::-webkit-outer-spin-button]:appearance-none"
-											/>
 										</div>
 									</div>
 									<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -552,7 +557,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 
 										{/* Project Logo Upload */}
 										<div className="w-full flex flex-col gap-3 p-2">
-											<span className="text-lg">Logo</span>
+											<span className="text-lg">Logo *</span>
 											<div className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible">
 												<input
 													type="file"
@@ -660,7 +665,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 										{/* Chain indicator */}
 
 										<div className="w-full flex flex-col gap-3 relative">
-											<span className=" text-lg">Representative Name</span>
+											<span className=" text-lg">Representative Name *</span>
 											<input
 												type="text"
 												value={representativeName}
@@ -676,7 +681,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 										{/* Chain indicator */}
 
 										<div className="w-full flex flex-col gap-3 relative">
-											<span className=" text-lg">Phone Number</span>
+											<span className=" text-lg">Phone Number *</span>
 											<input
 												type="text"
 												value={phoneNumber}
@@ -728,7 +733,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 
 										{/* Face ID Upload */}
 										<div className="w-full flex flex-col gap-3 p-2">
-											<span className="text-lg">Face ID</span>
+											<span className="text-lg">Face ID *</span>
 											<div className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible">
 												<input
 													type="file"

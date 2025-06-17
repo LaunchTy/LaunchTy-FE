@@ -34,7 +34,11 @@ export async function POST(request: Request) {
 				user_id: user.user_id,
 			},
 			include: {
-				charity: true,
+				charity: {
+					include: {
+						donations: true
+					}
+				},
 			},
 			orderBy: {
 				datetime: 'desc',
@@ -51,17 +55,25 @@ export async function POST(request: Request) {
 			if (now < startDate) status = 'upcoming'
 			else if (now >= startDate && now <= endDate) status = 'ongoing'
 
+			// Calculate total donation amount for this charity
+			const totalDonationAmount = donation.charity.donations.reduce(
+				(sum, d) => sum + d.amount,
+				0
+			)
+
 			return {
 				charity_id: donation.charity.charity_id,
 				charity_name: donation.charity.charity_name,
 				charity_short_des: donation.charity.charity_short_des,
 				charity_logo: donation.charity.charity_logo,
+				charity_token_symbol: donation.charity.charity_token_symbol,
 				donation_amount: donation.amount,
 				donation_date: donation.datetime,
 				charity_start_date: donation.charity.charity_start_date,
 				charity_end_date: donation.charity.charity_end_date,
 				status: status,
 				tx_hash: donation.tx_hash,
+				total_donation_amount: totalDonationAmount
 			}
 		})
 

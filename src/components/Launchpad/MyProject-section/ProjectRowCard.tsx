@@ -156,7 +156,7 @@ const ProjectSection = ({
 							<div className="flex-shrink-0 w-[60px] h-[60px] rounded-full overflow-hidden">
 								<Image
 									src={
-										project.images ? project.images[0] : '/default-project.png'
+										project.logo || project.images?.[0] || '/default-project.png'
 									}
 									alt={project.name || 'Project Image'}
 									width={4000}
@@ -166,11 +166,11 @@ const ProjectSection = ({
 							</div>
 							{/* Project info */}
 							{/* Cột 2: Tên + mô tả */}
-							<div className="flex-1 flex flex-col ">
+							<div className="flex-1 flex flex-col max-w-[300px]">
 								<h2 className="text-lg font-semibold text-white truncate whitespace-nowrap overflow-hidden text-ellipsis">
 									{project.name || 'Unnamed Project'}
 								</h2>
-								<p className="text-white text-sm truncate whitespace-nowrap overflow-hidden text-ellipsis">
+								<p className="text-white text-sm truncate whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
 									{project.shortDescription}
 								</p>
 							</div>
@@ -201,10 +201,7 @@ const ProjectSection = ({
 										18
 									)}
 						${project.launchpad_token || ''}`
-								: `${convertNumToOffChainFormat(
-										(project.totalDonationAmount ?? 0).toString(),
-										18
-									)} ${project.charity_token_symbol || ''}`}
+								: `${(project.totalDonationAmount ?? 0).toFixed(2)} ${project.charity_token_symbol || ''}`}
 						</div>
 
 						{/* <div className="text-white text-sm">

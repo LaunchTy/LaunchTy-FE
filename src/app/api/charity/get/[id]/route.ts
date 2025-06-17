@@ -18,6 +18,7 @@ export async function GET(
             user_name: true
           }
         },
+        donations: true,
       }
     });
 
@@ -28,7 +29,16 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ success: true, data: charity });
+    // Calculate total donation amount
+    const charityWithTotal = {
+      ...charity,
+      totalDonationAmount: charity.donations.reduce(
+        (sum, donation) => sum + donation.amount,
+        0
+      ),
+    };
+
+    return NextResponse.json({ success: true, data: charityWithTotal });
   } catch (error) {
     console.error("Error fetching charity:", error);
     return NextResponse.json(

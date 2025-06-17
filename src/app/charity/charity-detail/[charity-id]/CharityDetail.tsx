@@ -20,7 +20,7 @@ import AddressInfo from '@/components/charity/charity-detail-section/AddressInfo
 import ProjectImg from '@/public/Project.png'
 import DonorsTable from '@/components/charity/charity-detail-section/DonorsTable'
 import CountdownTimer from '@/components/UI/countdown/CountdownTimer'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { Charity } from '@/interface/interface'
 import { NextResponse } from 'next/server'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
@@ -35,68 +35,17 @@ import { convertNumToOnChainFormat } from '@/app/utils/decimal'
 import { readContract, waitForTransactionReceipt } from 'viem/actions'
 import { publicClient } from '@/app/launchpad/my-launchpad/MyLaunchpad'
 import { BigNumber } from 'ethers'
-
-// Dummy data for testing
-const dummyCharityData: Charity = {
-	charity_id: 'dummy-charity-1',
-	charity_name: 'Test Charity Organization',
-	charity_short_des: 'A test charity organization for development purposes',
-	charity_long_des:
-		'This is a detailed description of our test charity organization. We are dedicated to helping those in need and making a positive impact in our community. Our mission is to provide support and resources to those who need it most.',
-	charity_logo: 'https://picsum.photos/200',
-	charity_img: [
-		'https://picsum.photos/800/600',
-		'https://picsum.photos/800/601',
-		'https://picsum.photos/800/602',
-	],
-	charity_start_date: new Date().toISOString(),
-	charity_end_date: new Date(
-		Date.now() + 30 * 24 * 60 * 60 * 1000
-	).toISOString(), // 30 days from now
-	charity_fb: 'https://facebook.com/testcharity',
-	charity_x: 'https://twitter.com/testcharity',
-	charity_ig: 'https://instagram.com/testcharity',
-	charity_website: 'https://testcharity.org',
-	charity_token_symbol: 'TEST',
-	evidence: ['https://picsum.photos/400/300', 'https://picsum.photos/400/301'],
-	repre_name: 'John Doe',
-	repre_phone: '+1234567890',
-	repre_faceid: 'face123',
-	totalDonationAmount: 5000,
-	donations: [],
-	charity_email: 'test@charity.org',
-	repre_id: 'dummy-repre-1',
-	status: 'approve',
-}
-
-const dummyDonations = [
-	{
-		id: 1,
-		user: { user_name: 'Alice Smith' },
-		datetime: new Date().toISOString(),
-		amount: 1000,
-	},
-	{
-		id: 2,
-		user: { user_name: 'Bob Johnson' },
-		datetime: new Date().toISOString(),
-		amount: 750,
-	},
-	{
-		id: 3,
-		user: { user_name: 'Carol White' },
-		datetime: new Date().toISOString(),
-		amount: 500,
-	},
-]
+import Button from '@/components/UI/button/Button'
+import { useCharityStore } from '@/store/charity/CreateCharityStore'
 
 const CharityDetail = () => {
 	const account = useAccount()
 	const userAddress = account.address
+	const router = useRouter()
 	const [backgroundImage, setBackgroundImage] = useState<string>('')
 	const [charity, setCharity] = useState<Charity | null>(null)
 	const [donations, setDonations] = useState<any[]>([])
-	const [loading, setLoading] = useState(false)
+	const [loading, setLoading] = useState(true)
 	const [errorModalOpen, setErrorModalOpen] = useState(false)
 	const [errorMessage, setErrorMessage] = useState('')
 	const [errorCode, setErrorCode] = useState('')
@@ -109,26 +58,21 @@ const CharityDetail = () => {
 	const { writeContractAsync: writeToToken, error: tokenError } =
 		useWriteContract()
 
+	const {
+		resetStore,
+	} = useCharityStore()
+
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-				// Set a timeout for the API calls
-				const timeoutPromise = new Promise((_, reject) =>
-					setTimeout(() => reject(new Error('Request timeout')), 5000)
-				)
-
-				// Fetch charity details with timeout
-				const charityResponse = (await Promise.race([
-					fetch(`/api/charity/get/${params['charity-id']}`),
-					timeoutPromise,
-				])) as Response
+				setLoading(true)
+				
+				// Fetch charity details
+				const charityResponse = await fetch(`/api/charity/get/${params['charity-id']}`)
 				const charityData = await charityResponse.json()
 
-				// Fetch donations with timeout
-				const donationsResponse = (await Promise.race([
-					fetch(`/api/donation/get/${params['charity-id']}`),
-					timeoutPromise,
-				])) as Response
+				// Fetch donations
+				const donationsResponse = await fetch(`/api/donation/get/${params['charity-id']}`)
 				const donationsData = await donationsResponse.json()
 
 				if (charityData.success) {
@@ -140,23 +84,16 @@ const CharityDetail = () => {
 						setBackgroundImage(charityData.data.charity_img[0])
 					}
 				} else {
-					console.warn('Using dummy data due to API failure')
-					setCharity(dummyCharityData)
-					setBackgroundImage(dummyCharityData.charity_img[0])
+					throw new Error('Failed to fetch charity data')
 				}
 
 				if (donationsData.success) {
 					setDonations(donationsData.data)
 				} else {
-					console.warn('Using dummy donations due to API failure')
-					setDonations(dummyDonations)
+					setDonations([])
 				}
 			} catch (error: any) {
 				console.error('Error fetching data:', error)
-				console.warn('Using dummy data due to error')
-				setCharity(dummyCharityData)
-				setBackgroundImage(dummyCharityData.charity_img[0])
-				setDonations(dummyDonations)
 				setErrorCode(error?.response?.status?.toString() || '500')
 				setErrorMessage(error?.message || 'An unexpected error occurred')
 				setErrorModalOpen(true)
@@ -263,6 +200,47 @@ const CharityDetail = () => {
 	const handleImageChange = (imageSrc: string) => {
 		setBackgroundImage(imageSrc)
 	}
+
+	const handleEdit = () => {
+		resetStore()
+		router.push(`/charity/edit-charity/${params['charity-id']}`)
+	}
+
+	const handleSubmit = async () => {
+		try {
+			// Update charity status to published
+			const response = await fetch(`/api/charity/update/${params['charity-id']}`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					status: 'publish'
+				}),
+			})
+
+			if (!response.ok) {
+				throw new Error('Failed to publish charity')
+			}
+
+			// Refresh the page to show updated status
+			window.location.reload()
+		} catch (error: any) {
+			setErrorMessage(error.message || 'Failed to publish charity')
+			setErrorCode('500')
+			setErrorModalOpen(true)
+		}
+	}
+
+	// Check if user is the owner of this charity
+	console.log('Charity data:', charity)
+	console.log('User address:', userAddress)
+	console.log('Project owner:', charity?.project_owner)
+	console.log('Is owner check:', charity?.project_owner?.wallet_address === userAddress)
+	
+	const isOwner = charity?.project_owner?.wallet_address === userAddress
+	const canEdit = isOwner && (charity?.status === 'pending' || charity?.status === 'approve')
+	const canSubmit = isOwner && charity?.status === 'approve'
 
 	if (loading) {
 		return <LoadingModal open={loading} onOpenChange={setLoading} />
@@ -388,7 +366,7 @@ const CharityDetail = () => {
 					</div>
 					<div className="w-4/12 h-fit top-12 flex flex-col">
 						<div className="h-[500px] flex flex-col gap-5 w-full">
-							<DonateArea enabled={true} handleDonate={handleDonate} />
+							<DonateArea enabled={charity.status === 'approve'} handleDonate={handleDonate} />
 						</div>
 						<AddressInfo
 							fields={[
@@ -408,19 +386,45 @@ const CharityDetail = () => {
 						/>
 					</div>
 				</div>
-				<div className="flex items-start justify-center gap-12">
-					<div className="w-10/12">
-						<DonorsTable
-							donors={donations.map((donation, index) => ({
-								ranking: index + 1,
-								name: donation.user?.user_name || 'Anonymous',
-								date: new Date(donation.datetime).toISOString().split('T')[0],
-								amount: donation.amount,
-								currency: 'USD',
-							}))}
-						/>
+
+				{/* Action Buttons - Only show for charity owner */}
+				{isOwner && (
+					<div className="flex justify-center gap-4 mt-8">
+						{canEdit && (
+							<Button
+								onClick={handleEdit}
+								className="glass-component-3 px-8 py-3 rounded-xl text-white hover:bg-opacity-80 transition-all duration-300"
+							>
+								Edit Information
+							</Button>
+						)}
+						{canSubmit && (
+							<Button
+								onClick={handleSubmit}
+								className="glass-component-3 px-8 py-3 rounded-xl text-white hover:bg-opacity-80 transition-all duration-300"
+							>
+								Publish Charity
+							</Button>
+						)}
 					</div>
-				</div>
+				)}
+
+				{/* Donors Table - Only show for approved charities */}
+				{charity.status === 'approve' && (
+					<div className="flex items-start justify-center gap-12">
+						<div className="w-10/12">
+							<DonorsTable
+								donors={donations.map((donation, index) => ({
+									ranking: index + 1,
+									name: donation.user?.user_name || 'Anonymous',
+									date: new Date(donation.datetime).toISOString().split('T')[0],
+									amount: donation.amount,
+									currency: 'USD',
+								}))}
+							/>
+						</div>
+					</div>
+				)}
 			</div>
 			<ErrorModal
 				open={errorModalOpen}
