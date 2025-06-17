@@ -62,7 +62,6 @@ const convertLaunchpadToProject = (launchpad: Launchpad): BaseProject => {
 		launchpad_token: launchpad.launchpad_token,
 		logo: launchpad.launchpad_logo,
 		endDate: launchpad.launchpad_end_date,
-		shortDescription: launchpad.launchpad_short_des,
 		type: 'launchpad',
 		totalInvest: launchpad.totalInvest,
 		status: status,
@@ -84,10 +83,13 @@ const MyProject = () => {
 	const [errorMessage, setErrorMessage] = useState('')
 	const [errorCode, setErrorCode] = useState('')
 	const { address } = useAccount()
+	// const [publish, setPublish] = useState(false)
 
 	const [loadingOpen, setLoadingOpen] = useState(false)
 	const [successOpen, setSuccessOpen] = useState(false)
 
+	const { writeContractAsync: writeToWithdraw, error: errorWithdraw } =
+		useWriteContract()
 	const fetchProjects = async () => {
 		try {
 			setLoading(true)
@@ -96,11 +98,49 @@ const MyProject = () => {
 				wallet_address: address,
 			})
 			const launchpadsData: Launchpad[] = response.data.data
-			const projectsData: BaseProject[] = launchpadsData.map(
-				convertLaunchpadToProject
+			// const projectsData: BaseProject[] = launchpadsData.map(
+			// 	convertLaunchpadToProject
+			// )
+			const projectsWithTotalAount = await Promise.all(
+				launchpadsData.map(async (launchpad) => {
+					const id = launchpad.launchpad_id
+					console.log('Fetching data for ID:', id)
+					// const projectsData: BaseProject[] = launchpadsData.map(
+					// 	convertLaunchpadToProject
+					// )
+					try {
+						// const price = await readContract(publicClient, {
+						// 	address: id as Address,
+						// 	abi: LaunchpadABI,
+						// 	functionName: 'getPricePerToken',
+						// })
+						// console.log('Price per token:', price)
+						const totalAmount = await readContract(publicClient, {
+							address: id as Address,
+							abi: LaunchpadABI,
+							functionName: 'getRaisedAmount',
+							// args: [userAddress],
+						})
+						console.log('Total withdraw:', totalAmount)
+						return {
+							...convertLaunchpadToProject(launchpad),
+							launchpadAddress: id as Address,
+							// pricePerToken: parseFloat((price as string).toString()),
+							totalAmount: parseFloat((totalAmount as string).toString()),
+						}
+					} catch (err) {
+						console.error(`Error fetching data for ID ${id}`, err)
+						return {
+							...convertLaunchpadToProject(launchpad),
+							launchpadAddress: '0x0',
+							// pricePerToken: 0,
+							totalAmount: 0,
+						}
+					}
+				})
 			)
-			setProjects(projectsData)
-			console.log('Fetched projects:', projectsData)
+			setProjects(projectsWithTotalAount)
+			console.log('Fetched projects:', projectsWithTotalAount)
 		} catch (error: any) {
 			setErrorCode(error?.response?.status?.toString() || '500')
 			setErrorMessage(
@@ -386,13 +426,81 @@ const MyProject = () => {
 		})
 		if (response.status === 200) {
 			console.log('Project published successfully:', response.data)
-			router.push('/launchpad/my-launchpad')
+
+			// Update the state to reflect the published project
+			setProjects((prevProjects) =>
+				prevProjects.map((project) =>
+					project.id === projects.id
+						? { ...project, status_launchpad: 'publish' }
+						: project
+				)
+			)
 		} else {
 			console.error('Error publishing project:', response.data)
 			alert('Error publishing project. Please try again later.')
 		}
 		setLoadingOpen(false) // Hide loading modal
 		setSuccessOpen(true) // Show success modal
+	}
+
+	const handleWithdraw = (launchpad_id: any) => {
+		const withdraw = async () => {
+			if (!launchpad_id) {
+				console.error('Launchpad ID is required')
+				return
+			}
+
+			console.log('Withdraw function called with launchpad_id', launchpad_id)
+
+			try {
+				// Execute withdraw transaction
+				const hash = await writeToWithdraw({
+					abi: LaunchpadABI,
+					address: launchpad_id as Address,
+					functionName: 'withdraw',
+					args: [],
+					// account: userAddress,
+				})
+
+				console.log('Withdraw transaction hash:', hash)
+
+				// Wait for transaction confirmation
+				const withdrawReceipt = await waitForTransactionReceipt(publicClient, {
+					hash,
+				})
+
+				console.log('Withdraw transaction receipt:', withdrawReceipt)
+
+				if (withdrawReceipt.status !== 'success') {
+					console.error('Withdraw transaction failed')
+					console.log('Write to Withdraw error: ', errorWithdraw)
+					return
+				}
+
+				// Verify withdrawal by checking updated balances
+				const updatedBalance = await readContract(publicClient, {
+					abi: LaunchpadABI,
+					address: launchpad_id as Address,
+					functionName: 'getAcceptedTokenBalance',
+					args: [],
+				})
+
+				const updatedRaisedAmount = await readContract(publicClient, {
+					abi: LaunchpadABI,
+					address: launchpad_id as Address,
+					functionName: 'getRaisedAmount',
+					args: [],
+				})
+
+				console.log('Updated contract balance:', updatedBalance)
+				console.log('Updated raised amount:', updatedRaisedAmount)
+				console.log('Withdraw successful')
+			} catch (error) {
+				console.error('Error during withdrawal:', error)
+			}
+		}
+
+		withdraw()
 	}
 
 	const handleShowMore = () => {
@@ -431,7 +539,9 @@ const MyProject = () => {
 						onTabChange={setActiveTab}
 					/>
 					<ProjectRowCard
+						// publish={publish}
 						projects={visibleProjects}
+						projectType="launchpad" // Add the required projectType property
 						showCountdown={true}
 						countdownDuration={24}
 						className="custom-class"
@@ -439,7 +549,7 @@ const MyProject = () => {
 							console.log('Edit project:', projectId)
 						}}
 						handlePublish={handlePublish}
-						projectType="launchpad"
+						onWithdraw={handleWithdraw}
 					/>
 					{hasMore && (
 						<div className="align-center flex flex-col justify-center items-center p-8">

@@ -11,6 +11,7 @@ interface ContractData {
 		address: string;
 		transactionHash: string;
 		arguments: string[];
+		function: string;
 		additionalContracts: {
 			address: string;
 		}[];
@@ -55,11 +56,19 @@ contractData.transactions.forEach((item) => {
 	// 	console.log(`Charity address: ${item.contractAddress}`);
 	// }
 	if (item.contractName === "MockERC20") {
-		if (item.arguments && item.arguments[1] === "PTK") {
+		if (
+			item.arguments &&
+			item.function === null &&
+			item.arguments[1] === "PTK"
+		) {
 			chainConfig[11155111].contracts.MockERC20.address =
 				item.contractAddress;
 			console.log(`MockERC20 address: ${item.contractAddress}`);
-		} else {
+		} else if (
+			item.arguments &&
+			item.function === null &&
+			item.arguments[1] === "ATK"
+		) {
 			chainConfig[11155111].contracts.AcceptedMockERC20.address =
 				item.contractAddress;
 			console.log(`AcceptedMockERC20 address: ${item.contractAddress}`);
