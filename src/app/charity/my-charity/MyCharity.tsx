@@ -246,7 +246,12 @@ const MyCharity = () => {
 		setVisibleCount((prev) => prev + 6)
 	}
 
-	const visibleProjects = projects.slice(0, visibleCount)
+	const filteredProjects = projects.filter((project) => {
+		if (activeTab === 'all') return true
+		return project.status === activeTab
+	})
+
+	const visibleProjects = filteredProjects.slice(0, visibleCount)
 	const hasMore = visibleCount < projects.length
 
 	const handleWithdraw = async (projectId: Address) => {
