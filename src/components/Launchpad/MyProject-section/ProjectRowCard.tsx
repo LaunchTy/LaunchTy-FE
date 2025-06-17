@@ -142,14 +142,14 @@ const ProjectSection = ({
 			// ref={sectionRef}
 			className={`px-20 py-12 font-exo relative overflow-hidden min-h-auto ${className}`}
 		>
-			<div className="flex flex-col gap-6 z-20 relative">
+			<div className="grid gap-6 z-20 relative">
 				{projects.map((project, index) => (
 					<motion.div
 						key={project.id}
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.4, ease: 'easeOut' }}
-						className="relative z-20 px-5 py-4 border border-gray-300 shadow-md glass-component-2 rounded-[40px] grid grid-cols-5 items-center gap-24"
+						className="relative z-20 px-5 py-4 border border-gray-300 shadow-md glass-component-2 rounded-[40px] grid grid-cols-5 items-center gap-8"
 					>
 						{/* Project Image */}
 						<div className="flex gap-10">
@@ -164,19 +164,20 @@ const ProjectSection = ({
 									className="object-cover w-full h-full"
 								/>
 							</div>
-							<div className="flex-1 flex flex-col min-w-0">
-								<h2 className="text-lg font-semibold text-white">
+							{/* Project info */}
+							{/* Cột 2: Tên + mô tả */}
+							<div className="flex-1 flex flex-col ">
+								<h2 className="text-lg font-semibold text-white truncate whitespace-nowrap overflow-hidden text-ellipsis">
 									{project.name || 'Unnamed Project'}
 								</h2>
-								<p className="text-white text-sm line-clamp-2">
+								<p className="text-white text-sm truncate whitespace-nowrap overflow-hidden text-ellipsis">
 									{project.shortDescription}
 								</p>
 							</div>
 						</div>
-						{/* Project info */}
-						{/* Cột 2: Tên + mô tả */}
+
 						{/* Cột 3: Token */}
-						<div className="text-white text-sm flex gap-1 justify-start w-56">
+						<div className="text-white text-sm flex gap-1 justify-center ">
 							<span className="font-medium">Token: </span>{' '}
 							<span>
 								{' '}
@@ -239,7 +240,7 @@ const ProjectSection = ({
 							{onWithdraw /*&& project.status_launchpad === 'approve'*/ && (
 								<Button
 									onClick={() => onWithdraw(project.id || '')}
-									className="relative font-bold bg-gradient text-white py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 w-28"
+									className="relative bg-gradient text-white py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 w-auto"
 								>
 									Withdraw
 								</Button>
@@ -247,7 +248,7 @@ const ProjectSection = ({
 							{onEdit && (
 								<Button
 									onClick={() => onEdit(project.id || '')}
-									className="font-bold bg-gradient text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 w-28"
+									className=" bg-gradient text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 w-auto"
 								>
 									Edit
 								</Button>

@@ -48,7 +48,7 @@ const convertCharityToProject = (charity: Charity): BaseProject => {
 		type: 'charity',
 		totalDonationAmount: charity.totalDonationAmount,
 		status: status,
-		status_charity: charity.status_charity,
+		status_charity: charity.status,
 		charity_token_symbol: charity.charity_token_symbol,
 	}
 }
@@ -68,6 +68,9 @@ const MyCharity = () => {
 	const [error, setError] = useState<string | null>(null)
 	const router = useRouter()
 	const { writeContractAsync: writeWithdrawOwner } = useWriteContract()
+	const { writeContractAsync: writeCreateCharity } = useWriteContract()
+	const [loadingOpen, setLoadingOpen] = useState(false)
+	const [successOpen, setSuccessOpen] = useState(false)
 
 	const fetchProjects = async () => {
 		try {
@@ -76,6 +79,7 @@ const MyCharity = () => {
 				wallet_address: address,
 			})
 			const charityData: Charity[] = response.data.data
+			console.log('Charity data:', charityData)
 			// const projectsData: BaseProject[] = charityData.map(
 			// 	convertCharityToProject
 			// )
@@ -83,16 +87,7 @@ const MyCharity = () => {
 				charityData.map(async (charity) => {
 					const id = charity.charity_id
 					console.log('Fetching data for ID:', id)
-					// const projectsData: BaseProject[] = launchpadsData.map(
-					// 	convertLaunchpadToProject
-					// )
 					try {
-						// const price = await readContract(publicClient, {
-						// 	address: id as Address,
-						// 	abi: LaunchpadABI,
-						// 	functionName: 'getPricePerToken',
-						// })
-						// console.log('Price per token:', price)
 						const totalDonate = await readContract(publicClient, {
 							address: id as Address,
 							abi: LaunchpadABI,
@@ -119,6 +114,8 @@ const MyCharity = () => {
 					}
 				})
 			)
+			console.log('Charity with total donation:', charityWithTotalDonate)
+
 			setProjects(charityWithTotalDonate)
 		} catch (error: any) {
 			setErrorCode(error?.response?.status?.toString() || '500')
@@ -140,14 +137,14 @@ const MyCharity = () => {
 		const acceptedTokenAddress: Address = chainConfig.contracts
 			.AcceptedMockERC20.address as Address
 
-		const hash = await writeWithdrawOwner({
+		const hash = await writeCreateCharity({
 			address: chainConfig.contracts.CharityFactory.address as Address,
 			abi: CharityFactoryABI,
-			functionName: 'withdrawFund',
+			functionName: 'createCharity',
 			args: [
-				// 	acceptedTokenAddress,
-				// 	Math.floor(Date.now() / 1000),
-				// 	Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days from now
+				acceptedTokenAddress,
+				Math.floor(Date.now() / 1000),
+				Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days from now
 			],
 		})
 
@@ -218,6 +215,21 @@ const MyCharity = () => {
 		} finally {
 			setLoading(false)
 		}
+
+		const response = await axios.post('/api/charity/my-charity/publish', {
+			wallet_address: address,
+			charity_address: charityAddress,
+			charity_id: projects.id,
+		})
+		if (response.status === 200) {
+			console.log('Project published successfully:', response.data)
+			window.location.reload() // Reload the page to reflect changes
+		} else {
+			console.error('Error publishing project:', response.data)
+			alert('Error publishing project. Please try again later.')
+		}
+		setLoadingOpen(false) // Hide loading modal
+		setSuccessOpen(true) // Show success modal
 	}
 
 	useEffect(() => {
