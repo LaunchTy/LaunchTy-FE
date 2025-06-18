@@ -95,6 +95,8 @@ const ExploreProjectPage = () => {
 	// 	useWriteContract()
 	const { writeContractAsync: writeToWithdraw, error: errorWithdraw } =
 		useWriteContract()
+	const { writeContractAsync: writeToRefund, error: errorRefund } =
+		useWriteContract()
 
 	const fetchProjects = async () => {
 		if (!account.address) return
@@ -126,8 +128,20 @@ const ExploreProjectPage = () => {
 							args: [userAddress],
 						})
 						console.log('Total withdraw:', totalWithdraw)
+
+						const isSoftcapReached: boolean = (await readContract(
+							publicClient,
+							{
+								address: id as Address,
+								abi: LaunchpadABI,
+								functionName: 'isSoftcapReached',
+							}
+						)) as boolean
+
+						console.log(`Is softcap reached for ${id}: `, isSoftcapReached)
 						return {
 							...convertLaunchpadToProject(launchpad),
+							isSoftcapReached,
 							launchpadAddress: id as Address,
 							pricePerToken: parseFloat((price as string).toString()),
 							totalWithdraw: parseFloat((totalWithdraw as string).toString()),
@@ -136,6 +150,7 @@ const ExploreProjectPage = () => {
 						console.error(`Error fetching data for ID ${id}`, err)
 						return {
 							...convertLaunchpadToProject(launchpad),
+							isSoftcapReached: false,
 							launchpadAddress: '0x0',
 							pricePerToken: 0,
 							totalWithdraw: 0,
@@ -307,6 +322,66 @@ const ExploreProjectPage = () => {
 		withdraw()
 	}
 
+	const handleRefund = (launchpad_id: any) => {
+		const refund = async () => {
+			if (!launchpad_id) {
+				console.error('Launchpad ID is required')
+				return
+			}
+
+			console.log('Refund function called with launchpad_id', launchpad_id)
+
+			try {
+				// Execute refund transaction
+				const hash = await writeToRefund({
+					abi: LaunchpadABI,
+					address: launchpad_id as Address,
+					functionName: 'claimToken',
+					args: [],
+					// account: userAddress,
+				})
+
+				console.log('Refund transaction hash:', hash)
+
+				// Wait for transaction confirmation
+				const refundReceipt = await waitForTransactionReceipt(publicClient, {
+					hash,
+				})
+
+				console.log('Refund transaction receipt:', refundReceipt)
+
+				if (refundReceipt.status !== 'success') {
+					console.error('Refund transaction failed')
+					console.log('Write to Refund error: ', errorRefund)
+					return
+				}
+
+				// Verify refund by checking updated balances
+				const updatedBalance = await readContract(publicClient, {
+					abi: LaunchpadABI,
+					address: launchpad_id as Address,
+					functionName: 'getAcceptedTokenBalance',
+					args: [],
+				})
+
+				const updatedRaisedAmount = await readContract(publicClient, {
+					abi: LaunchpadABI,
+					address: launchpad_id as Address,
+					functionName: 'getUserDeposits',
+					args: [userAddress],
+				})
+
+				console.log('Updated contract balance:', updatedBalance)
+				console.log('Updated raised amount:', updatedRaisedAmount)
+				console.log('Refund successful')
+			} catch (error) {
+				console.error('Error during refund:', error)
+			}
+		}
+
+		refund()
+	}
+
 	const filteredProjects = projects.filter((project) => {
 		if (activeTab === 'all') return true
 		return project.status === activeTab
@@ -350,6 +425,7 @@ const ExploreProjectPage = () => {
 						countdownDuration={24}
 						className="custom-class pb-12"
 						onButtonClick={(id) => handleWithdraw(id)}
+						onRefund={(id) => handleRefund(id)}
 					/>
 					{hasMoreProjects && !showAll && (
 						<div className="flex justify-center my-10">

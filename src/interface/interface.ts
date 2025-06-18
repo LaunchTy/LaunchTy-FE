@@ -123,6 +123,7 @@ export interface BaseProject {
 	status_launchpad?: "pending" | "approve" | "deny" | "publish";
 	totalInvest?: number;
 	totalAmount?: number;
+	isSoftcapReached?: boolean;
 
 	//Charity
 	charity_token_symbol?: string;

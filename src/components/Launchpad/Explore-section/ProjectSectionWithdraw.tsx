@@ -28,6 +28,8 @@ interface ProjectSectionProps {
 	showCountdown?: boolean
 	countdownDuration?: number // in hours
 	onButtonClick?: (id: string) => void
+	onRefund?: (id: string) => void
+	isSoftcapReached?: boolean
 }
 
 const ProjectSection = ({
@@ -36,6 +38,8 @@ const ProjectSection = ({
 	showCountdown = true,
 	countdownDuration = 12,
 	onButtonClick,
+	onRefund,
+	isSoftcapReached,
 }: ProjectSectionProps) => {
 	const sectionRef = useRef<HTMLElement>(null)
 	const [countdowns, setCountdowns] = useState<{ [key: string]: string }>({})
@@ -205,12 +209,25 @@ const ProjectSection = ({
 									)}{' '}
 									{project.launchpad_token || ''}
 								</p>
-								<Button
-									onClick={() => onButtonClick?.(project.id || '')}
-									className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-[5rem] py-3 rounded-full hover:opacity-90 transition-all duration-300 flex items-center justify-center"
-								>
-									Withdraw
-								</Button>
+								{project.isSoftcapReached && project.status === 'finished' ? (
+									<div className="">
+										<Button
+											onClick={() => onButtonClick?.(project.id || '')}
+											className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-[5rem] py-3 rounded-full hover:opacity-90 transition-all duration-300 flex items-center justify-center"
+										>
+											Withdraw
+										</Button>
+									</div>
+								) : (
+									<div className="">
+										<Button
+											onClick={() => onRefund?.(project.id || '')}
+											className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-[5rem] py-3 rounded-full hover:opacity-90 transition-all duration-300 flex items-center justify-center"
+										>
+											Refund
+										</Button>
+									</div>
+								)}
 							</div>
 						</motion.div>
 					))}
