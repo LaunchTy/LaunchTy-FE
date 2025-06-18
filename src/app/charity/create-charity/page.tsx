@@ -4,12 +4,12 @@ import { useCharityStore } from '@/store/charity/CreateCharityStore'
 import React from 'react'
 
 export default function CreateCharityPage() {
-	const resetStore = useCharityStore((state) => state.resetStore);
+	const resetStore = useCharityStore((state) => state.resetStore)
 
 	// Reset store when component mounts
 	React.useEffect(() => {
-		resetStore();
-	}, [resetStore]);
+		resetStore()
+	}, [resetStore])
 
 	return <CreateCharity />
 }

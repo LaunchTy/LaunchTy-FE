@@ -158,19 +158,21 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 			}
 
 			// Client-side validation
-			const missingFields = [];
-			if (!projectName) missingFields.push('Charity Name');
-			if (!shortDescription) missingFields.push('Short Description');
-			if (!longDescription) missingFields.push('Long Description');
-			if (!logo) missingFields.push('Logo');
-			if (!startDate) missingFields.push('Start Date');
-			if (!endDate) missingFields.push('End Date');
-			if (!representativeName) missingFields.push('Representative Name');
-			if (!phoneNumber) missingFields.push('Phone Number');
-			if (!faceId) missingFields.push('Face ID');
+			const missingFields = []
+			if (!projectName) missingFields.push('Charity Name')
+			if (!shortDescription) missingFields.push('Short Description')
+			if (!longDescription) missingFields.push('Long Description')
+			if (!logo) missingFields.push('Logo')
+			if (!startDate) missingFields.push('Start Date')
+			if (!endDate) missingFields.push('End Date')
+			if (!representativeName) missingFields.push('Representative Name')
+			if (!phoneNumber) missingFields.push('Phone Number')
+			if (!faceId) missingFields.push('Face ID')
 
 			if (missingFields.length > 0) {
-				throw new Error(`Please fill in all required fields: ${missingFields.join(', ')}`);
+				throw new Error(
+					`Please fill in all required fields: ${missingFields.join(', ')}`
+				)
 			}
 
 			setLoading(true)
@@ -215,8 +217,8 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 				console.error('API Error Response:', errorData)
 				throw new Error(
 					errorData.error ||
-					errorData.message ||
-					`Failed to ${isEditing ? 'update' : 'create'} charity (Status: ${response.status})`
+						errorData.message ||
+						`Failed to ${isEditing ? 'update' : 'create'} charity (Status: ${response.status})`
 				)
 			}
 
@@ -227,8 +229,8 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 				console.error('API Success False:', data)
 				throw new Error(
 					data.error ||
-					data.message || 
-					`Failed to ${isEditing ? 'update' : 'create'} charity`
+						data.message ||
+						`Failed to ${isEditing ? 'update' : 'create'} charity`
 				)
 			}
 

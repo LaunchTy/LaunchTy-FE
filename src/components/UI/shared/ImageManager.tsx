@@ -102,7 +102,7 @@ const ImageManager: React.FC<ImageManagerProps> = ({
 
 	// Filter images by type
 	const getImagesByType = (type: string) => {
-		return images.filter(img => img.type === type)
+		return images.filter((img) => img.type === type)
 	}
 
 	return (

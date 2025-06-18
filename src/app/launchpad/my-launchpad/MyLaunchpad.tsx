@@ -119,7 +119,7 @@ const MyProject = () => {
 							address: id as Address,
 							abi: LaunchpadABI,
 							functionName: 'getRaisedAmount',
-							// args: [userAddress],
+							args: [userAddress],
 						})
 						console.log('Total withdraw:', totalAmount)
 						return {

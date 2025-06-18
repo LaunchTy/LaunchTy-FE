@@ -58,21 +58,23 @@ const CharityDetail = () => {
 	const { writeContractAsync: writeToToken, error: tokenError } =
 		useWriteContract()
 
-	const {
-		resetStore,
-	} = useCharityStore()
+	const { resetStore } = useCharityStore()
 
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
 				setLoading(true)
-				
+
 				// Fetch charity details
-				const charityResponse = await fetch(`/api/charity/get/${params['charity-id']}`)
+				const charityResponse = await fetch(
+					`/api/charity/get/${params['charity-id']}`
+				)
 				const charityData = await charityResponse.json()
 
 				// Fetch donations
-				const donationsResponse = await fetch(`/api/donation/get/${params['charity-id']}`)
+				const donationsResponse = await fetch(
+					`/api/donation/get/${params['charity-id']}`
+				)
 				const donationsData = await donationsResponse.json()
 
 				if (charityData.success) {
@@ -209,15 +211,18 @@ const CharityDetail = () => {
 	const handleSubmit = async () => {
 		try {
 			// Update charity status to published
-			const response = await fetch(`/api/charity/update/${params['charity-id']}`, {
-				method: 'PUT',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					status: 'publish'
-				}),
-			})
+			const response = await fetch(
+				`/api/charity/update/${params['charity-id']}`,
+				{
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						status: 'publish',
+					}),
+				}
+			)
 
 			if (!response.ok) {
 				throw new Error('Failed to publish charity')
@@ -236,10 +241,14 @@ const CharityDetail = () => {
 	console.log('Charity data:', charity)
 	console.log('User address:', userAddress)
 	console.log('Project owner:', charity?.project_owner)
-	console.log('Is owner check:', charity?.project_owner?.wallet_address === userAddress)
-	
+	console.log(
+		'Is owner check:',
+		charity?.project_owner?.wallet_address === userAddress
+	)
+
 	const isOwner = charity?.project_owner?.wallet_address === userAddress
-	const canEdit = isOwner && (charity?.status === 'pending' || charity?.status === 'approve')
+	const canEdit =
+		isOwner && (charity?.status === 'pending' || charity?.status === 'approve')
 	const canSubmit = isOwner && charity?.status === 'approve'
 
 	if (loading) {
@@ -366,7 +375,10 @@ const CharityDetail = () => {
 					</div>
 					<div className="w-4/12 h-fit top-12 flex flex-col">
 						<div className="h-[500px] flex flex-col gap-5 w-full">
-							<DonateArea enabled={charity.status === 'approve'} handleDonate={handleDonate} />
+							<DonateArea
+								enabled={charity.status === 'approve'}
+								handleDonate={handleDonate}
+							/>
 						</div>
 						<AddressInfo
 							fields={[

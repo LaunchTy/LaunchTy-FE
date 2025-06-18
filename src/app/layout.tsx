@@ -31,11 +31,11 @@ export default function RootLayout({
 								subItems: [
 									{ name: 'My Launchpad', link: '/launchpad/my-launchpad' },
 									{
-										name: 'My Investment', link: '/launchpad/explore-launchpad-withdraw',
+										name: 'My Investment',
+										link: '/launchpad/explore-launchpad-withdraw',
 									},
 									{ name: 'My Charity', link: '/charity/my-charity' },
 									{ name: 'My Donations', link: '/charity/my-donations' },
-
 								],
 							},
 						]}

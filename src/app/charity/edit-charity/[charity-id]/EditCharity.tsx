@@ -50,11 +50,11 @@ const EditCharity = () => {
 				console.log('Fetching from:', `/api/charity/get/${charityId}`)
 				const response = await fetch(`/api/charity/get/${charityId}`)
 				console.log('API Response status:', response.status)
-				
+
 				if (!response.ok) {
 					throw new Error(`Failed to fetch charity data: ${response.status}`)
 				}
-				
+
 				const data = await response.json()
 				console.log('API Response data:', data)
 
@@ -68,23 +68,23 @@ const EditCharity = () => {
 					setRepresentativeName(charity.repre_name || '')
 					setPhoneNumber(charity.repre_phone || '')
 					setSelectedToken(charity.charity_token_symbol || '')
-					
+
 					// Convert dates to datetime-local format (YYYY-MM-DDTHH:MM)
 					const formatDateForInput = (dateString: string) => {
 						if (!dateString) return ''
 						const date = new Date(dateString)
 						if (isNaN(date.getTime())) return ''
-						
+
 						// Format date to YYYY-MM-DDTHH:MM without timezone conversion
 						const year = date.getFullYear()
 						const month = String(date.getMonth() + 1).padStart(2, '0')
 						const day = String(date.getDate()).padStart(2, '0')
 						const hours = String(date.getHours()).padStart(2, '0')
 						const minutes = String(date.getMinutes()).padStart(2, '0')
-						
+
 						return `${year}-${month}-${day}T${hours}:${minutes}`
 					}
-					
+
 					setStartDate(formatDateForInput(charity.charity_start_date))
 					setEndDate(formatDateForInput(charity.charity_end_date))
 
@@ -110,7 +110,9 @@ const EditCharity = () => {
 				}
 			} catch (error) {
 				console.error('Error in fetchCharityData:', error)
-				setError(error instanceof Error ? error.message : 'Failed to load charity data')
+				setError(
+					error instanceof Error ? error.message : 'Failed to load charity data'
+				)
 			} finally {
 				console.log('Setting loading to false')
 				setIsLoading(false)
@@ -157,4 +159,3 @@ const EditCharity = () => {
 }
 
 export default EditCharity
-	

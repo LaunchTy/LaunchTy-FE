@@ -48,7 +48,8 @@ const MyDonations = () => {
 				endDate: donation.charity_end_date,
 				status: donation.status, // This should be calculated based on dates like in ExploreCharity
 				charity_token_symbol: donation.charity_token_symbol,
-				totalDonationAmount: donation.total_donation_amount || donation.donation_amount
+				totalDonationAmount:
+					donation.total_donation_amount || donation.donation_amount,
 			}))
 			setDonations(transformedDonations)
 		} catch (error: any) {
@@ -144,4 +145,4 @@ const MyDonations = () => {
 	)
 }
 
-export default MyDonations 
+export default MyDonations

@@ -42,21 +42,21 @@ export async function POST(req: NextRequest) {
 			!wallet_address
 		) {
 			const missingFields = [];
-			if (!charity_name) missingFields.push('Charity Name');
-			if (!charity_short_des) missingFields.push('Short Description');
-			if (!charity_long_des) missingFields.push('Long Description');
-			if (!charity_logo) missingFields.push('Logo');
-			if (!charity_start_date) missingFields.push('Start Date');
-			if (!charity_end_date) missingFields.push('End Date');
-			if (!repre_name) missingFields.push('Representative Name');
-			if (!repre_phone) missingFields.push('Phone Number');
-			if (!repre_faceid) missingFields.push('Face ID');
-			if (!wallet_address) missingFields.push('Wallet Address');
+			if (!charity_name) missingFields.push("Charity Name");
+			if (!charity_short_des) missingFields.push("Short Description");
+			if (!charity_long_des) missingFields.push("Long Description");
+			if (!charity_logo) missingFields.push("Logo");
+			if (!charity_start_date) missingFields.push("Start Date");
+			if (!charity_end_date) missingFields.push("End Date");
+			if (!repre_name) missingFields.push("Representative Name");
+			if (!repre_phone) missingFields.push("Phone Number");
+			if (!repre_faceid) missingFields.push("Face ID");
+			if (!wallet_address) missingFields.push("Wallet Address");
 
 			return NextResponse.json(
-				{ 
-					success: false, 
-					error: `Missing required fields: ${missingFields.join(', ')}` 
+				{
+					success: false,
+					error: `Missing required fields: ${missingFields.join(", ")}`,
 				},
 				{ status: 400 }
 			);

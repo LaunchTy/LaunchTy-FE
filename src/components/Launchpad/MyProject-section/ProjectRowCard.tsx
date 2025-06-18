@@ -156,7 +156,9 @@ const ProjectSection = ({
 							<div className="flex-shrink-0 w-[60px] h-[60px] rounded-full overflow-hidden">
 								<Image
 									src={
-										project.logo || project.images?.[0] || '/default-project.png'
+										project.logo ||
+										project.images?.[0] ||
+										'/default-project.png'
 									}
 									alt={project.name || 'Project Image'}
 									width={4000}
