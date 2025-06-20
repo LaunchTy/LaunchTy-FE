@@ -73,7 +73,7 @@ export interface Charity {
 	repre_id: string;
 	repre_faceid: string;
 	status_charity?: "pending" | "approve" | "deny" | "publish";
-	status: "pending" | "approve" | "deny";
+	status: "pending" | "approve" | "deny" | "publish";
 	user?: User;
 	project_owner?: User;
 	donations?: Donation[];

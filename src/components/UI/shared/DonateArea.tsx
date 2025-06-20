@@ -6,12 +6,9 @@ interface CharityAreaProps {
 	enabled?: boolean
 	handleDonate?: () => void
 }
-const StakeArea: React.FC<CharityAreaProps> = ({
-	enabled = false,
-	handleDonate,
-}) => {
+const StakeArea: React.FC<CharityAreaProps> = ({ enabled, handleDonate }) => {
 	const { tokenAmount, setTokenAmount } = useCharityTokenAmountStore()
-	const isButtonDisabled = !enabled || tokenAmount <= 0
+	const isButtonDisabled = !enabled && tokenAmount <= 0
 	return (
 		<div className="">
 			<div className="glass-component-1 p-12 text-white rounded-xl h-[400px]">
