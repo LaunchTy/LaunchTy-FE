@@ -30,7 +30,7 @@ const HistoryEvidence = ({ images }: HistoryEvidenceProps) => {
 	}
 
 	return (
-		<div className="h-[400px] flex flex-col gap-5 w-full rounded-xl glass-component-1 p-8">
+		<div className="h-[525px] flex flex-col w-full rounded-xl glass-component-1 p-8">
 			<span className="text-[30px] font-bold">History Evidence</span>
 
 			<div className="relative flex-1 w-full rounded-lg overflow-hidden">

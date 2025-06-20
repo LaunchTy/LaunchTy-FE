@@ -12,6 +12,7 @@ import {
 import DonateArea from '@/components/UI/shared/DonateArea'
 import CustomTabs from '@/components/UI/shared/Tabs'
 import Tabs from '@/components/UI/shared/Tabs'
+import SocialLinks from '@/components/UI/shared/SocialLinks'
 import { projectDetail } from '@/constants/utils'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
@@ -347,8 +348,8 @@ const CharityDetail = () => {
 					</div>
 				</div>
 				<div className="flex items-start justify-center gap-9">
-					<div className="w-6/12">
-						<div className="h-[500px]">
+					<div className="w-6/12 h-fit top-12 flex flex-col">
+						<div className="h-[520px]">
 							<HistoryEvidence
 								images={charity.evidence.map((img, index) => ({
 									src: img,
@@ -356,46 +357,69 @@ const CharityDetail = () => {
 								}))}
 							/>
 						</div>
-						<AddressInfo
-							fields={[
-								{
-									label: 'Representative Name',
-									value: charity.repre_name,
-								},
-								{
-									label: 'Phone',
-									value: charity.repre_phone,
-								},
-								{
-									label: 'Status',
-									value: status,
-								},
-							]}
-						/>
+						<div className="mt-20">
+							<AddressInfo
+								fields={[
+									{
+										label: 'Representative Name',
+										value: charity.repre_name,
+									},
+									{
+										label: 'Phone',
+										value: charity.repre_phone,
+									},
+									{
+										label: 'Status',
+										value: status,
+									},
+								]}
+								className="h-[200px]"
+							/>
+						</div>
 					</div>
-					<div className="w-4/12 h-fit top-12 flex flex-col">
-						<div className="h-[500px] flex flex-col gap-5 w-full">
+					<div className="w-4/12 h-fit top-12 flex flex-col gap-3">
+						{/* Social Links Section */}
+						{(charity.charity_website || charity.charity_fb || charity.charity_x) && (
+							<div className="border rounded-xl glass-component-1 text-white w-full p-6">
+								<div className="text-xl font-bold font-orbitron mb-4 bg-gradient-to-r bg-white bg-clip-text text-transparent">
+									Follow Us
+								</div>
+								<SocialLinks
+									socials={{
+										website: charity.charity_website,
+										fb: charity.charity_fb,
+										x: charity.charity_x,
+									}}
+									iconSize="medium"
+									align="start"
+								/>
+							</div>
+						)}
+						<div className="h-[380px] flex flex-col gap-2 w-full">
 							<DonateArea
 								enabled={charity.status === 'approve'}
 								handleDonate={handleDonate}
 							/>
 						</div>
-						<AddressInfo
-							fields={[
-								{
-									label: 'Total charity raised',
-									value: charity.totalDonationAmount?.toString() || '0',
-								},
-								{
-									label: 'Total donors',
-									value: charity.donations?.length.toString() || '0',
-								},
-								{
-									label: 'Token Symbol',
-									value: charity.charity_token_symbol,
-								},
-							]}
-						/>
+						<div className="mt-20">
+							<AddressInfo
+								fields={[
+									{
+										label: 'Total charity raised',
+										value: charity.totalDonationAmount?.toString() || '0',
+									},
+									{
+										label: 'Total donors',
+										value: charity.donations?.length.toString() || '0',
+									},
+									{
+										label: 'Token Symbol',
+										value: charity.charity_token_symbol,
+									},
+								]}
+								className="h-[200px]"
+							/>
+						</div>
 					</div>
 				</div>
 

@@ -19,7 +19,7 @@ const AddressInfo = ({ title, fields, className = '' }: AddressInfoProps) => {
 			{title && <span className="text-[25px] font-bold">{title}</span>}
 			{fields.map((field, i) => (
 				<div key={i} className="flex items-center mb-6">
-					<span className="flex-none w-48 text-right text-[19px] font-bold">
+					<span className="flex-none w-52 text-right text-[19px] font-bold">
 						{field.label}:
 					</span>
 					<span className="ml-10 text-[16px] text-left font-normal">
