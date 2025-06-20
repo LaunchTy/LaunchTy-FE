@@ -1,21 +1,41 @@
 'use client'
 import { StaticImageData } from 'next/image'
-import React from 'react'
+import React, { useState, useCallback } from 'react'
 
 interface ExploreProjectProps {
 	title: string
 	backgroundImage: string | { src: string } // Supports both URL and imported image/SVG
 	searchPlaceholder?: string
+	onSearchChange?: (searchTerm: string) => void
+	initialSearchTerm?: string
 }
 
 const ExploreProject = ({
 	title,
 	backgroundImage,
 	searchPlaceholder = 'Search projects...',
+	onSearchChange,
+	initialSearchTerm = '',
 }: ExploreProjectProps) => {
+	const [searchTerm, setSearchTerm] = useState(initialSearchTerm)
+
 	// Handle imported images with `src` property
 	const resolvedBackgroundImage =
 		typeof backgroundImage === 'string' ? backgroundImage : backgroundImage.src
+
+	// Debounced search handler
+	const handleSearchChange = useCallback(
+		(event: React.ChangeEvent<HTMLInputElement>) => {
+			const value = event.target.value
+			setSearchTerm(value)
+			
+			// Call the parent's search handler if provided
+			if (onSearchChange) {
+				onSearchChange(value)
+			}
+		},
+		[onSearchChange]
+	)
 
 	return (
 		<div
@@ -37,6 +57,8 @@ const ExploreProject = ({
 						<div className="relative">
 							<input
 								type="text"
+								value={searchTerm}
+								onChange={handleSearchChange}
 								placeholder={searchPlaceholder}
 								className="w-full px-6 py-4 rounded-[20px] bg-transparent backdrop-blur-xl border border-[#2A2A2A] text-white placeholder-gray-400 focus:outline-none focus:border-[#8132a2] transition-all duration-300"
 								style={{

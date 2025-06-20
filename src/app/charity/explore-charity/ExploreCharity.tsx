@@ -60,14 +60,28 @@ const ExploreCharity = () => {
 	const [showAll, setShowAll] = useState(false)
 	const [loading, setLoading] = useState(true)
 	const [charity, setCharity] = useState<BaseProject[]>([])
+	const [searchTerm, setSearchTerm] = useState('')
 
 	const [errorModalOpen, setErrorModalOpen] = useState(false)
 	const [errorMessage, setErrorMessage] = useState('')
 	const [errorCode, setErrorCode] = useState('')
 
+	const handleSearchChange = (searchTerm: string) => {
+		setSearchTerm(searchTerm)
+		setShowAll(false) // Reset show all when searching
+	}
+
 	const filteredProjects = charity.filter((project) => {
-		if (activeTab === 'all') return true
-		return project.status === activeTab
+		// First filter by tab
+		const tabFiltered = activeTab === 'all' ? true : project.status === activeTab
+		
+		// Then filter by search term
+		const searchFiltered = searchTerm === '' || 
+			project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			project.shortDescription?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			project.longDescription?.toLowerCase().includes(searchTerm.toLowerCase())
+		
+		return tabFiltered && searchFiltered
 	})
 
 	const displayedProjects = showAll
@@ -122,6 +136,8 @@ const ExploreCharity = () => {
 							title="Discover all projects"
 							backgroundImage={exploreImage.src}
 							searchPlaceholder="Search projects..."
+							onSearchChange={handleSearchChange}
+							initialSearchTerm={searchTerm}
 						/>
 					</div>
 					<div className="w-full">

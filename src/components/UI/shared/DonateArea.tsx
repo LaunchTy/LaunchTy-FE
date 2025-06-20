@@ -69,7 +69,7 @@ const StakeArea: React.FC<CharityAreaProps> = ({ enabled, handleDonate }) => {
 						}`}
 						disabled={isButtonDisabled}
 						onClick={() => {
-							handleDonate()
+							handleDonate?.()
 						}}
 					>
 						Donate

@@ -195,8 +195,53 @@ const CharityDetail = () => {
 				setErrorModalOpen(true)
 				return
 			}
+
+			// Record donation in database
+			try {
+				const donationResponse = await fetch('/api/donation/route', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						charity_id: params['charity-id'],
+						wallet_address: userAddress,
+						amount: tokenAmount,
+						tx_hash: hash,
+						datetime: new Date().toISOString(),
+					}),
+				})
+
+				if (!donationResponse.ok) {
+					console.error('Failed to record donation in database')
+					setErrorMessage('Donation recorded on blockchain but failed to save to database')
+					setErrorCode('500')
+					setErrorModalOpen(true)
+					return
+				}
+
+				const donationData = await donationResponse.json()
+				console.log('Donation recorded in database:', donationData)
+
+				// Refresh the page to show updated donation data
+				window.location.reload()
+			} catch (dbError) {
+				console.error('Database error:', dbError)
+				setErrorMessage('Donation recorded on blockchain but failed to save to database')
+				setErrorCode('500')
+				setErrorModalOpen(true)
+				return
+			}
+
 			setLockOpen(true)
-		} catch (error) {}
+		} catch (error) {
+			console.error('Error during donation:', error)
+			setErrorMessage('Failed to process donation. Please try again.')
+			setErrorCode('500')
+			setErrorModalOpen(true)
+		} finally {
+			setLoading(false)
+		}
 	}
 
 	// Handler for image changes from the carousel
@@ -397,7 +442,7 @@ const CharityDetail = () => {
 						)}
 						<div className="h-[380px] flex flex-col gap-2 w-full">
 							<DonateArea
-								enabled={charity.status === 'approve'}
+								enabled={charity.status === 'publish'}
 								handleDonate={handleDonate}
 							/>
 						</div>

@@ -57,7 +57,8 @@ const MyCharity = () => {
 	const { address } = useAccount()
 	const [activeTab, setActiveTab] = useState('all')
 	const [visibleCount, setVisibleCount] = useState(6)
-	const [projects, setProjects] = useState<any[]>([])
+	const [projects, setProjects] = useState<BaseProject[]>([])
+	const [searchTerm, setSearchTerm] = useState('')
 	const [loading, setLoading] = useState(true)
 	const [lockOpen, setLockOpen] = useState(false)
 	const [errorModalOpen, setErrorModalOpen] = useState(false)
@@ -71,6 +72,11 @@ const MyCharity = () => {
 	const { writeContractAsync: writeCreateCharity } = useWriteContract()
 	const [loadingOpen, setLoadingOpen] = useState(false)
 	const [successOpen, setSuccessOpen] = useState(false)
+
+	const handleSearchChange = (searchTerm: string) => {
+		setSearchTerm(searchTerm)
+		setVisibleCount(6) // Reset visible count when searching
+	}
 
 	const fetchProjects = async () => {
 		try {
@@ -247,12 +253,20 @@ const MyCharity = () => {
 	}
 
 	const filteredProjects = projects.filter((project) => {
-		if (activeTab === 'all') return true
-		return project.status === activeTab
+		// First filter by tab
+		const tabFiltered = activeTab === 'all' ? true : project.status === activeTab
+		
+		// Then filter by search term
+		const searchFiltered = searchTerm === '' || 
+			project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			project.shortDescription?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			project.longDescription?.toLowerCase().includes(searchTerm.toLowerCase())
+		
+		return tabFiltered && searchFiltered
 	})
 
 	const visibleProjects = filteredProjects.slice(0, visibleCount)
-	const hasMore = visibleCount < projects.length
+	const hasMore = visibleCount < filteredProjects.length
 
 	const handleWithdraw = async (projectId: Address) => {
 		if (!address) {
@@ -313,6 +327,8 @@ const MyCharity = () => {
 						title="Your Charities"
 						backgroundImage={YourProject}
 						searchPlaceholder="Search charities..."
+						onSearchChange={handleSearchChange}
+						initialSearchTerm={searchTerm}
 					/>
 					<Tab
 						navItems={navItems}

@@ -82,6 +82,7 @@ const ExploreProjectPage = () => {
 		[key: string]: any
 	}
 	const [projects, setProjects] = useState<BaseProject[]>([])
+	const [searchTerm, setSearchTerm] = useState('')
 	const [loading, setLoading] = useState(false)
 	const [lockOpen, setLockOpen] = useState(false)
 	const [errorModalOpen, setErrorModalOpen] = useState(false)
@@ -97,6 +98,11 @@ const ExploreProjectPage = () => {
 		useWriteContract()
 	const { writeContractAsync: writeToRefund, error: errorRefund } =
 		useWriteContract()
+
+	const handleSearchChange = (searchTerm: string) => {
+		setSearchTerm(searchTerm)
+		setShowAll(false) // Reset show all when searching
+	}
 
 	const fetchProjects = async () => {
 		if (!account.address) return
@@ -180,84 +186,6 @@ const ExploreProjectPage = () => {
 		fetchProjects()
 	}, [account.address])
 
-	// const handleWithDraw = (launchpad_id: any) => {
-	// const deposit = async () => {
-	// 	if (!launchpad_id || !tokenAmount) return
-	// 	console.log('Deposit function called with launchpad_id', launchpad_id)
-	// 	//log all the below address
-	// 	// console.log()
-	// 	const acceptedTokenAddress =
-	// 		chainConfig.contracts.AcceptedMockERC20.address
-	// 	const allowance = await readContract(publicClient, {
-	// 		abi: MockERC20ABI,
-	// 		address: acceptedTokenAddress as Address,
-	// 		functionName: 'allowance',
-	// 		args: [userAddress, launchpad_id as Address],
-	// 	})
-	// 	console.log('allowancesiogseoigh:', allowance)
-	// 	// if (!allowance) {
-	// 	// 	console.error('Failed to fetch allowance')
-	// 	// 	return
-	// 	// }
-	// 	console.log('eoisfjsoigjiroj')
-	// 	const allowanceBN = BigNumber.from(allowance as string)
-	// 	if (allowanceBN.gte(tokenAmount)) {
-	// 		console.log('Allowance is sufficient, no need to approve.')
-	// 	} else {
-	// 		// const MockERC20Address = chainConfig.contracts.MockERC20.address
-	// 		const approveHash = await writeToToken({
-	// 			abi: MockERC20ABI,
-	// 			address: acceptedTokenAddress as Address,
-	// 			functionName: 'approve',
-	// 			args: [
-	// 				launchpad_id as Address,
-	// 				convertNumToOnChainFormat(tokenAmount, 18),
-	// 			],
-	// 		})
-	// 		console.log('Approval transaction hash:', approveHash)
-	// 		console.log('Appoved')
-	// 		const receipt = await waitForTransactionReceipt(publicClient, {
-	// 			hash: approveHash,
-	// 		})
-	// 		const newAllowance = await readContract(publicClient, {
-	// 			abi: MockERC20ABI,
-	// 			address: acceptedTokenAddress as Address,
-	// 			functionName: 'allowance',
-	// 			args: [userAddress, launchpad_id as Address],
-	// 		})
-	// 		console.log('New allowance:', newAllowance)
-	// 		if (receipt.status !== 'success') {
-	// 			console.error('Approval transaction failed')
-	// 			console.log('Write to Token error: ', errorToken)
-	// 			return
-	// 		}
-	// 	}
-	// 	const hash = await writeToDeposit({
-	// 		abi: LaunchpadABI,
-	// 		address: launchpad_id as Address,
-	// 		functionName: 'deposit',
-	// 		args: [convertNumToOnChainFormat(tokenAmount, 18)],
-	// 	})
-	// 	const depositReceipt = await waitForTransactionReceipt(publicClient, {
-	// 		hash,
-	// 	})
-	// 	console.log('Deposit transaction receipt:', depositReceipt)
-	// 	if (depositReceipt.status !== 'success') {
-	// 		console.error('Deposit transaction failed')
-	// 		console.log('Write to Deposit error: ', errorDeposit)
-	// 		return
-	// 	}
-	// 	const userDepositAmount = await readContract(publicClient, {
-	// 		abi: LaunchpadABI,
-	// 		address: launchpad_id as Address,
-	// 		functionName: 'getUserDeposits',
-	// 		args: [userAddress],
-	// 	})
-	// 	console.log('User deposit amount:', userDepositAmount)
-	// 	console.log('Deposit transaction hash:', hash)
-	// 	console.log('Deposit successful')
-	// }
-	// deposit()
 	const handleSubmit = () => {
 		route.push('/launchpad/create-launchpad')
 	}
@@ -383,8 +311,16 @@ const ExploreProjectPage = () => {
 	}
 
 	const filteredProjects = projects.filter((project) => {
-		if (activeTab === 'all') return true
-		return project.status === activeTab
+		// First filter by tab
+		const tabFiltered = activeTab === 'all' ? true : project.status === activeTab
+		
+		// Then filter by search term
+		const searchFiltered = searchTerm === '' || 
+			project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			project.shortDescription?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			project.longDescription?.toLowerCase().includes(searchTerm.toLowerCase())
+		
+		return tabFiltered && searchFiltered
 	})
 
 	const displayedProjects = showAll
@@ -410,6 +346,8 @@ const ExploreProjectPage = () => {
 						title="Explore Projects"
 						backgroundImage={ExploreProjectWithdraw.src}
 						searchPlaceholder="Search projects..."
+						onSearchChange={handleSearchChange}
+						initialSearchTerm={searchTerm}
 					/>
 					<Tab
 						navItems={navItems}

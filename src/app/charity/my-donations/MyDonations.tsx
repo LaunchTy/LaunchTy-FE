@@ -26,11 +26,17 @@ const MyDonations = () => {
 	const [activeTab, setActiveTab] = useState('all')
 	const [visibleCount, setVisibleCount] = useState(6)
 	const [donations, setDonations] = useState<any[]>([])
+	const [searchTerm, setSearchTerm] = useState('')
 	const [loading, setLoading] = useState(true)
 	const [lockOpen, setLockOpen] = useState(false)
 	const [errorModalOpen, setErrorModalOpen] = useState(false)
 	const [errorMessage, setErrorMessage] = useState('')
 	const [errorCode, setErrorCode] = useState('')
+
+	const handleSearchChange = (searchTerm: string) => {
+		setSearchTerm(searchTerm)
+		setVisibleCount(6) // Reset visible count when searching
+	}
 
 	const fetchDonations = async () => {
 		try {
@@ -79,8 +85,15 @@ const MyDonations = () => {
 	}
 
 	const filteredDonations = donations.filter((donation) => {
-		if (activeTab === 'all') return true
-		return donation.status === activeTab
+		// First filter by tab
+		const tabFiltered = activeTab === 'all' ? true : donation.status === activeTab
+		
+		// Then filter by search term
+		const searchFiltered = searchTerm === '' || 
+			donation.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			donation.shortDescription?.toLowerCase().includes(searchTerm.toLowerCase())
+		
+		return tabFiltered && searchFiltered
 	})
 
 	const visibleDonations = filteredDonations.slice(0, visibleCount)
@@ -104,6 +117,8 @@ const MyDonations = () => {
 						title="Your Donations"
 						backgroundImage={YourProject}
 						searchPlaceholder="Search donations..."
+						onSearchChange={handleSearchChange}
+						initialSearchTerm={searchTerm}
 					/>
 					<Tab
 						navItems={navItems}

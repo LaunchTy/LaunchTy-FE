@@ -73,23 +73,27 @@ const MyProject = () => {
 	const router = useRouter()
 	const { writeContractAsync } = useWriteContract()
 	const account = useAccount()
-	const userAddress = account.address
+	const { address } = useAccount()
 	const [activeTab, setActiveTab] = useState('all')
 	const [visibleCount, setVisibleCount] = useState(6)
 	const [projects, setProjects] = useState<BaseProject[]>([])
+	const [searchTerm, setSearchTerm] = useState('')
 	const [loading, setLoading] = useState(true)
 	const [lockOpen, setLockOpen] = useState(false)
 	const [errorModalOpen, setErrorModalOpen] = useState(false)
 	const [errorMessage, setErrorMessage] = useState('')
 	const [errorCode, setErrorCode] = useState('')
-	const { address } = useAccount()
-	// const [publish, setPublish] = useState(false)
-
 	const [loadingOpen, setLoadingOpen] = useState(false)
 	const [successOpen, setSuccessOpen] = useState(false)
 
 	const { writeContractAsync: writeToWithdraw, error: errorWithdraw } =
 		useWriteContract()
+
+	const handleSearchChange = (searchTerm: string) => {
+		setSearchTerm(searchTerm)
+		setVisibleCount(6) // Reset visible count when searching
+	}
+
 	const fetchProjects = async () => {
 		try {
 			setLoading(true)
@@ -98,34 +102,21 @@ const MyProject = () => {
 				wallet_address: address,
 			})
 			const launchpadsData: Launchpad[] = response.data.data
-			// const projectsData: BaseProject[] = launchpadsData.map(
-			// 	convertLaunchpadToProject
-			// )
 			const projectsWithTotalAount = await Promise.all(
 				launchpadsData.map(async (launchpad) => {
 					const id = launchpad.launchpad_id
 					console.log('Fetching data for ID:', id)
-					// const projectsData: BaseProject[] = launchpadsData.map(
-					// 	convertLaunchpadToProject
-					// )
 					try {
-						// const price = await readContract(publicClient, {
-						// 	address: id as Address,
-						// 	abi: LaunchpadABI,
-						// 	functionName: 'getPricePerToken',
-						// })
-						// console.log('Price per token:', price)
 						const totalAmount = await readContract(publicClient, {
 							address: id as Address,
 							abi: LaunchpadABI,
 							functionName: 'getRaisedAmount',
-							args: [userAddress],
+							args: [address],
 						})
 						console.log('Total withdraw:', totalAmount)
 						return {
 							...convertLaunchpadToProject(launchpad),
 							launchpadAddress: id as Address,
-							// pricePerToken: parseFloat((price as string).toString()),
 							totalAmount: parseFloat((totalAmount as string).toString()),
 						}
 					} catch (err) {
@@ -133,7 +124,6 @@ const MyProject = () => {
 						return {
 							...convertLaunchpadToProject(launchpad),
 							launchpadAddress: '0x0',
-							// pricePerToken: 0,
 							totalAmount: 0,
 						}
 					}
@@ -188,13 +178,11 @@ const MyProject = () => {
 		abi: MockERC20ABI,
 		address: launchpadAddress as Address,
 		functionName: 'allowance',
-		args: [userAddress, launchpadAddress as Address],
+		args: [address, launchpadAddress as Address],
 	})
 
 	const handlePublish = async (projects: BaseProject) => {
-		// tokenSupply = 1000
-		// tokenAddress = chainConfig.contracts.MockERC20.address
-		if (!userAddress) {
+		if (!address) {
 			console.log('account.address: ', account.address)
 			alert('Please connect your wallet to create a launchpad.')
 			return
@@ -211,51 +199,11 @@ const MyProject = () => {
 			return
 		}
 
-		// const projectOwnerDepositToken = async () => {
-		// 	try {
-		// 		// if (!allowance || (allowance as BigNumber).gte(tokenSupply)) {
-		// 		// 	console.log('Allowance is sufficient, no need to approve.')
-		// 		// } else {
-		// 		// const MockERC20Address = chainConfig.contracts.MockERC20.address
-		// 		console.log('Mockerc20 addressss: ', MockERC20Address)
-		// 		console.log('Launchpad address: ', launchpadAddress)
-		// 		const approveHash = await writeContractAsync({
-		// 			abi: MockERC20ABI,
-		// 			address: MockERC20Address as Address,
-		// 			functionName: 'approve',
-		// 			args: [
-		// 				launchpadAddress as Address,
-		// 				convertNumToOnChainFormat(tokenSupply, 18),
-		// 			],
-		// 		})
-		// 		console.log('Approval transaction hash:', approveHash)
-		// 		console.log('Appoved')
-		// 		//get the allowance after approval
-		// 		const newAllowance = await readContract(publicClient, {
-		// 			abi: MockERC20ABI,
-		// 			address: MockERC20Address as Address,
-		// 			functionName: 'allowance',
-		// 			args: [userAddress, launchpadAddress as Address],
-		// 		})
-		// 		console.log(
-		// 			'New allowance after approval:',
-		// 			convertNumToOffChainFormat((newAllowance as bigint).toString(), 18)
-		// 		)
-		// 		// }
-		// 	} catch (someError) {
-		// 		console.error('Error approving tokenrgergrgerge:', someError)
-		// 		console.log('Error approving token:', allowanceError)
-		// 		alert('Error approving token. Please try again later.')
-		// 		return
-		// 	}
-		// }
-
 		setLoadingOpen(true) // Show loading modal
 
 		try {
 			const factoryAddress = chainConfig.contracts.LaunchpadFactory
 				.address as Address
-			// const tokenAdd = chainConfig.contracts.MockERC20.address as Address
 			const acceptedToken = chainConfig.contracts.AcceptedMockERC20
 				.address as Address
 
@@ -266,7 +214,7 @@ const MyProject = () => {
 				args: [
 					projects.token_address,
 					acceptedToken,
-					userAddress,
+					address,
 					1, //Price per token, set to 1 for simplicity
 					Math.floor(Date.now() / 1000), // Current time in seconds
 					Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // End time in seconds (1 week later)
@@ -306,9 +254,6 @@ const MyProject = () => {
 
 			const projectOwnerDepositToken = async () => {
 				try {
-					// if (!allowance || (allowance as BigNumber).gte(tokenSupply)) {
-					// 	console.log('Allowance is sufficient, no need to approve.')
-					// } else {
 					const MockERC20Address = chainConfig.contracts.MockERC20.address
 					console.log('Mockerc20 addressss: ', MockERC20Address)
 					console.log('Launchpad address: ', launchpadAddress)
@@ -328,13 +273,12 @@ const MyProject = () => {
 						abi: MockERC20ABI,
 						address: MockERC20Address as Address,
 						functionName: 'allowance',
-						args: [userAddress, launchpadAddress as Address],
+						args: [address, launchpadAddress as Address],
 					})
 					console.log(
 						'New allowance after approval:',
 						convertNumToOffChainFormat((newAllowance as bigint).toString(), 18)
 					)
-					// }
 				} catch (someError) {
 					console.error('Error approving tokenrgergrgerge:', someError)
 					console.log('Error approving token:', allowanceError)
@@ -345,71 +289,6 @@ const MyProject = () => {
 
 			projectOwnerDepositToken()
 
-			// const response = await axios.post('/api/launchpad/create', {
-			// 	token_address: tokenAddress,
-			// 	total_supply: tokenSupply,
-			// 	launchpad_token: launchpadToken,
-			// 	max_stake: maxStake,
-			// 	min_stake: minStake,
-			// 	soft_cap: softCap,
-			// 	hard_cap: hardCap,
-			// 	launchpad_name: projectName,
-			// 	launchpad_logo: logo,
-			// 	launchpad_short_des: shortDescription,
-			// 	launchpad_long_des: longDescription,
-			// 	launchpad_fb: socialLinks?.facebook || null,
-			// 	launchpad_x: socialLinks?.twitter || null,
-			// 	launchpad_ig: socialLinks?.instagram || null,
-			// 	launchpad_website: socialLinks?.website || null,
-			// 	launchpad_whitepaper: whitepaper || null,
-			// 	launchpad_img: images,
-			// 	//
-			// 	launchpad_start_date: startDate.toISOString(),
-			// 	launchpad_end_date: endDate.toISOString(),
-			// 	// launchpad_start_date: new Date().toISOString(),
-			// 	// launchpad_end_date: new Date(
-			// 	// 	Date.now() + 7 * 24 * 60 * 60 * 1000
-			// 	// ).toISOString(),
-			// 	wallet_address: account.address,
-			// })
-			//give api data with real mock value to test the api
-			// const response = await axios.post('/api/launchpad/create', {
-			// 	launchpad_id: launchpadAddress,
-			// 	token_address: '0x1234567890abcdef1234567890abcdef12345678',
-			// 	total_supply: 1000000,
-			// 	launchpad_token: 'DEMO',
-			// 	max_stake: 5000,
-			// 	min_stake: 100,
-			// 	soft_cap: 10000,
-			// 	hard_cap: 50000,
-			// 	launchpad_name: 'Demo Project',
-			// 	launchpad_logo: 'https://via.placeholder.com/150',
-			// 	launchpad_short_des: 'Short description for demo project.',
-			// 	launchpad_long_des:
-			// 		'This is a longer and more detailed description of the demo project.',
-			// 	launchpad_fb: 'https://facebook.com/demo',
-			// 	launchpad_x: 'https://twitter.com/demo',
-			// 	launchpad_ig: 'https://instagram.com/demo',
-			// 	launchpad_website: 'https://demo.io/',
-			// 	launchpad_whitepaper: 'https://demo.io/whitepaper.pdf',
-			// 	launchpad_img: [
-			// 		'https://via.placeholder.com/600x300',
-			// 		'https://via.placeholder.com/600x400',
-			// 	],
-			// 	launchpad_start_date: new Date().toISOString(),
-			// 	launchpad_end_date: new Date(
-			// 		Date.now() + 7 * 24 * 60 * 60 * 1000
-			// 	).toISOString(), // 7 ngày sau
-			// 	wallet_address: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
-			// })
-			// if (!response || response.status !== 201) {
-			// 	console.error('Error submitting launchpad:', response)
-			// 	alert('Error submitting launchpad. Please try again later.')
-			// 	setLoadingOpen(false) // Hide loading modal
-			// 	return
-			// }+
-
-			// console.log('Launchpad created:', response.data)
 			router.push('/launchpad/my-launchpad')
 			setLoadingOpen(false) // Hide loading modal
 			setSuccessOpen(true) // Show success modal
@@ -459,7 +338,6 @@ const MyProject = () => {
 					address: launchpad_id as Address,
 					functionName: 'withdraw',
 					args: [],
-					// account: userAddress,
 				})
 
 				console.log('Withdraw transaction hash:', hash)
@@ -508,12 +386,20 @@ const MyProject = () => {
 	}
 
 	const filteredProjects = projects.filter((project) => {
-		if (activeTab === 'all') return true
-		return project.status === activeTab
+		// First filter by tab
+		const tabFiltered = activeTab === 'all' ? true : project.status === activeTab
+		
+		// Then filter by search term
+		const searchFiltered = searchTerm === '' || 
+			project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			project.shortDescription?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			project.longDescription?.toLowerCase().includes(searchTerm.toLowerCase())
+		
+		return tabFiltered && searchFiltered
 	})
 
 	const visibleProjects = filteredProjects.slice(0, visibleCount)
-	const hasMore = visibleCount < projects.length
+	const hasMore = visibleCount < filteredProjects.length
 	return (
 		<div className="min-h-screen font-exo">
 			<AnimatedBlobs count={6} />
@@ -532,6 +418,8 @@ const MyProject = () => {
 						title="Your Projects"
 						backgroundImage={YourProject}
 						searchPlaceholder="Search projects..."
+						onSearchChange={handleSearchChange}
+						initialSearchTerm={searchTerm}
 					/>
 					<Tab
 						navItems={navItems}
@@ -539,9 +427,8 @@ const MyProject = () => {
 						onTabChange={setActiveTab}
 					/>
 					<ProjectRowCard
-						// publish={publish}
 						projects={visibleProjects}
-						projectType="launchpad" // Add the required projectType property
+						projectType="launchpad"
 						showCountdown={true}
 						countdownDuration={24}
 						className="custom-class"
@@ -569,7 +456,6 @@ const MyProject = () => {
 						onRetry={() => {
 							setErrorModalOpen(false)
 							setLoading(true)
-							// gọi lại API
 							const refetch = async () => {
 								try {
 									const response = await axios.post(
