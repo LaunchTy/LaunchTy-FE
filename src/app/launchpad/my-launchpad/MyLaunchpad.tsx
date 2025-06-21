@@ -217,7 +217,7 @@ const MyProject = () => {
 					address,
 					1, //Price per token, set to 1 for simplicity
 					Math.floor(Date.now() / 1000), // Current time in seconds
-					Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // End time in seconds (1 week later)
+					Math.floor(Date.now() / 1000) + 120, // End time in seconds (1 week later)
 					BigInt(convertNumToOnChainFormat(10, 18)), // Soft cap in wei
 					BigInt(convertNumToOnChainFormat(500, 18)), // Hard cap in wei
 					BigInt(convertNumToOnChainFormat(1, 18)), // Min stake in wei
@@ -387,14 +387,18 @@ const MyProject = () => {
 
 	const filteredProjects = projects.filter((project) => {
 		// First filter by tab
-		const tabFiltered = activeTab === 'all' ? true : project.status === activeTab
-		
+		const tabFiltered =
+			activeTab === 'all' ? true : project.status === activeTab
+
 		// Then filter by search term
-		const searchFiltered = searchTerm === '' || 
+		const searchFiltered =
+			searchTerm === '' ||
 			project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			project.shortDescription?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			project.shortDescription
+				?.toLowerCase()
+				.includes(searchTerm.toLowerCase()) ||
 			project.longDescription?.toLowerCase().includes(searchTerm.toLowerCase())
-		
+
 		return tabFiltered && searchFiltered
 	})
 
