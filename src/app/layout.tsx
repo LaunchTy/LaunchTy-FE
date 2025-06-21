@@ -23,7 +23,7 @@ export default function RootLayout({
 				<Web3Provider>
 					<Navbar
 						navItems={[
-							{ name: 'About us', link: '/' },
+							{ name: 'About us', link: '/about-us' },
 							{ name: 'Charity', link: '/charity/explore-charity' },
 							{ name: 'Launchpad', link: '/launchpad/explore-launchpad' },
 							{
