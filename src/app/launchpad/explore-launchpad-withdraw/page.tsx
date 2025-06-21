@@ -264,7 +264,7 @@ const ExploreProjectPage = () => {
 				const hash = await writeToRefund({
 					abi: LaunchpadABI,
 					address: launchpad_id as Address,
-					functionName: 'claimToken',
+					functionName: 'refundToken',
 					args: [],
 					// account: userAddress,
 				})
@@ -312,14 +312,18 @@ const ExploreProjectPage = () => {
 
 	const filteredProjects = projects.filter((project) => {
 		// First filter by tab
-		const tabFiltered = activeTab === 'all' ? true : project.status === activeTab
-		
+		const tabFiltered =
+			activeTab === 'all' ? true : project.status === activeTab
+
 		// Then filter by search term
-		const searchFiltered = searchTerm === '' || 
+		const searchFiltered =
+			searchTerm === '' ||
 			project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			project.shortDescription?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			project.shortDescription
+				?.toLowerCase()
+				.includes(searchTerm.toLowerCase()) ||
 			project.longDescription?.toLowerCase().includes(searchTerm.toLowerCase())
-		
+
 		return tabFiltered && searchFiltered
 	})
 
