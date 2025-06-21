@@ -27,6 +27,7 @@ import { NextResponse } from 'next/server'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
 import ErrorModal from '@/components/UI/modal/ErrorModal'
 import LockModal from '@/components/UI/modal/LockModal'
+import SuccessModal from '@/components/UI/modal/SuccessModal'
 import useCharityTokenAmountStore from '@/store/launchpad/LaunchpadDetailStore'
 import { useAccount, useWriteContract } from 'wagmi'
 import { chainConfig } from '@/app/config'
@@ -51,6 +52,7 @@ const CharityDetail = () => {
 	const [errorMessage, setErrorMessage] = useState('')
 	const [errorCode, setErrorCode] = useState('')
 	const [lockOpen, setLockOpen] = useState(false)
+	const [successOpen, setSuccessOpen] = useState(false)
 	const params = useParams()
 	const charityAddress = params['charity-id']
 	const { tokenAmount } = useCharityTokenAmountStore()
@@ -60,6 +62,31 @@ const CharityDetail = () => {
 		useWriteContract()
 
 	const { resetStore } = useCharityStore()
+
+	// Monitor contract errors
+	useEffect(() => {
+		if (tokenError) {
+			console.error('Token contract error:', tokenError)
+			// Only show error if it's not already being handled in the main function
+			if (!loading) {
+				setErrorMessage('Token approval failed. Please check your wallet and try again.')
+				setErrorCode('500')
+				setErrorModalOpen(true)
+			}
+		}
+	}, [tokenError, loading])
+
+	useEffect(() => {
+		if (donateError) {
+			console.error('Donation contract error:', donateError)
+			// Only show error if it's not already being handled in the main function
+			if (!loading) {
+				setErrorMessage('Donation transaction failed. Please check your wallet and try again.')
+				setErrorCode('500')
+				setErrorModalOpen(true)
+			}
+		}
+	}, [donateError, loading])
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -121,7 +148,19 @@ const CharityDetail = () => {
 			setErrorModalOpen(true)
 			return
 		}
+		
+		// Clear any previous errors
+		setErrorModalOpen(false)
+		setErrorMessage('')
+		setErrorCode('')
+		
+		console.log('Starting donation process...')
+		console.log('User address:', userAddress)
+		console.log('Charity address:', charityAddress)
+		console.log('Token amount:', tokenAmount)
+		
 		setLoading(true)
+		
 		try {
 			const acceptedTokenAddress =
 				chainConfig.contracts.AcceptedMockERC20.address
@@ -132,110 +171,168 @@ const CharityDetail = () => {
 				args: [userAddress, charityAddress as Address],
 			})
 
-			console.log('allowancesiogseoigh:', allowance)
+			console.log('Current allowance:', allowance)
 
-			// if (!allowance) {
-			// 	console.error('Failed to fetch allowance')
-			// 	return
-			// }
-			console.log('eoisfjsoigjiroj')
 			const allowanceBN = BigNumber.from(allowance as string)
 			if (allowanceBN.gte(tokenAmount)) {
 				console.log('Allowance is sufficient, no need to approve.')
 			} else {
-				// const MockERC20Address = chainConfig.contracts.MockERC20.address
-				const approveHash = await writeToToken({
-					abi: MockERC20ABI,
-					address: acceptedTokenAddress as Address,
-					functionName: 'approve',
-					args: [
-						charityAddress as Address,
-						convertNumToOnChainFormat(tokenAmount, 18),
-					],
-				})
-				console.log('Approval transaction hash:', approveHash)
-				console.log('Appoved')
+				console.log('Insufficient allowance, requesting approval...')
+				// Handle token approval with comprehensive error handling
+				try {
+					const approveHash = await writeToToken({
+						abi: MockERC20ABI,
+						address: acceptedTokenAddress as Address,
+						functionName: 'approve',
+						args: [
+							charityAddress as Address,
+							convertNumToOnChainFormat(tokenAmount, 18),
+						],
+					})
+					console.log('Approval transaction hash:', approveHash)
 
-				const receipt = await waitForTransactionReceipt(publicClient, {
-					hash: approveHash,
-				})
+					const receipt = await waitForTransactionReceipt(publicClient, {
+						hash: approveHash,
+					})
 
-				const newAllowance = await readContract(publicClient, {
-					abi: MockERC20ABI,
-					address: acceptedTokenAddress as Address,
-					functionName: 'allowance',
-					args: [userAddress, charityAddress as Address],
-				})
+					if (receipt.status !== 'success') {
+						setErrorMessage('Token approval transaction failed. Please try again.')
+						setErrorCode('500')
+						setErrorModalOpen(true)
+						return
+					}
 
-				console.log('New allowance:', newAllowance)
-
-				if (receipt.status !== 'success') {
-					console.error('Approval transaction failed')
-					console.log('Write to Token error: ', tokenError)
+					console.log('Token approval successful')
+				} catch (approvalError: any) {
+					console.error('Token approval error:', approvalError)
+					
+					// Handle specific MetaMask errors
+					if (approvalError.message?.includes('User rejected') || 
+						approvalError.message?.includes('user rejected') ||
+						approvalError.message?.includes('User denied') ||
+						approvalError.message?.includes('user denied')) {
+						setErrorMessage('Token approval was cancelled by user.')
+						setErrorCode('USER_REJECTED')
+					} else if (approvalError.message?.includes('insufficient funds') ||
+							   approvalError.message?.includes('Insufficient funds')) {
+						setErrorMessage('Insufficient funds for token approval. Please check your balance.')
+						setErrorCode('INSUFFICIENT_FUNDS')
+					} else if (approvalError.message?.includes('network') ||
+							   approvalError.message?.includes('Network')) {
+						setErrorMessage('Network error. Please check your connection and try again.')
+						setErrorCode('NETWORK_ERROR')
+					} else if (approvalError.message?.includes('gas') ||
+							   approvalError.message?.includes('Gas')) {
+						setErrorMessage('Gas estimation failed. Please try again with a different amount.')
+						setErrorCode('GAS_ERROR')
+					} else {
+						setErrorMessage('Token approval failed. Please check your wallet and try again.')
+						setErrorCode('500')
+					}
+					setErrorModalOpen(true)
 					return
 				}
 			}
-			// const charityAddress = chainConfig.contracts.Charity.address
-			const hash = await writeDonate({
-				address: charityAddress as Address,
-				abi: CharityABI,
-				functionName: 'deposit',
-				args: [convertNumToOnChainFormat(tokenAmount, 18)],
-			})
 
-			const receipt = await waitForTransactionReceipt(publicClient, {
-				hash,
-			})
-
-			console.log('Donation receipt:', receipt)
-
-			if (!receipt.status) {
-				setErrorMessage('Transaction failed. Please try again.')
-				setErrorCode('500')
-				setErrorModalOpen(true)
-				return
-			}
-
-			// Record donation in database
+			// Handle donation transaction with comprehensive error handling
+			console.log('Starting donation transaction...')
 			try {
-				const donationResponse = await fetch('/api/donation/route', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({
-						charity_id: params['charity-id'],
-						wallet_address: userAddress,
-						amount: tokenAmount,
-						tx_hash: hash,
-						datetime: new Date().toISOString(),
-					}),
+				const hash = await writeDonate({
+					address: charityAddress as Address,
+					abi: CharityABI,
+					functionName: 'deposit',
+					args: [convertNumToOnChainFormat(tokenAmount, 18)],
 				})
 
-				if (!donationResponse.ok) {
-					console.error('Failed to record donation in database')
+				console.log('Donation transaction hash:', hash)
+
+				const receipt = await waitForTransactionReceipt(publicClient, {
+					hash,
+				})
+
+				console.log('Donation receipt:', receipt)
+
+				if (receipt.status !== 'success') {
+					setErrorMessage('Donation transaction failed. Please try again.')
+					setErrorCode('500')
+					setErrorModalOpen(true)
+					console.error('Donation transaction failed. Please try again.', donateError)
+					return
+				}
+
+				console.log('Donation transaction successful, recording in database...')
+
+				// Record donation in database
+				try {
+					const donationResponse = await fetch('/api/donation', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({
+							charity_id: params['charity-id'],
+							wallet_address: userAddress,
+							amount: tokenAmount,
+							tx_hash: hash,
+							datetime: new Date().toISOString(),
+						}),
+					})
+
+					if (!donationResponse.ok) {
+						console.error('Failed to record donation in database')
+						setErrorMessage('Donation recorded on blockchain but failed to save to database')
+						setErrorCode('500')
+						setErrorModalOpen(true)
+						return
+					}
+
+					const donationData = await donationResponse.json()
+					console.log('Donation recorded in database:', donationData)
+
+					// Show success modal
+					setSuccessOpen(true)
+				} catch (dbError) {
+					console.error('Database error:', dbError)
 					setErrorMessage('Donation recorded on blockchain but failed to save to database')
 					setErrorCode('500')
 					setErrorModalOpen(true)
 					return
 				}
-
-				const donationData = await donationResponse.json()
-				console.log('Donation recorded in database:', donationData)
-
-				// Refresh the page to show updated donation data
-				window.location.reload()
-			} catch (dbError) {
-				console.error('Database error:', dbError)
-				setErrorMessage('Donation recorded on blockchain but failed to save to database')
-				setErrorCode('500')
+			} catch (donationError: any) {
+				console.error('Donation transaction error:', donationError)
+				
+				// Handle specific MetaMask errors
+				if (donationError.message?.includes('User rejected') || 
+					donationError.message?.includes('user rejected') ||
+					donationError.message?.includes('User denied') ||
+					donationError.message?.includes('user denied')) {
+					setErrorMessage('Donation was cancelled by user.')
+					setErrorCode('USER_REJECTED')
+				} else if (donationError.message?.includes('insufficient funds') ||
+						   donationError.message?.includes('Insufficient funds')) {
+					setErrorMessage('Insufficient funds for donation. Please check your balance.')
+					setErrorCode('INSUFFICIENT_FUNDS')
+				} else if (donationError.message?.includes('network') ||
+						   donationError.message?.includes('Network')) {
+					setErrorMessage('Network error. Please check your connection and try again.')
+					setErrorCode('NETWORK_ERROR')
+				} else if (donationError.message?.includes('gas') ||
+						   donationError.message?.includes('Gas')) {
+					setErrorMessage('Gas estimation failed. Please try again with a different amount.')
+					setErrorCode('GAS_ERROR')
+				} else if (donationError.message?.includes('execution reverted') ||
+						   donationError.message?.includes('reverted')) {
+					setErrorMessage('Transaction reverted. Please check the charity contract and try again.')
+					setErrorCode('CONTRACT_ERROR')
+				} else {
+					setErrorMessage('Donation transaction failed. Please check your wallet and try again.')
+					setErrorCode('500')
+				}
 				setErrorModalOpen(true)
 				return
 			}
-
-			setLockOpen(true)
-		} catch (error) {
-			console.error('Error during donation:', error)
+		} catch (error: any) {
+			console.error('General error during donation:', error)
 			setErrorMessage('Failed to process donation. Please try again.')
 			setErrorCode('500')
 			setErrorModalOpen(true)
@@ -247,6 +344,12 @@ const CharityDetail = () => {
 	// Handler for image changes from the carousel
 	const handleImageChange = (imageSrc: string) => {
 		setBackgroundImage(imageSrc)
+	}
+
+	const handleSuccessClose = () => {
+		setSuccessOpen(false)
+		// Refresh the page to show updated donation data
+		window.location.reload()
 	}
 
 	const handleEdit = () => {
@@ -344,6 +447,8 @@ const CharityDetail = () => {
 					)}
 				</AnimatePresence>
 
+				<SuccessModal open={successOpen} onOpenChange={handleSuccessClose} />
+				
 				<div className="relative px-20 pt-48 pb-12 z-10">
 					<div className="flex justify-between items-center">
 						<ProjectHeader

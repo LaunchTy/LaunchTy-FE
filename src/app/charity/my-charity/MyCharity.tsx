@@ -309,6 +309,11 @@ const MyCharity = () => {
 		console.log('Withdraw transaction receipt:', withdrawReceipt)
 	}
 
+	const handleEdit = (projectId: string) => {
+		console.log('Edit charity:', projectId)
+		router.push(`/charity/edit-charity/${projectId}`)
+	}
+
 	return (
 		<div className="min-h-screen font-exo">
 			<AnimatedBlobs count={6} />
@@ -340,9 +345,7 @@ const MyCharity = () => {
 						showCountdown={true}
 						countdownDuration={24}
 						className="custom-class"
-						onEdit={(projectId) => {
-							console.log('Edit charity:', projectId)
-						}}
+						onEdit={handleEdit}
 						onWithdraw={(projectId) => {
 							handleWithdraw(projectId as Address)
 						}}
