@@ -1,4 +1,5 @@
 'use client'
+import { MotionParticles } from '@/components/UI/background/Particle'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 
@@ -98,6 +99,8 @@ const AboutUsPage = () => {
 	return (
 		<div className="min-h-screen font-exo mt-32">
 			{/* Hero Section */}
+			<MotionParticles particleCount={40} connectParticles={true} />
+
 			<section className="relative overflow-hidden py-10 px-8">
 				<div className="max-w-6xl mx-auto">
 					<motion.div {...fadeInUp} className="text-center mb-16">
