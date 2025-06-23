@@ -18,13 +18,23 @@ interface ImageCarouselProps {
 	onImageChange?: (imageSrc: string) => void
 }
 
+interface ImageSize {
+	width: number
+	height: number
+}
+
+const UPSCALE_LIMIT = 1.0 // Only allow display at up to 100% of natural size
+
 const ThumbNailCarousel: React.FC<ImageCarouselProps> = ({
 	projectImages,
 	fullWidthBackground = true,
 	onImageChange,
 }) => {
 	const [index, setIndex] = useState(0)
+	const [imageSizes, setImageSizes] = useState<ImageSize[]>([])
+	const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({ width: 0, height: 0 })
 	const ref = useRef<Splide>(null)
+	const containerRef = useRef<HTMLDivElement>(null)
 
 	// Default images as fallback if no project images are provided
 	const defaultImages: Image[] = [
@@ -53,7 +63,32 @@ const ThumbNailCarousel: React.FC<ImageCarouselProps> = ({
 	// Use provided project images or default to fallback images
 	const images =
 		projectImages && projectImages.length > 0 ? projectImages : defaultImages
-	// projectImages
+
+	// Track container size changes
+	useEffect(() => {
+		if (!containerRef.current) return
+
+		const resizeObserver = new ResizeObserver((entries) => {
+			for (const entry of entries) {
+				const { width, height } = entry.contentRect
+				setContainerSize({ width, height })
+			}
+		})
+
+		resizeObserver.observe(containerRef.current)
+
+		return () => {
+			resizeObserver.disconnect()
+		}
+	}, [])
+
+	const onLoadingComplete = (index: number, naturalWidth: number, naturalHeight: number) => {
+		setImageSizes(prev => {
+			const newSizes = [...prev]
+			newSizes[index] = { width: naturalWidth, height: naturalHeight }
+			return newSizes
+		})
+	}
 
 	useEffect(() => {
 		if (ref.current && ref.current.splide) {
@@ -123,20 +158,72 @@ const ThumbNailCarousel: React.FC<ImageCarouselProps> = ({
 						}}
 						ref={ref}
 					>
-						{images.map((image, i) => (
-							<SplideSlide key={i}>
-								<Image
-									src={image.src}
-									alt={image.alt}
-									width={956}
-									height={478}
-									className="w-full h-full object-cover rounded-lg shadow-md"
-								/>
-								<div className="bottom-0 bg-black bg-opacity-50 text-white text-center p-2 w-full">
-									{image.description}
-								</div>
-							</SplideSlide>
-						))}
+						{images.map((image, i) => {
+							const imageSize = imageSizes[i]
+							const isLargeEnough = imageSize && containerSize.width > 0 && containerSize.height > 0 && 
+								(imageSize.width >= containerSize.width * UPSCALE_LIMIT || 
+								 imageSize.height >= containerSize.height * UPSCALE_LIMIT)
+
+							return (
+								<SplideSlide key={i}>
+									<div 
+										ref={containerRef}
+										className="relative w-full h-full bg-gray-100 rounded-lg shadow-md overflow-hidden"
+									>
+										{/* Blurred background for small images */}
+										{!isLargeEnough && (
+											<div className="absolute inset-0">
+												<Image
+													src={image.src}
+													alt={image.alt}
+													fill
+													className="object-cover filter blur-lg scale-110"
+													onLoadingComplete={(img) => onLoadingComplete(i, img.naturalWidth, img.naturalHeight)}
+												/>
+											</div>
+										)}
+
+										{/* Main image */}
+										{isLargeEnough ? (
+											// Large enough image - render with fill and object-cover
+											<div className="relative w-full h-full">
+												<Image
+													src={image.src}
+													alt={image.alt}
+													width={956}
+													height={478}
+													className="w-full h-full object-cover rounded-lg"
+													onLoadingComplete={(img) => onLoadingComplete(i, img.naturalWidth, img.naturalHeight)}
+												/>
+											</div>
+										) : (
+											// Too small image - render pixel-perfect at natural size
+											imageSize && (
+												<div 
+													className="absolute"
+													style={{
+														left: `calc(50% - ${imageSize.width / 2}px)`,
+														top: `calc(50% - ${imageSize.height / 2}px)`,
+													}}
+												>
+													<Image
+														src={image.src}
+														alt={image.alt}
+														width={imageSize.width}
+														height={imageSize.height}
+														className="object-contain rounded-lg"
+														onLoadingComplete={(img) => onLoadingComplete(i, img.naturalWidth, img.naturalHeight)}
+													/>
+												</div>
+											)
+										)}
+									</div>
+									<div className="bottom-0 bg-black bg-opacity-50 text-white text-center p-2 w-full">
+										{image.description}
+									</div>
+								</SplideSlide>
+							)
+						})}
 					</Splide>
 				</section>
 				<ImageBarCarousel
