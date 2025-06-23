@@ -178,20 +178,28 @@ const MyProject = () => {
 	})
 
 	const handlePublish = async (projects: BaseProject) => {
+		setErrorMessage('') // Clear any previous error messages
+
 		if (!address) {
 			console.log('account.address: ', account.address)
-			alert('Please connect your wallet to create a launchpad.')
+			const errorMsg = 'Please connect your wallet to create a launchpad.'
+			setErrorMessage(errorMsg)
+			alert(errorMsg)
 			return
 		}
 
 		if (!projects.total_supply || !projects.token_address) {
-			alert('Please provide a valid token supply and token address.')
+			const errorMsg = 'Please provide a valid token supply and token address.'
+			setErrorMessage(errorMsg)
+			alert(errorMsg)
 			return
 		}
 
 		if (allowanceError) {
 			console.error('Error reading allowance:', allowanceError)
-			alert('Error reading allowance. Please try again later.')
+			const errorMsg = 'Error reading allowance. Please try again later.'
+			setErrorMessage(errorMsg)
+			alert(errorMsg)
 			return
 		}
 
@@ -246,7 +254,9 @@ const MyProject = () => {
 			const receipt = await waitForTransactionReceipt(publicClient, { hash })
 			if (!receipt || !receipt.status) {
 				console.error('Transaction failed or receipt is undefined')
-				alert('Transaction failed. Please try again later.')
+				const errorMsg = 'Transaction failed. Please try again later.'
+				setErrorMessage(errorMsg)
+				alert(errorMsg)
 				setLoading(false) // Hide loading modal
 				return
 			}
@@ -290,7 +300,9 @@ const MyProject = () => {
 				} catch (someError) {
 					console.error('Error approving tokenrgergrgerge:', someError)
 					console.log('Error approving token:', allowanceError)
-					alert('Error approving token. Please try again later.')
+					const errorMsg = 'Error approving token. Please try again later.'
+					setErrorMessage(errorMsg)
+					alert(errorMsg)
 					return
 				}
 			}
@@ -315,11 +327,12 @@ const MyProject = () => {
 						: project
 				)
 			)
-
 			setSuccessOpen(true)
 		} catch (error) {
 			console.error('Error in handlePublish:', error)
-			alert('Publish failed. Please try again later.')
+			const errorMsg = 'Publish failed. Please try again later.'
+			setErrorMessage(errorMsg)
+			alert(errorMsg)
 		} finally {
 			setLoading(false) // luôn gọi dù thành công hay thất bại
 		}
@@ -327,8 +340,12 @@ const MyProject = () => {
 
 	const handleWithdraw = (launchpad_id: any) => {
 		const withdraw = async () => {
+			setErrorMessage('') // Clear any previous error messages
+
 			if (!launchpad_id) {
 				console.error('Launchpad ID is required')
+				const errorMsg = 'Launchpad ID is required'
+				setErrorMessage(errorMsg)
 				return
 			}
 
@@ -355,6 +372,9 @@ const MyProject = () => {
 				if (withdrawReceipt.status !== 'success') {
 					console.error('Withdraw transaction failed')
 					console.log('Write to Withdraw error: ', errorWithdraw)
+					const errorMsg =
+						'Withdraw transaction failed. Please try again later.'
+					setErrorMessage(errorMsg)
 					return
 				}
 
@@ -378,6 +398,8 @@ const MyProject = () => {
 				console.log('Withdraw successful')
 			} catch (error) {
 				console.error('Error during withdrawal:', error)
+				const errorMsg = 'Error during withdrawal. Please try again later.'
+				setErrorMessage(errorMsg)
 			}
 		}
 
