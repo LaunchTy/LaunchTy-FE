@@ -1,4 +1,10 @@
 'use client'
+import { LaunchpadABI, LaunchpadFactoryABI, MockERC20ABI } from '@/app/abi'
+import { chainConfig } from '@/app/config'
+import {
+	convertNumToOffChainFormat,
+	convertNumToOnChainFormat,
+} from '@/app/utils/decimal'
 import ExploreProject from '@/components/Launchpad/Explore-section/ExploreProject' // Adjust the import path as necessary
 import Tab from '@/components/Launchpad/Explore-section/Tab' // Adjust the import path as necessary
 import ProjectRowCard from '@/components/Launchpad/MyProject-section/ProjectRowCard' // Adjust the import path as necessary
@@ -7,31 +13,16 @@ import Button from '@/components/UI/button/Button' // Adjust the import path as 
 import ErrorModal from '@/components/UI/modal/ErrorModal'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
 import LockModal from '@/components/UI/modal/LockModal'
+import SuccessModal from '@/components/UI/modal/SuccessModal'
 import { BaseProject, Launchpad } from '@/interface/interface'
 import YourProject from '@/public/YourProject.svg' // Adjust the import path as necessary
 import axios from 'axios' // Adjust the import path as necessary
-import { useEffect, useState } from 'react' // Adjust the import path as necessary
-import { useLaunchpadStore } from '@/store/launchpad/CreateLaunchpadStore'
-import ProjectHeader from '@/components/project-component/ProjectHeader'
 import { useRouter } from 'next/navigation'
-import {
-	useAccount,
-	useReadContract,
-	useWatchContractEvent,
-	useWriteContract,
-} from 'wagmi'
-import { WriteContractMutateAsync } from 'wagmi/query'
-import { LaunchpadABI, LaunchpadFactoryABI, MockERC20ABI } from '@/app/abi'
-import { chainConfig } from '@/app/config'
+import { useEffect, useState } from 'react' // Adjust the import path as necessary
 import { Address, createPublicClient, http } from 'viem'
-import {
-	convertNumToOffChainFormat,
-	convertNumToOnChainFormat,
-} from '@/app/utils/decimal'
-import { to } from '@react-spring/web'
-import { readContract, reset, waitForTransactionReceipt } from 'viem/actions'
-import { anvil, sepolia } from 'viem/chains'
-import { BigNumber } from 'ethers'
+import { readContract, waitForTransactionReceipt } from 'viem/actions'
+import { sepolia } from 'viem/chains'
+import { useAccount, useReadContract, useWriteContract } from 'wagmi'
 
 export const publicClient = createPublicClient({
 	chain: sepolia,
@@ -87,7 +78,7 @@ const MyProject = () => {
 	const [errorModalOpen, setErrorModalOpen] = useState(false)
 	const [errorMessage, setErrorMessage] = useState('')
 	const [errorCode, setErrorCode] = useState('')
-	const [loadingOpen, setLoadingOpen] = useState(false)
+	// const [loadingOpen, setLoadingOpen] = useState(false)
 	const [successOpen, setSuccessOpen] = useState(false)
 
 	const { writeContractAsync: writeToWithdraw, error: errorWithdraw } =
@@ -203,7 +194,7 @@ const MyProject = () => {
 			return
 		}
 
-		setLoadingOpen(true) // Show loading modal
+		setLoading(true) // Show loading modal
 
 		try {
 			const factoryAddress = chainConfig.contracts.LaunchpadFactory
@@ -262,7 +253,7 @@ const MyProject = () => {
 			if (!receipt || !receipt.status) {
 				console.error('Transaction failed or receipt is undefined')
 				alert('Transaction failed. Please try again later.')
-				setLoadingOpen(false) // Hide loading modal
+				setLoading(false) // Hide loading modal
 				return
 			}
 
@@ -313,11 +304,11 @@ const MyProject = () => {
 			projectOwnerDepositToken()
 
 			router.push('/launchpad/my-launchpad')
-			setLoadingOpen(false) // Hide loading modal
+			setLoading(false) // Hide loading modal
 			setSuccessOpen(true) // Show success modal
 		} catch (error) {
 			console.error('Error submitting launchpad:', error)
-			setLoadingOpen(false) // Hide loading modal
+			setLoading(false) // Hide loading modal
 		}
 
 		// Call the API to publish the project
@@ -341,7 +332,7 @@ const MyProject = () => {
 			console.error('Error publishing project:', response.data)
 			alert('Error publishing project. Please try again later.')
 		}
-		setLoadingOpen(false) // Hide loading modal
+		setLoading(false) // Hide loading modal
 		setSuccessOpen(true) // Show success modal
 	}
 
@@ -408,6 +399,10 @@ const MyProject = () => {
 		setVisibleCount((prev) => prev + 6)
 	}
 
+	const handleEdit = (launchpad_id: any) => {
+		router.push('/launchpad/Edit-launchpad/' + launchpad_id)
+	}
+
 	const filteredProjects = projects.filter((project) => {
 		// First filter by tab
 		const tabFiltered =
@@ -429,6 +424,14 @@ const MyProject = () => {
 	const hasMore = visibleCount < filteredProjects.length
 	return (
 		<div className="min-h-screen font-exo">
+			<SuccessModal
+				open={successOpen}
+				onOpenChange={setSuccessOpen}
+				// onContinue={() => {
+				// 	setSuccessOpen(false)
+				// 	router.push('/launchpad/explore-launchpad') // Redirect after success
+				// }}
+			/>
 			<AnimatedBlobs count={6} />
 			{lockOpen ? (
 				<LockModal
@@ -459,9 +462,7 @@ const MyProject = () => {
 						showCountdown={true}
 						countdownDuration={24}
 						className="custom-class"
-						onEdit={(projectId) => {
-							console.log('Edit project:', projectId)
-						}}
+						onEdit={handleEdit}
 						handlePublish={handlePublish}
 						onWithdraw={handleWithdraw}
 					/>
