@@ -244,14 +244,16 @@ const ProjectSection = ({
 									Withdraw
 								</Button>
 							)}
-							{onEdit && (
-								<Button
-									onClick={() => onEdit(project.id || '')}
-									className=" bg-gradient text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 w-auto"
-								>
-									Edit
-								</Button>
-							)}
+							{onEdit &&
+								(project.status_launchpad === 'pending' ||
+									project.status_charity === 'pending') && (
+									<Button
+										onClick={() => onEdit(project.id || '')}
+										className=" bg-gradient text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 w-auto"
+									>
+										Edit
+									</Button>
+								)}
 						</div>
 					</motion.div>
 				))}

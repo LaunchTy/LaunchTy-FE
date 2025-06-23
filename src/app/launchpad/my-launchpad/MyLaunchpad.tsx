@@ -58,6 +58,10 @@ const convertLaunchpadToProject = (launchpad: Launchpad): BaseProject => {
 		id: launchpad.launchpad_id,
 		token_address: launchpad.token_address,
 		total_supply: launchpad.total_supply,
+		max_stake: launchpad.max_stake,
+		min_stake: launchpad.min_stake,
+		soft_cap: launchpad.soft_cap,
+		hard_cap: launchpad.hard_cap,
 		name: launchpad.launchpad_name,
 		launchpad_token: launchpad.launchpad_token,
 		logo: launchpad.launchpad_logo,
@@ -207,6 +211,25 @@ const MyProject = () => {
 			const acceptedToken = chainConfig.contracts.AcceptedMockERC20
 				.address as Address
 
+			// const hash = await writeContractAsync({
+			// 	abi: LaunchpadFactoryABI,
+			// 	address: factoryAddress,
+			// 	functionName: 'createLaunchpad',
+			// 	args: [
+			// 		projects.token_address,
+			// 		acceptedToken,
+			// 		address,
+			// 		1, //Price per token, set to 1 for simplicity
+			// 		Math.floor(Date.now() / 1000), // Current time in seconds
+			// 		Math.floor(Date.now() / 1000) + 120, // End time in seconds (1 week later)
+			// 		BigInt(convertNumToOnChainFormat(10, 18)), // Soft cap in wei
+			// 		BigInt(convertNumToOnChainFormat(500, 18)), // Hard cap in wei
+			// 		BigInt(convertNumToOnChainFormat(1, 18)), // Min stake in wei
+			// 		BigInt(convertNumToOnChainFormat(500, 18)), // Max stake in wei
+			// 		BigInt(convertNumToOnChainFormat(500, 18)), // Total supply in wei
+			// 	],
+			// })
+
 			const hash = await writeContractAsync({
 				abi: LaunchpadFactoryABI,
 				address: factoryAddress,
@@ -216,13 +239,13 @@ const MyProject = () => {
 					acceptedToken,
 					address,
 					1, //Price per token, set to 1 for simplicity
-					Math.floor(Date.now() / 1000), // Current time in seconds
-					Math.floor(Date.now() / 1000) + 120, // End time in seconds (1 week later)
-					BigInt(convertNumToOnChainFormat(10, 18)), // Soft cap in wei
-					BigInt(convertNumToOnChainFormat(500, 18)), // Hard cap in wei
-					BigInt(convertNumToOnChainFormat(1, 18)), // Min stake in wei
-					BigInt(convertNumToOnChainFormat(500, 18)), // Max stake in wei
-					BigInt(convertNumToOnChainFormat(500, 18)), // Total supply in wei
+					projects.startDate,
+					projects.endDate,
+					BigInt(convertNumToOnChainFormat(projects.soft_cap || 0, 18)), // Soft cap in wei
+					BigInt(convertNumToOnChainFormat(projects.hard_cap || 0, 18)), // Hard cap in wei
+					BigInt(convertNumToOnChainFormat(projects.min_stake || 0, 18)), // Min stake in wei
+					BigInt(convertNumToOnChainFormat(projects.max_stake || 0, 18)), // Max stake in wei
+					BigInt(convertNumToOnChainFormat(projects.total_supply || 0, 18)), // Total supply in wei
 				],
 			})
 

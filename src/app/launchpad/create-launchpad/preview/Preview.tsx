@@ -268,65 +268,66 @@ const Preview = () => {
 			// })
 
 			// console.log('Launchpad paijfoaifaoiejaofiej', launchpadAddress)
-			// const response = await axios.post('/api/launchpad/create', {
-			// 	token_address: tokenAddress,
-			// 	total_supply: tokenSupply,
-			// 	launchpad_token: launchpadToken,
-			// 	max_stake: maxStake,
-			// 	min_stake: minStake,
-			// 	soft_cap: softCap,
-			// 	hard_cap: hardCap,
-			// 	launchpad_name: projectName,
-			// 	launchpad_logo: logo,
-			// 	launchpad_short_des: shortDescription,
-			// 	launchpad_long_des: longDescription,
-			// 	launchpad_fb: socialLinks?.facebook || null,
-			// 	launchpad_x: socialLinks?.twitter || null,
-			// 	launchpad_ig: socialLinks?.instagram || null,
-			// 	launchpad_website: socialLinks?.website || null,
-			// 	launchpad_whitepaper: whitepaper || null,
-			// 	launchpad_img: images,
-			// 	//
-			// 	launchpad_start_date: startDate.toISOString(),
-			// 	launchpad_end_date: endDate.toISOString(),
-			// 	// launchpad_start_date: new Date().toISOString(),
-			// 	// launchpad_end_date: new Date(
-			// 	// 	Date.now() + 7 * 24 * 60 * 60 * 1000
-			// 	// ).toISOString(),
-			// 	wallet_address: account.address,
-			// })
-			//give api data with real mock value to test the api
 			const response = await axios.post('/api/launchpad/create', {
-				// launchpad_id: launchpadAddress,
-				token_address: '0xdf781fe9e6484722fe78f461a744ab7d7a1c9f96',
-				total_supply: 5000000,
-				launchpad_token: 'KANBAN',
-				max_stake: 10000,
-				min_stake: 250,
-				soft_cap: 20000,
-				hard_cap: 100000,
-				launchpad_name: 'KAKA',
-				launchpad_logo:
-					'https://via.placeholder.com/150/00bfff/ffffff?text=FREEDOM',
-				launchpad_short_des:
-					'Tự do không phải là đích đến, mà là hành trình. Mà trình là gì mà là trình ai chấm',
-				launchpad_long_des:
-					'Dự án FREEDOM hướng tới việc xây dựng một nền kinh tế phi tập trung, nơi con người làm chủ cuộc sống và tài chính của chính mình.',
-				launchpad_fb: 'https://facebook.com/freedomdao',
-				launchpad_x: 'https://twitter.com/freedomdao',
-				launchpad_ig: 'https://instagram.com/freedomdao',
-				launchpad_website: 'https://freedomdao.org/',
-				launchpad_whitepaper: 'https://freedomdao.org/whitepaper.pdf',
-				launchpad_img: [
-					'https://via.placeholder.com/600x300/000000/ffffff?text=Freedom+1',
-					'https://via.placeholder.com/600x400/1a1a1a/ffffff?text=Freedom+2',
-				],
-				launchpad_start_date: new Date().toISOString(),
-				launchpad_end_date: new Date(
-					Date.now() + 5 * 24 * 60 * 60 * 1000
-				).toISOString(), // 5 ngày sau
-				wallet_address: '0x8f07aDC031CF8e12fc66a01A12982fB543AEe86C',
+				token_address: tokenAddress,
+				total_supply: tokenSupply,
+				launchpad_token: launchpadToken,
+				max_stake: maxStake,
+				min_stake: minStake,
+				soft_cap: softCap,
+				hard_cap: hardCap,
+				launchpad_name: projectName,
+				launchpad_logo: logo,
+				launchpad_short_des: shortDescription,
+				launchpad_long_des: longDescription,
+				launchpad_fb: socialLinks?.facebook || null,
+				launchpad_x: socialLinks?.twitter || null,
+				launchpad_ig: socialLinks?.instagram || null,
+				launchpad_website: socialLinks?.website || null,
+				launchpad_whitepaper: whitepaper || null,
+				launchpad_img: images,
+				//
+				launchpad_start_date: startDate.toISOString(),
+				launchpad_end_date: endDate.toISOString(),
+				// launchpad_start_date: new Date().toISOString(),
+				// launchpad_end_date: new Date(
+				// 	Date.now() + 7 * 24 * 60 * 60 * 1000
+				// ).toISOString(),
+				wallet_address: account.address,
 			})
+
+			//give api data with real mock value to test the api
+			// const response = await axios.post('/api/launchpad/create', {
+			// 	// launchpad_id: launchpadAddress,
+			// 	token_address: '0xdf781fe9e6484722fe78f461a744ab7d7a1c9f96',
+			// 	total_supply: 10000000,
+			// 	launchpad_token: 'AILAB',
+			// 	max_stake: 20000,
+			// 	min_stake: 500,
+			// 	soft_cap: 50000,
+			// 	hard_cap: 200000,
+			// 	launchpad_name: 'Project AILAB',
+			// 	launchpad_logo:
+			// 		'https://via.placeholder.com/150/ff6347/ffffff?text=NOVA',
+			// 	launchpad_short_des:
+			// 		'NOVA is building the next generation of decentralized identity and reputation.',
+			// 	launchpad_long_des:
+			// 		'Project NOVA aims to redefine how trust works in Web3 by providing a decentralized identity infrastructure. With NOVA, users can build verifiable reputations that are portable across platforms and protocols.',
+			// 	launchpad_fb: 'https://facebook.com/projectnova',
+			// 	launchpad_x: 'https://twitter.com/projectnova',
+			// 	launchpad_ig: 'https://instagram.com/projectnova',
+			// 	launchpad_website: 'https://projectnova.io/',
+			// 	launchpad_whitepaper: 'https://projectnova.io/whitepaper.pdf',
+			// 	launchpad_img: [
+			// 		'https://via.placeholder.com/600x300/333333/ffffff?text=NOVA+1',
+			// 		'https://via.placeholder.com/600x400/555555/ffffff?text=NOVA+2',
+			// 	],
+			// 	launchpad_start_date: new Date().toISOString(),
+			// 	launchpad_end_date: new Date(
+			// 		Date.now() + 10 * 24 * 60 * 60 * 1000
+			// 	).toISOString(), // 10 days later
+			// 	wallet_address: '0x8f07aDC031CF8e12fc66a01A12982fB543AEe86C',
+			// })
 			if (!response || response.status !== 201) {
 				console.error('Error submitting launchpad:', response)
 				alert('Error submitting launchpad. Please try again later.')
