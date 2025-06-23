@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Button from '../button/Button'
 import useCharityTokenAmountStore from '@/store/launchpad/LaunchpadDetailStore'
+import Image from 'next/image'
 
 interface CharityAreaProps {
 	enabled?: boolean
@@ -30,7 +31,7 @@ const StakeArea: React.FC<CharityAreaProps> = ({ enabled, handleDonate }) => {
 							disabled={!enabled} // vô hiệu hoá input nếu không được phép
 						/>
 						<div className="w-1/3 flex flex-row items-center justify-end">
-							<svg
+							{/* <svg
 								width="50"
 								height="50"
 								viewBox="0 0 66 66"
@@ -56,7 +57,15 @@ const StakeArea: React.FC<CharityAreaProps> = ({ enabled, handleDonate }) => {
 										<rect width="66" height="66" fill="white" />
 									</clipPath>
 								</defs>
-							</svg>
+							</svg> */}
+							<div className="relative w-12 h-12 rounded-full overflow-hidden">
+								<Image
+									src="https://s3.coinmarketcap.com/static-gravity/image/fecbf806c893460cbc5241d4e902b039.png"
+									alt="Project Logo"
+									fill
+									className="object-cover"
+								/>
+							</div>
 						</div>
 					</div>
 				</div>
