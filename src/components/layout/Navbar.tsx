@@ -254,7 +254,9 @@ const Navbar = ({
 							Connect Wallet
 						</Button> */}
 						{/* <ConnectButton accountStatus="avatar" />{' '} */}
-						<ConnectWalletButton />
+						<div className="hidden lg:block">
+							<ConnectWalletButton />
+						</div>
 					</div>
 					<div className="lg:hidden flex flex-col justify-end">
 						<button onClick={toggleNavbar}>
@@ -285,11 +287,11 @@ const Navbar = ({
 
 						<div className="flex flex-col items-center gap-3 sm:gap-5">
 							<div className="relative ">
-								<input
+								{/* <input
 									type="text"
 									placeholder="Search project"
 									className="glass-component-2  rounded-full px-4 sm:px-7 py-2 text-sm sm:text-md font-exo focus:outline-none focus:ring-0"
-								/>
+								/> */}
 								<svg
 									className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
 									fill="none"
