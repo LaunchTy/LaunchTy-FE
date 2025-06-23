@@ -56,6 +56,7 @@ const convertLaunchpadToProject = (launchpad: Launchpad): BaseProject => {
 		name: launchpad.launchpad_name,
 		launchpad_token: launchpad.launchpad_token,
 		logo: launchpad.launchpad_logo,
+		startDate: launchpad.launchpad_start_date,
 		endDate: launchpad.launchpad_end_date,
 		type: 'launchpad',
 		totalInvest: launchpad.totalInvest,
@@ -182,19 +183,19 @@ const MyProject = () => {
 			alert('Please connect your wallet to create a launchpad.')
 			return
 		}
-		console.log('total_supply: ', projects.total_supply)
-		console.log('token_address: ', projects.token_address)
+
 		if (!projects.total_supply || !projects.token_address) {
 			alert('Please provide a valid token supply and token address.')
 			return
 		}
+
 		if (allowanceError) {
 			console.error('Error reading allowance:', allowanceError)
 			alert('Error reading allowance. Please try again later.')
 			return
 		}
 
-		setLoading(true) // Show loading modal
+		setLoading(true)
 
 		try {
 			const factoryAddress = chainConfig.contracts.LaunchpadFactory
@@ -202,25 +203,13 @@ const MyProject = () => {
 			const acceptedToken = chainConfig.contracts.AcceptedMockERC20
 				.address as Address
 
-			// const hash = await writeContractAsync({
-			// 	abi: LaunchpadFactoryABI,
-			// 	address: factoryAddress,
-			// 	functionName: 'createLaunchpad',
-			// 	args: [
-			// 		projects.token_address,
-			// 		acceptedToken,
-			// 		address,
-			// 		1, //Price per token, set to 1 for simplicity
-			// 		Math.floor(Date.now() / 1000), // Current time in seconds
-			// 		Math.floor(Date.now() / 1000) + 120, // End time in seconds (1 week later)
-			// 		BigInt(convertNumToOnChainFormat(10, 18)), // Soft cap in wei
-			// 		BigInt(convertNumToOnChainFormat(500, 18)), // Hard cap in wei
-			// 		BigInt(convertNumToOnChainFormat(1, 18)), // Min stake in wei
-			// 		BigInt(convertNumToOnChainFormat(500, 18)), // Max stake in wei
-			// 		BigInt(convertNumToOnChainFormat(500, 18)), // Total supply in wei
-			// 	],
-			// })
-
+			console.log('rojects.startdate ', projects.startDate)
+			console.log('rojects.enddate ', projects.endDate)
+			console.log('rojects.soft_cap ', projects.soft_cap)
+			console.log('rojects.hard_cap ', projects.hard_cap)
+			console.log('rojects.min_stake ', projects.min_stake)
+			console.log('rojects.max_stake ', projects.max_stake)
+			console.log('rojects.total_supply ', projects.total_supply)
 			const hash = await writeContractAsync({
 				abi: LaunchpadFactoryABI,
 				address: factoryAddress,
@@ -229,27 +218,32 @@ const MyProject = () => {
 					projects.token_address,
 					acceptedToken,
 					address,
-					1, //Price per token, set to 1 for simplicity
-					projects.startDate,
-					projects.endDate,
-					BigInt(convertNumToOnChainFormat(projects.soft_cap || 0, 18)), // Soft cap in wei
-					BigInt(convertNumToOnChainFormat(projects.hard_cap || 0, 18)), // Hard cap in wei
-					BigInt(convertNumToOnChainFormat(projects.min_stake || 0, 18)), // Min stake in wei
-					BigInt(convertNumToOnChainFormat(projects.max_stake || 0, 18)), // Max stake in wei
-					BigInt(convertNumToOnChainFormat(projects.total_supply || 0, 18)), // Total supply in wei
+					1,
+					Math.floor(new Date(projects.startDate ?? '').getTime() / 1000),
+					Math.floor(new Date(projects.endDate ?? '').getTime() / 1000),
+					BigInt(convertNumToOnChainFormat(projects.soft_cap || 0, 18)),
+					BigInt(convertNumToOnChainFormat(projects.hard_cap || 0, 18)),
+					BigInt(convertNumToOnChainFormat(projects.min_stake || 0, 18)),
+					BigInt(convertNumToOnChainFormat(projects.max_stake || 0, 18)),
+					BigInt(convertNumToOnChainFormat(projects.total_supply || 0, 18)),
+					// BigInt(1),
+					// BigInt(2),
+					// BigInt(3),
+					// BigInt(4),
+					// BigInt(5),
+					// 10000000000000000000,
+					// 10000000000000000000,
+					// 10000000000000000000,
+					// 10000000000000000000,
+					// 10000000000000000000,
 				],
 			})
 
-			if (!hash) {
-				console.error('Transaction hash is undefined')
-				return
-			}
-			console.log('Transaction hash:', hash)
-			const receipt = await waitForTransactionReceipt(publicClient, {
-				hash,
-			})
-			console.log('Transaction receipt:', receipt)
+			if (!hash) throw new Error('Transaction hash is undefined')
 
+			console.log('Transaction hash:', hash)
+
+			const receipt = await waitForTransactionReceipt(publicClient, { hash })
 			if (!receipt || !receipt.status) {
 				console.error('Transaction failed or receipt is undefined')
 				alert('Transaction failed. Please try again later.')
@@ -264,7 +258,7 @@ const MyProject = () => {
 				args: [Number(projectId) - 1],
 			})
 
-			console.log('Launchpad paijfoaifaoiejaofiej', launchpadAddress)
+			console.log('Launchpad Address:', launchpadAddress)
 
 			const projectOwnerDepositToken = async () => {
 				try {
@@ -300,27 +294,20 @@ const MyProject = () => {
 					return
 				}
 			}
-
 			projectOwnerDepositToken()
 
-			router.push('/launchpad/my-launchpad')
-			setLoading(false) // Hide loading modal
-			setSuccessOpen(true) // Show success modal
-		} catch (error) {
-			console.error('Error submitting launchpad:', error)
-			setLoading(false) // Hide loading modal
-		}
+			const response = await axios.post('/api/launchpad/my-launchpad/publish', {
+				wallet_address: address,
+				launchpad_address: launchpadAddress,
+				launchpad_id: projects.id,
+			})
 
-		// Call the API to publish the project
-		const response = await axios.post('/api/launchpad/my-launchpad/publish', {
-			wallet_address: address,
-			launchpad_address: launchpadAddress,
-			launchpad_id: projects.id,
-		})
-		if (response.status === 200) {
+			if (response.status !== 200) {
+				throw new Error('API publish failed')
+			}
+
 			console.log('Project published successfully:', response.data)
 
-			// Update the state to reflect the published project
 			setProjects((prevProjects) =>
 				prevProjects.map((project) =>
 					project.id === projects.id
@@ -328,12 +315,14 @@ const MyProject = () => {
 						: project
 				)
 			)
-		} else {
-			console.error('Error publishing project:', response.data)
-			alert('Error publishing project. Please try again later.')
+
+			setSuccessOpen(true)
+		} catch (error) {
+			console.error('Error in handlePublish:', error)
+			alert('Publish failed. Please try again later.')
+		} finally {
+			setLoading(false) // luôn gọi dù thành công hay thất bại
 		}
-		setLoading(false) // Hide loading modal
-		setSuccessOpen(true) // Show success modal
 	}
 
 	const handleWithdraw = (launchpad_id: any) => {

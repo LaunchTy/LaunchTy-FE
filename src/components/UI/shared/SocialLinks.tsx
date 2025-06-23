@@ -94,8 +94,8 @@ const SocialLinks: FC<SocialLinksProps> = ({
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
-						width="54"
-						height="54"
+						width={sizeMap[iconSize].website.width}
+						height={sizeMap[iconSize].website.height}
 						fill="currentColor"
 						viewBox="0 0 24 24"
 					>
@@ -114,8 +114,8 @@ const SocialLinks: FC<SocialLinksProps> = ({
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
-						width="54"
-						height="54"
+						width={sizeMap[iconSize].website.width}
+						height={sizeMap[iconSize].website.height}
 						fill="currentColor"
 						viewBox="0 0 16 16"
 					>
@@ -134,8 +134,8 @@ const SocialLinks: FC<SocialLinksProps> = ({
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
-						width="54"
-						height="54"
+						width={sizeMap[iconSize].website.width}
+						height={sizeMap[iconSize].website.height}
 						fill="currentColor"
 						viewBox="0 0 16 16"
 					>
