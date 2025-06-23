@@ -3,19 +3,18 @@ import AnimatedBlobs from '@/components/UI/background/AnimatedBlobs'
 import Button from '@/components/UI/button/Button'
 import Stepper, { Step } from '@/components/UI/shared/Stepper'
 import SplitText from '@/components/UI/text-effect/SplitText'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Folder from '@/components/UI/shared/Folder'
-import {
-	useLaunchpadStore,
-	LaunchpadState,
-} from '@/store/launchpad/CreateLaunchpadStore'
+import { useLaunchpadStore } from '@/store/launchpad/CreateLaunchpadStore'
 import ImageManager from '@/components/UI/shared/ImageManager'
 import { useRouter } from 'next/navigation'
 import { useAccount } from 'wagmi'
 import LockModal from '@/components/UI/modal/LockModal'
 import { chainConfig, anvilConfig } from '@/app/config'
+import LoadingModal from '@/components/UI/modal/LoadingModal'
+import ErrorModal from '@/components/UI/modal/ErrorModal'
 
 interface CreateLaunchpadProps {
 	isEditing?: boolean
@@ -25,6 +24,19 @@ interface CreateLaunchpadProps {
 const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 	const route = useRouter()
 	const account = useAccount()
+	const [loading, setLoading] = useState(false)
+	const [errorModalOpen, setErrorModalOpen] = useState(false)
+	const [errorMessage, setErrorMessage] = useState('')
+	const [errorCode, setErrorCode] = useState('')
+
+	// Add stepper ref to control it programmatically
+	const stepperRef = useRef<any>(null)
+
+	// Add validation state
+	const [validationErrors, setValidationErrors] = useState<
+		Record<string, string>
+	>({})
+
 	const {
 		projectTokenAddress,
 		setProjectTokenAddress,
@@ -109,10 +121,66 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 		return date.toISOString().slice(0, 16)
 	}
 
+	// Error message component
+	const ErrorMessage = ({ error }: { error?: string }) =>
+		error ? <div className="text-red-400 text-sm mt-1">{error}</div> : null
+
 	const onFinalStepCompleted = async () => {
-		if (isEditing && id) {
-			try {
-				// Call update API
+		try {
+			// if (!account?.address) {
+			// 	setLockOpen(true)
+			// 	return
+			// }
+
+			// Client-side validation
+			const missingFields = []
+			if (!projectTokenAddress) missingFields.push('Token Address')
+			if (!tokenSupply) missingFields.push('Total Supply')
+			if (!launchpadToken) missingFields.push('Launchpad Token')
+			if (!maxStakePerInvestor) missingFields.push('Max Stake Per Investor')
+			if (!minStakePerInvestor) missingFields.push('Min Stake Per Investor')
+			if (!softCap) missingFields.push('Soft Cap')
+			if (!hardCap) missingFields.push('Hard Cap')
+			if (!projectName) missingFields.push('Launchpad Name')
+			if (!logo) missingFields.push('Logo')
+			if (!shortDescription) missingFields.push('Short Description')
+			if (!longDescription) missingFields.push('Long Description')
+			if (!startDate) missingFields.push('Start Date')
+			if (!endDate) missingFields.push('End Date')
+
+			if (missingFields.length > 0) {
+				throw new Error(
+					`Please fill in all required fields: ${missingFields.join(', ')}`
+				)
+			}
+
+			setLoading(true)
+
+			if (isEditing && id) {
+				// Update existing launchpad
+				const launchpadData = {
+					token_address: projectTokenAddress,
+					total_supply: tokenSupply,
+					launchpad_token: launchpadToken,
+					max_stake: maxStakePerInvestor,
+					min_stake: minStakePerInvestor,
+					soft_cap: softCap,
+					hard_cap: hardCap,
+					launchpad_name: projectName,
+					launchpad_logo: logo,
+					launchpad_short_des: shortDescription,
+					launchpad_long_des: longDescription,
+					launchpad_fb: socialLinks.facebook || '',
+					launchpad_x: socialLinks.twitter || '',
+					launchpad_ig: socialLinks.instagram || '',
+					launchpad_website: socialLinks.website || '',
+					launchpad_whitepaper: whitepaper || '',
+					launchpad_img: images,
+					launchpad_start_date: startDate,
+					launchpad_end_date: endDate,
+					wallet_address: account.address,
+				}
+
 				const response = await fetch(
 					`/api/launchpad/update?launchpad_id=${id}`,
 					{
@@ -120,53 +188,80 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 						headers: {
 							'Content-Type': 'application/json',
 						},
-						body: JSON.stringify({
-							token_address: projectTokenAddress,
-							total_supply: tokenSupply,
-							launchpad_token: launchpadToken,
-							max_stake: maxStakePerInvestor,
-							min_stake: minStakePerInvestor,
-							soft_cap: softCap,
-							hard_cap: hardCap,
-							launchpad_name: projectName,
-							launchpad_logo: logo,
-							launchpad_short_des: shortDescription,
-							launchpad_long_des: longDescription,
-							launchpad_fb: socialLinks.facebook,
-							launchpad_x: socialLinks.twitter,
-							launchpad_ig: socialLinks.instagram,
-							launchpad_website: socialLinks.website,
-							launchpad_whitepaper: whitepaper,
-							launchpad_img: images,
-							launchpad_start_date: startDate?.toISOString(),
-							launchpad_end_date: endDate?.toISOString(),
-							wallet_address: account.address,
-						}),
+						body: JSON.stringify(launchpadData),
 					}
 				)
 
-				const result = await response.json()
-
-				if (result.success) {
-					route.push(`/launchpad/launchpad-detail/${id}`)
-				} else {
-					console.error('Failed to update launchpad:', result.error)
-					// You might want to show an error message to the user here
+				if (!response.ok) {
+					const errorData = await response.json()
+					console.error('API Error Response:', errorData)
+					throw new Error(
+						errorData.error ||
+							errorData.message ||
+							`Failed to update launchpad (Status: ${response.status})`
+					)
 				}
-			} catch (error) {
-				console.error('Error updating launchpad:', error)
-				// You might want to show an error message to the user here
+
+				const data = await response.json()
+				console.log('API Success Response:', data)
+
+				if (!data.success) {
+					console.error('API Success False:', data)
+					throw new Error(
+						data.error || data.message || 'Failed to update launchpad'
+					)
+				}
+
+				route.push(`/launchpad/launchpad-detail/${id}`)
+			} else {
+				// Navigate to preview for new launchpad
+				route.push('/launchpad/create-launchpad/preview')
 			}
-		} else {
-			route.push('/launchpad/create-launchpad/preview')
+		} catch (error: any) {
+			console.error(
+				`Error ${isEditing ? 'updating' : 'creating'} launchpad:`,
+				error
+			)
+			setErrorCode(error?.response?.status?.toString() || '500')
+			setErrorMessage(
+				error?.message ||
+					`Failed to ${isEditing ? 'update' : 'create'} launchpad`
+			)
+			setErrorModalOpen(true)
+		} finally {
+			setLoading(false)
 		}
+	}
+
+	// Function to reset to step 1
+	const resetToStep1 = () => {
+		if (stepperRef.current && stepperRef.current.goToStep) {
+			stepperRef.current.goToStep(1)
+		}
+		// Clear validation errors
+		setValidationErrors({})
+	}
+
+	// Handle retry - reset to step 1
+	const handleRetry = () => {
+		setErrorModalOpen(false)
+		resetToStep1()
 	}
 
 	return (
 		<div className="relative p-36 flex flex-col justify-center items-center font-exo">
 			<AnimatedBlobs count={4} />
 			{!account.isConnected ? (
-				<LockModal />
+				<div className="h-screen ">
+					<LockModal
+						// open={lockOpen}
+						// onUnlock={() => setLockOpen(false)}
+						// canClose={true}
+						message="Please connect your wallet to create a charity."
+					/>
+				</div>
+			) : loading ? (
+				<LoadingModal open={loading} onOpenChange={setLoading} />
 			) : (
 				<>
 					<div className=" text-center z-20">
@@ -178,7 +273,10 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 							}
 							className="text-[45px] font-bold text-white"
 							delay={50}
-							animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
+							animationFrom={{
+								opacity: 0,
+								transform: 'translate3d(0,50px,0)',
+							}}
 							animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
 							threshold={0.2}
 							rootMargin="-50px"
@@ -193,7 +291,10 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 							}
 							className="content-text text-gray-300"
 							delay={10}
-							animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
+							animationFrom={{
+								opacity: 0,
+								transform: 'translate3d(0,50px,0)',
+							}}
 							animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
 							threshold={0.2}
 							rootMargin="-50px"
@@ -204,6 +305,7 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 						className={`mt-14 w-[1200px] h-auto glass-component-3 rounded-2xl p-8 transition-all duration-300 z-20`}
 					>
 						<Stepper
+							ref={stepperRef}
 							className="w-full z-20"
 							initialStep={1}
 							backButtonText="Previous"
@@ -214,21 +316,32 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 							<Step>
 								<div className="flex flex-col items-center justify-center w-full gap-5">
 									<span className="text-3xl  text-white mb-4 flex justify-center w-full">
-										Token address
+										Token address <span className="ml-3 text-red-400"> *</span>
 									</span>
 									<div className="relative w-full">
 										<input
 											id="projectName"
 											value={projectTokenAddress}
-											onChange={(e) => setProjectTokenAddress(e.target.value)}
+											onChange={(e) => {
+												setProjectTokenAddress(e.target.value)
+												if (validationErrors.projectTokenAddress) {
+													setValidationErrors((prev) => ({
+														...prev,
+														projectTokenAddress: '',
+													}))
+												}
+											}}
 											placeholder="Enter your token address"
-											className={`p-4 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full`}
+											className={`p-4 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full ${
+												validationErrors.projectTokenAddress
+													? 'border-2 border-red-400'
+													: ''
+											}`}
+											required
 										/>
-										{/* {isValidatingToken && (
-									<div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-										<Spinner heightWidth={5} className="border-blue-400" />
-									</div>
-								)} */}
+										<ErrorMessage
+											error={validationErrors.projectTokenAddress}
+										/>
 									</div>
 								</div>
 							</Step>
@@ -251,10 +364,34 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 											{/* Chain indicator */}
 
 											<div className="w-full flex flex-col gap-3 relative">
-												<span className=" text-lg">Token</span>
+												<span className=" text-lg">
+													Token <span className="text-red-400">*</span>
+												</span>
 
 												<div className="relative group">
-													<select
+													<input
+														id="projectName"
+														value="GLMR"
+														onChange={(e) => {
+															setSelectedStakingToken(
+																e.target.value,
+																'GLMR symbol'
+															)
+															if (validationErrors.projectTokenAddress) {
+																setValidationErrors((prev) => ({
+																	...prev,
+																	projectTokenAddress: '',
+																}))
+															}
+														}}
+														className={`p-4 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full ${
+															validationErrors.selectedStakingToken
+																? 'border-2 border-red-400'
+																: ''
+														}`}
+														readOnly
+													/>
+													{/* <select
 														value={selectedStakingToken}
 														onChange={(e) => {
 															const selectedOption =
@@ -262,8 +399,19 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 															const tokenAddress = selectedOption.value
 															const tokenSymbol = selectedOption.text
 															setSelectedStakingToken(tokenAddress, tokenSymbol)
+															if (validationErrors.selectedStakingToken) {
+																setValidationErrors((prev) => ({
+																	...prev,
+																	selectedStakingToken: '',
+																}))
+															}
 														}}
-														className="p-3 pr-10 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none cursor-pointer"
+														className={`p-3 pr-10 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none cursor-pointer ${
+															validationErrors.selectedStakingToken
+																? 'border-2 border-red-400'
+																: ''
+														}`}
+														required
 													>
 														<option value="" disabled>
 															Select staking token
@@ -278,10 +426,9 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 																</option>
 															)
 														)}
-													</select>
+													</select> */}
 
-													{/* Custom dropdown arrow */}
-													<div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none transition-transform duration-300 group-hover:translate-y-0.5">
+													{/* <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none transition-transform duration-300 group-hover:translate-y-0.5">
 														<svg
 															className="w-5 h-5 text-white opacity-80"
 															fill="none"
@@ -295,19 +442,33 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 																d="M19 9l-7 7-7-7"
 															/>
 														</svg>
-													</div>
+													</div> */}
 												</div>
+												<ErrorMessage
+													error={validationErrors.selectedStakingToken}
+												/>
 											</div>
 										</div>
 
 										<div className="w-full flex flex-col p-2 gap-3">
-											<span className=" text-lg">Project token supply</span>
+											<span className=" text-lg">
+												Project token supply{' '}
+												<span className="text-red-400">*</span>
+											</span>
 											<div className="flex gap-5">
 												<input
 													type="number"
 													min={1}
 													value={tokenSupply}
-													onChange={(e) => setTokenSupply(e.target.value)}
+													onChange={(e) => {
+														setTokenSupply(e.target.value)
+														if (validationErrors.tokenSupply) {
+															setValidationErrors((prev) => ({
+																...prev,
+																tokenSupply: '',
+															}))
+														}
+													}}
 													onKeyDown={(e) => {
 														const invalidChars = ['e', 'E', '+', '-', '.', ',']
 														if (
@@ -318,15 +479,24 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 														}
 													}}
 													placeholder="Enter project token supply"
-													className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+													className={`p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
     																[&::-webkit-inner-spin-button]:appearance-none 
-    																[&::-webkit-outer-spin-button]:appearance-none"
+    																[&::-webkit-outer-spin-button]:appearance-none ${
+																			validationErrors.tokenSupply
+																				? 'border-2 border-red-400'
+																				: ''
+																		}`}
+													required
 												/>
 											</div>
+											<ErrorMessage error={validationErrors.tokenSupply} />
 										</div>
 
 										<div className="w-full flex flex-col gap-3 p-2">
-											<span className=" text-lg">Launchpad Token</span>
+											<span className=" text-lg">
+												Launchpad Token{' '}
+												<span className="ml-1 text-red-400">*</span>
+											</span>
 											<input
 												type="text"
 												value={launchpadToken}
@@ -339,7 +509,10 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 										</div>
 
 										<div className="w-full flex flex-col gap-3 p-2">
-											<span className=" text-lg">Max stake per investor</span>
+											<span className=" text-lg">
+												Max stake per investor
+												<span className="ml-1 text-red-400">*</span>
+											</span>
 											<input
 												type="number"
 												value={maxStakePerInvestor}
@@ -361,7 +534,10 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 										</div>
 
 										<div className="w-full flex flex-col gap-3 p-2">
-											<span className=" text-lg">Min stake per investor</span>
+											<span className=" text-lg">
+												Min stake per investor
+												<span className="ml-1 text-red-400">*</span>
+											</span>
 											<input
 												type="number"
 												value={minStakePerInvestor}
@@ -383,7 +559,9 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 										</div>
 										<div className="w-full flex  gap-3 p-2">
 											<div className="w-1/2 flex flex-col gap-3">
-												<span className=" text-lg">Soft cap</span>
+												<span className=" text-lg">
+													Soft cap<span className="ml-1 text-red-400">*</span>
+												</span>
 												<input
 													type="number"
 													value={softCap}
@@ -404,7 +582,9 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 												/>
 											</div>
 											<div className="w-1/2 flex flex-col gap-3">
-												<span className=" text-lg">Hard cap</span>
+												<span className=" text-lg">
+													Hard cap<span className="ml-1 text-red-400">*</span>
+												</span>
 												<input
 													type="number"
 													value={hardCap}
@@ -445,29 +625,65 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 										{/* Chain indicator */}
 
 										<div className="w-full flex flex-col gap-3 relative">
-											<span className=" text-lg">Project Name</span>
+											<span className=" text-lg">
+												Project Name <span className="text-red-400">*</span>
+											</span>
 											<input
 												type="text"
 												value={projectName}
-												onChange={(e) => setProjectName(e.target.value)}
+												onChange={(e) => {
+													setProjectName(e.target.value)
+													if (validationErrors.projectName) {
+														setValidationErrors((prev) => ({
+															...prev,
+															projectName: '',
+														}))
+													}
+												}}
 												placeholder="Enter project name"
-												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+												className={`p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
     															[&::-webkit-inner-spin-button]:appearance-none 
-    															[&::-webkit-outer-spin-button]:appearance-none"
+    															[&::-webkit-outer-spin-button]:appearance-none ${
+																		validationErrors.projectName
+																			? 'border-2 border-red-400'
+																			: ''
+																	}`}
+												required
 											/>
+											<ErrorMessage error={validationErrors.projectName} />
 										</div>
 									</div>
 
 									<div className="w-full flex flex-col p-2 gap-3">
-										<span className="text-lg">Short Description</span>
-										<div className="flex gap-5">
-											<textarea
-												id="shortDescription"
-												value={shortDescription}
-												onChange={(e) => setShortDescription(e.target.value)}
-												placeholder="Brief overview of your launchpad (100 words max)"
-												className="p-4  text-white rounded-xl glass-component-2 h-32 resize-none w-full text-sm"
-											/>
+										<span className="text-lg">
+											Short Description
+											<span className="ml-1 text-red-400">*</span>
+										</span>
+										<div className="flex flex-col gap-2">
+											<div className="flex gap-5">
+												<textarea
+													id="shortDescription"
+													value={shortDescription}
+													onChange={(e) => {
+														const words = e.target.value
+															.split(/\s+/)
+															.filter((word) => word.length > 0)
+														if (words.length <= 100) {
+															setShortDescription(e.target.value)
+														}
+													}}
+													placeholder="Brief overview of your launchpad (100 words max)"
+													className="p-4 text-white rounded-xl glass-component-2 h-32 resize-none w-full text-sm"
+												/>
+											</div>
+											<div className="text-xs text-gray-400 text-right">
+												{
+													shortDescription
+														.split(/\s+/)
+														.filter((word) => word.length > 0).length
+												}
+												/100 words
+											</div>
 										</div>
 										{/* <div className="text-xs text-gray-400 text-right font-comfortaa">
 										{
@@ -481,7 +697,10 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 									</div>
 
 									<div className="w-full flex flex-col p-2 gap-3">
-										<span className=" text-lg">Long Description</span>
+										<span className=" text-lg">
+											Long Description
+											<span className="ml-1 text-red-400">*</span>
+										</span>
 										<div className="flex gap-5">
 											<textarea
 												id="longDescription"
@@ -493,7 +712,9 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 										</div>
 									</div>
 									<div className="w-full flex flex-col p-2 gap-5">
-										<span className=" text-lg">Socials</span>
+										<span className=" text-lg">
+											Socials<span className="ml-1 text-red-400">*</span>
+										</span>
 										<div className="flex flex-col gap-5">
 											<div className="flex gap-5">
 												<svg
@@ -621,7 +842,9 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 										{/* Chain indicator */}
 
 										<div className="w-full flex flex-col gap-3 relative">
-											<span className=" text-lg">Whitepaper</span>
+											<span className=" text-lg">
+												Whitepaper<span className="ml-1 text-red-400">*</span>
+											</span>
 											<input
 												type="text"
 												value={whitepaper}
@@ -636,7 +859,9 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 									<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
 										{/* Project Images Upload */}
 										<div className="w-full flex flex-col gap-3 p-2">
-											<span className="text-lg">Images</span>
+											<span className="text-lg">
+												Images<span className="ml-1 text-red-400">*</span>
+											</span>
 											<div className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible">
 												<input
 													type="file"
@@ -691,7 +916,9 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 
 										{/* Project Logo Upload */}
 										<div className="w-full flex flex-col gap-3 p-2">
-											<span className="text-lg">Logo</span>
+											<span className="text-lg">
+												Logo<span className="ml-1 text-red-400">*</span>
+											</span>
 											<div className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible">
 												<input
 													type="file"
@@ -761,20 +988,24 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 
 									<div className="w-full flex gap-6">
 										<div className="w-1/2 flex flex-col gap-2 sm:gap-3 p-1 sm:p-2">
-											<span className=" text-base sm:text-lg">From</span>
+											<span className=" text-base sm:text-lg">
+												From<span className="ml-1 text-red-400">*</span>
+											</span>
 											<input
 												type="datetime-local"
-												value={formatDateForInput(startDate)}
+												value={startDate}
 												onChange={(e) => setStartDate(e.target.value)}
 												placeholder="Enter start date"
 												className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"
 											/>
 										</div>
 										<div className="w-1/2 flex flex-col gap-2 sm:gap-3 p-1 sm:p-2">
-											<span className=" text-base sm:text-lg">To</span>
+											<span className=" text-base sm:text-lg">
+												To<span className="ml-1 text-red-400">*</span>
+											</span>
 											<input
 												type="datetime-local"
-												value={formatDateForInput(endDate)}
+												value={endDate}
 												onChange={(e) => setEndDate(e.target.value)}
 												placeholder="Enter end date"
 												className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"
@@ -787,6 +1018,15 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 					</div>
 				</>
 			)}
+
+			<ErrorModal
+				open={errorModalOpen}
+				onOpenChange={setErrorModalOpen}
+				errorCode={errorCode}
+				errorMessage={errorMessage}
+				onRetry={handleRetry}
+			/>
+
 			{/* --------------------------------------Title & Subtitle----------------------------------------------------- */}
 		</div>
 	)
