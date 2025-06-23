@@ -49,6 +49,7 @@ const convertLaunchpadToProject = (launchpad: Launchpad): BaseProject => {
 		id: launchpad.launchpad_id,
 		token_address: launchpad.token_address,
 		total_supply: launchpad.total_supply,
+		shortDescription: launchpad.launchpad_short_des,
 		max_stake: launchpad.max_stake,
 		min_stake: launchpad.min_stake,
 		soft_cap: launchpad.soft_cap,

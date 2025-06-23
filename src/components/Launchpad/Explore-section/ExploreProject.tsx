@@ -28,7 +28,7 @@ const ExploreProject = ({
 		(event: React.ChangeEvent<HTMLInputElement>) => {
 			const value = event.target.value
 			setSearchTerm(value)
-			
+
 			// Call the parent's search handler if provided
 			if (onSearchChange) {
 				onSearchChange(value)
