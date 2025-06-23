@@ -7,7 +7,7 @@ interface StakeAreaProps {
 	handleDeposit: () => void
 }
 const StakeArea: React.FC<StakeAreaProps> = ({ handleDeposit }) => {
-	const { setTokenAmount } = useLaunchpadTokenAmountStore()
+	const { tokenAmount, setTokenAmount } = useLaunchpadTokenAmountStore()
 	return (
 		<div className="mt-6">
 			<div className="glass-component-1 p-4 text-white rounded-xl">
@@ -46,6 +46,7 @@ const StakeArea: React.FC<StakeAreaProps> = ({ handleDeposit }) => {
 					<Button
 						className="w-full bg-gradient font-extrabold glass-component-1"
 						onClick={handleDeposit}
+						disabled={tokenAmount <= 0 || !tokenAmount}
 					>
 						Deposit
 					</Button>
