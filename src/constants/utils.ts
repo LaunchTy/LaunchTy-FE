@@ -2,19 +2,47 @@
 export const FOOTER_LINKS = [
 	{
 		title: "Security",
-		links: ["Audit Report"],
+		links: [
+			{
+				name: "Audit Report",
+				url: "https://example.com/audit-report.pdf",
+			},
+		],
 	},
 	{
 		title: "Explore",
-		links: ["Docs", "Github"],
+		links: [
+			{
+				name: "Docs",
+				url: "http://localhost:3000/tutorial",
+			},
+			// {
+			// 	name: "Github",
+			// 	url: "https://github.com/your-org/your-repo",
+			// },
+		],
 	},
 	{
 		title: "Community",
-		links: ["Twitter"],
+		links: [
+			{
+				name: "Twitter",
+				url: "https://x.com/LAUNCHTYAPP",
+			},
+			{
+				name: "Facebook",
+				url: "https://www.facebook.com/profile.php?id=61576233647923",
+			},
+		],
 	},
 	{
 		title: "Career",
-		links: ["Contact us"],
+		links: [
+			{
+				name: "Contact us",
+				url: "mailto:launchty@gmail.com",
+			},
+		],
 	},
 ];
 

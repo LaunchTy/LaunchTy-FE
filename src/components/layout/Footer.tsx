@@ -56,11 +56,11 @@ export function Footer() {
 								<ul className="regular-14 flex flex-col gap-4 text-gray-30 ">
 									{columns.links.map((link) => (
 										<Link
-											href="/"
-											key={link}
+											href={link.url}
+											key={link.name}
 											className="hover:text-[#8132a2] duration-200 transform transition-transform hover:scale-105 active:scale-95"
 										>
-											{link}
+											{link.name}
 										</Link>
 									))}
 								</ul>
