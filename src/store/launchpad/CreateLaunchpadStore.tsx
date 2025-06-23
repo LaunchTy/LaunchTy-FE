@@ -62,8 +62,8 @@ export interface LaunchpadState {
 	backgroundImage: string // hình nền
 
 	// Time settings
-	startDate: Date | null // thời gian bắt đầu
-	endDate: Date | null // thời gian kết thúc
+	startDate: string
+	endDate: string
 
 	// Validation status
 	isTokenValidated: boolean // token đã được xác thực hay chưa
@@ -121,8 +121,8 @@ const initialState = {
 	logo: null as string | null,
 	images: [] as string[],
 	backgroundImage: '',
-	startDate: null as Date | null,
-	endDate: null as Date | null,
+	startDate: '',
+	endDate: '',
 	isTokenValidated: false,
 }
 
@@ -163,14 +163,8 @@ export const useLaunchpadStore = create<LaunchpadState>()(
 		setImages: (images) => set({ images }),
 		setBackgroundImage: (image) => set({ backgroundImage: image }),
 
-		setStartDate: (date) => {
-			const dateObj = new Date(date)
-			set({ startDate: isNaN(dateObj.getTime()) ? null : dateObj })
-		},
-		setEndDate: (date) => {
-			const dateObj = new Date(date)
-			set({ endDate: isNaN(dateObj.getTime()) ? null : dateObj })
-		},
+		setStartDate: (date) => set({ startDate: date }),
+		setEndDate: (date) => set({ endDate: date }),
 
 		setIsTokenValidated: (isValidated) =>
 			set({ isTokenValidated: isValidated }),

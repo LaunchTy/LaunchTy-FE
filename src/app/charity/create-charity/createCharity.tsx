@@ -263,11 +263,17 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 					console.error('No charity_id in response:', data)
 					throw new Error('Charity ID not found in response')
 				}
-				if (typeof data.data.charity_id !== 'string' || data.data.charity_id === 'string') {
+				if (
+					typeof data.data.charity_id !== 'string' ||
+					data.data.charity_id === 'string'
+				) {
 					console.error('Invalid charity_id value:', data.data.charity_id)
 					throw new Error('Invalid charity ID value')
 				}
-				console.log('Navigating to charity detail with ID:', data.data.charity_id)
+				console.log(
+					'Navigating to charity detail with ID:',
+					data.data.charity_id
+				)
 				router.push(`/charity/charity-detail/${data.data.charity_id}`)
 			}
 		} catch (error: any) {

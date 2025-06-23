@@ -122,9 +122,18 @@ export const useCharityStore = create<CharityState>()(
 		setImages: (images) => set({ images }),
 		setBackgroundImage: (image) => set({ backgroundImage: image }),
 
-		setLicenseAndCertification: (images) => set({ licenseAndCertification: images }),
-		addLicenseImage: (image) => set((state) => ({ licenseAndCertification: [...state.licenseAndCertification, image] })),
-		removeLicenseImage: (index) => set((state) => ({ licenseAndCertification: state.licenseAndCertification.filter((_, i) => i !== index) })),
+		setLicenseAndCertification: (images) =>
+			set({ licenseAndCertification: images }),
+		addLicenseImage: (image) =>
+			set((state) => ({
+				licenseAndCertification: [...state.licenseAndCertification, image],
+			})),
+		removeLicenseImage: (index) =>
+			set((state) => ({
+				licenseAndCertification: state.licenseAndCertification.filter(
+					(_, i) => i !== index
+				),
+			})),
 
 		setHistoryEvidence: (images) => set({ historyEvidence: images }),
 		setPersonalId: (image) => set({ personalId: image }),
