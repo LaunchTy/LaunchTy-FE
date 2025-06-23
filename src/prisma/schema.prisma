@@ -13,10 +13,10 @@ model User {
   wallet_address     String?     @unique
   user_name          String
   create_date        DateTime    @default(now())
-  launchpads         Launchpad[]
+  charities_as_owner Charity[]   @relation("OwnerUser")
   deposits           Deposit[]
   donations          Donation[]
-  charities_as_owner Charity[]   @relation("OwnerUser")
+  launchpads         Launchpad[]
 }
 
 model Launchpad {
@@ -25,7 +25,7 @@ model Launchpad {
   token_address          String
   total_supply           Int
   launchpad_token        String
-  max_stake              Float  
+  max_stake              Float
   min_stake              Float
   soft_cap               Float
   hard_cap               Float
@@ -74,12 +74,13 @@ model Charity {
   charity_img            String[]
   charity_start_date     DateTime
   charity_end_date       DateTime
-  license_certificate    String?
+  license_certificate    String[]
   evidence               String[]
   charity_email          String?
   repre_name             String
   repre_phone            String
   repre_faceid           String
+  repre_personal_id      String
   project_owner_id       String?
   status                 String     @default("pending")
   project_owner          User?      @relation("OwnerUser", fields: [project_owner_id], references: [user_id])

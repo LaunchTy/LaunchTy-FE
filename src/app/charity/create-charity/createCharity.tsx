@@ -40,8 +40,6 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 		setRepresentativeName,
 		phoneNumber,
 		setPhoneNumber,
-		tokenSupply,
-		setTokenSupply,
 		selectedToken,
 		setSelectedToken,
 		socialLinks,
@@ -52,10 +50,9 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 		addImage,
 		removeImage,
 		setImages,
-		backgroundImage,
-		setBackgroundImage,
 		licenseAndCertification,
-		setLicenseAndCertification,
+		addLicenseImage,
+		removeLicenseImage,
 		historyEvidence,
 		setHistoryEvidence,
 		personalId,
@@ -98,7 +95,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 	) => {
 		if (e.target.files && e.target.files[0]) {
 			const base64Image = await convertToBase64(e.target.files[0])
-			setLicenseAndCertification(base64Image)
+			addLicenseImage(base64Image)
 		}
 	}
 
@@ -119,6 +116,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 	) => {
 		if (e.target.files && e.target.files[0]) {
 			const base64Image = await convertToBase64(e.target.files[0])
+			console.log('Personal ID uploaded:', base64Image.substring(0, 50) + '...')
 			setPersonalId(base64Image)
 		}
 	}
@@ -134,6 +132,13 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 		const index = parseInt(id, 10)
 		if (!isNaN(index)) {
 			removeImage(index)
+		}
+	}
+
+	const handleLicenseDelete = (id: string) => {
+		const index = parseInt(id, 10)
+		if (!isNaN(index)) {
+			removeLicenseImage(index)
 		}
 	}
 
@@ -168,6 +173,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 			if (!representativeName) missingFields.push('Representative Name')
 			if (!phoneNumber) missingFields.push('Phone Number')
 			if (!faceId) missingFields.push('Face ID')
+			if (!personalId) missingFields.push('Personal ID')
 
 			if (missingFields.length > 0) {
 				throw new Error(
@@ -196,8 +202,20 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 				repre_name: representativeName,
 				repre_phone: phoneNumber,
 				repre_faceid: faceId,
+				repre_personal_id: personalId,
 				wallet_address: address,
 			}
+
+			console.log('Submitting charity data:', {
+				...charityData,
+				charity_logo: charityData.charity_logo ? 'Logo present' : 'No logo',
+				repre_faceid: charityData.repre_faceid
+					? 'Face ID present'
+					: 'No face ID',
+				repre_personal_id: charityData.repre_personal_id
+					? 'Personal ID present'
+					: 'No personal ID',
+			})
 
 			const url = isEditing
 				? `/api/charity/update/${id}`
@@ -224,6 +242,10 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 
 			const data = await response.json()
 			console.log('API Success Response:', data)
+			console.log('Charity ID from response:', data.data?.charity_id)
+			console.log('Charity ID type:', typeof data.data?.charity_id)
+			console.log('Full data structure:', JSON.stringify(data, null, 2))
+			console.log('All keys in data.data:', Object.keys(data.data || {}))
 
 			if (!data.success) {
 				console.error('API Success False:', data)
@@ -237,6 +259,15 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 			if (isEditing) {
 				router.push(`/charity/charity-detail/${id}`)
 			} else {
+				if (!data.data?.charity_id) {
+					console.error('No charity_id in response:', data)
+					throw new Error('Charity ID not found in response')
+				}
+				if (typeof data.data.charity_id !== 'string' || data.data.charity_id === 'string') {
+					console.error('Invalid charity_id value:', data.data.charity_id)
+					throw new Error('Invalid charity ID value')
+				}
+				console.log('Navigating to charity detail with ID:', data.data.charity_id)
 				router.push(`/charity/charity-detail/${data.data.charity_id}`)
 			}
 		} catch (error: any) {
@@ -582,24 +613,26 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 													color="#00d8ff"
 													size={0.8}
 													items={
-														licenseAndCertification
-															? [
-																	<div
-																		key="license"
-																		className="w-full h-full flex items-center justify-center"
-																	>
-																		<Image
-																			src={licenseAndCertification}
-																			alt="License & Certification"
-																			width={512}
-																			height={512}
-																			className="max-w-full max-h-full object-contain rounded"
-																		/>
-																	</div>,
-																]
+														licenseAndCertification.length > 0
+															? licenseAndCertification.map(
+																	(base64: string, index: number) => (
+																		<div
+																			key={`license-${index}`}
+																			className="w-full h-full flex items-center justify-center"
+																		>
+																			<Image
+																				src={base64}
+																				alt={`License & Certification ${index + 1}`}
+																				width={512}
+																				height={512}
+																				className="max-w-full max-h-full object-contain rounded"
+																			/>
+																		</div>
+																	)
+																)
 															: []
 													}
-													maxItems={1}
+													maxItems={3}
 												/>
 											</div>
 										</div>
@@ -754,15 +787,15 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 													name: `Project Image ${index + 1}`,
 													type: 'project',
 												})),
-												...(licenseAndCertification
-													? [
-															{
-																id: 'license',
-																base64: licenseAndCertification,
-																name: 'License & Certification',
+												...(licenseAndCertification.length > 0
+													? licenseAndCertification.map(
+															(base64: string, index: number) => ({
+																id: `license-${index}`,
+																base64,
+																name: `License & Certification ${index + 1}`,
 																type: 'license',
-															},
-														]
+															})
+														)
 													: []),
 												...historyEvidence.map(
 													(base64: string, index: number) => ({
@@ -806,7 +839,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 												if (type === 'project') {
 													removeImage(parseInt(index))
 												} else if (type === 'license') {
-													setLicenseAndCertification(null)
+													handleLicenseDelete(index)
 												} else if (type === 'history') {
 													const newImages = historyEvidence.filter(
 														(_, i) => i !== parseInt(index)
@@ -853,7 +886,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 											onClick={onFinalStepCompleted}
 											className="glass-component-3 rounded-xl px-8 py-3 text-lg font-semibold hover:bg-opacity-80 transition-all duration-300"
 										>
-											{isEditing ? 'Update Charity' : 'Create Charity'}
+											{isEditing ? 'Update Charity' : 'Submit'}
 										</Button>
 									</div>
 								</motion.div>

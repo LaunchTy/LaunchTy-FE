@@ -31,6 +31,7 @@ export async function PUT(
 			repre_name,
 			repre_phone,
 			repre_faceid,
+			repre_personal_id,
 			status,
 		} = body;
 
@@ -57,6 +58,7 @@ export async function PUT(
 			repre_name,
 			repre_phone,
 			repre_faceid: repre_faceid ? "present" : "missing",
+			repre_personal_id: repre_personal_id ? "present" : "missing",
 			status,
 		});
 
@@ -106,6 +108,7 @@ export async function PUT(
 				...(repre_name && { repre_name }),
 				...(repre_phone && { repre_phone }),
 				...(repre_faceid && { repre_faceid }),
+				...(repre_personal_id && { repre_personal_id }),
 				...(status && { status }),
 			},
 			include: {

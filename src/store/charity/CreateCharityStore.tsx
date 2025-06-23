@@ -30,7 +30,7 @@ interface CharityState {
 	logo: string | null
 	images: string[]
 	backgroundImage: string
-	licenseAndCertification: string | null
+	licenseAndCertification: string[]
 	historyEvidence: string[]
 	personalId: string | null
 	faceId: string | null
@@ -53,13 +53,15 @@ interface CharityState {
 	removeImage: (index: number) => void
 	setImages: (images: string[]) => void
 	setBackgroundImage: (image: string) => void
-	setLicenseAndCertification: (image: string | null) => void
+	setLicenseAndCertification: (images: string[]) => void
 	setHistoryEvidence: (images: string[]) => void
 	setPersonalId: (image: string | null) => void
 	setFaceId: (image: string | null) => void
 	setStartDate: (date: string) => void
 	setEndDate: (date: string) => void
 	resetStore: () => void
+	addLicenseImage: (image: string) => void
+	removeLicenseImage: (index: number) => void
 }
 
 const initialState = {
@@ -82,7 +84,7 @@ const initialState = {
 	logo: null,
 	images: [],
 	backgroundImage: '',
-	licenseAndCertification: null,
+	licenseAndCertification: [],
 	historyEvidence: [],
 	personalId: null,
 	faceId: null,
@@ -120,8 +122,10 @@ export const useCharityStore = create<CharityState>()(
 		setImages: (images) => set({ images }),
 		setBackgroundImage: (image) => set({ backgroundImage: image }),
 
-		setLicenseAndCertification: (image) =>
-			set({ licenseAndCertification: image }),
+		setLicenseAndCertification: (images) => set({ licenseAndCertification: images }),
+		addLicenseImage: (image) => set((state) => ({ licenseAndCertification: [...state.licenseAndCertification, image] })),
+		removeLicenseImage: (index) => set((state) => ({ licenseAndCertification: state.licenseAndCertification.filter((_, i) => i !== index) })),
+
 		setHistoryEvidence: (images) => set({ historyEvidence: images }),
 		setPersonalId: (image) => set({ personalId: image }),
 		setFaceId: (image) => set({ faceId: image }),

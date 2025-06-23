@@ -539,6 +539,7 @@ const CharityDetail = () => {
 										website: charity.charity_website,
 										fb: charity.charity_fb,
 										x: charity.charity_x,
+										ig: charity.charity_ig,
 									}}
 									iconSize="medium"
 									align="start"

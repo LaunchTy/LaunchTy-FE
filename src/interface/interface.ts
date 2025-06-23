@@ -65,13 +65,14 @@ export interface Charity {
 	charity_img: string[];
 	charity_start_date: string; // ISO string
 	charity_end_date: string; // ISO string
-	license_certificate?: string;
+	license_certificate: string[];
 	evidence: string[];
-	charity_email: string;
+	charity_email?: string;
 	repre_name: string;
 	repre_phone: string;
-	repre_id: string;
+	repre_personal_id: string;
 	repre_faceid: string;
+	project_owner_id?: string;
 	status_charity?: "pending" | "approve" | "deny" | "publish";
 	status: "pending" | "approve" | "deny" | "publish";
 	user?: User;
@@ -127,11 +128,11 @@ export interface BaseProject {
 
 	//Charity
 	charity_token_symbol?: string;
-	license_certificate?: string;
+	license_certificate?: string[];
 	evidence?: string[];
 	repre_name?: string;
 	repre_phone?: string;
-	repre_id?: string;
+	repre_personal_id?: string;
 	repre_faceid?: string;
 	status_charity?: "pending" | "approve" | "deny" | "publish";
 	totalDonationAmount?: number;

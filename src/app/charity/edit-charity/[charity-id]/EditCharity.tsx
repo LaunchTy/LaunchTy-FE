@@ -96,8 +96,9 @@ const EditCharity = () => {
 
 					setLogo(charity.charity_logo || null)
 					setImages(charity.charity_img || [])
-					setLicenseAndCertification(charity.license_certificate || null)
+					setLicenseAndCertification(charity.license_certificate || [])
 					setHistoryEvidence(charity.evidence || [])
+					setPersonalId(charity.repre_personal_id || null)
 					setFaceId(charity.repre_faceid || null)
 
 					if (charity.charity_img && charity.charity_img.length > 0) {
