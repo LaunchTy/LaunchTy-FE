@@ -8,6 +8,8 @@ import Logo from '@/public/Logo.png'
 import { cn } from '@/lib/utils'
 import Button from '../UI/button/Button'
 import ConnectWalletButton from '../UI/button/ConnectWalletButton'
+import { useAccount } from 'wagmi'
+import axios from 'axios'
 
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 
@@ -29,10 +31,40 @@ const Navbar = ({
 }) => {
 	const [toggle, setToggle] = useState(false)
 	const toggleNavbar = () => setToggle(!toggle)
-
+	const [finalNavItems, setFinalNavItems] = useState(navItems)
+	const { address } = useAccount()
+	const [isAdmin, setIsAdmin] = useState(false)
 	// const { scrollY } = useScroll()
 	const [visible, setVisible] = useState(true)
 	const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+	useEffect(() => {
+		if (!address) return setFinalNavItems(navItems)
+
+		const checkAdmin = async () => {
+			try {
+				const res = await axios.get(`/api/admin/check-admin?address=${address}`)
+				const isAdmin = res.data.isAdmin
+
+				if (isAdmin) {
+					// Thêm option Admin vào navItems
+					setFinalNavItems([
+						...navItems,
+						{
+							name: 'Admin',
+							link: '/admin/dashboard',
+						},
+					])
+				} else {
+					setFinalNavItems(navItems)
+				}
+			} catch (err) {
+				console.error('Failed to check admin:', err)
+				setFinalNavItems(navItems)
+			}
+		}
+
+		checkAdmin()
+	}, [address])
 
 	useEffect(() => {
 		let lastScrollY = window.scrollY
@@ -88,7 +120,7 @@ const Navbar = ({
 								</span>
 							</Link>
 						))} */}
-						{navItems.map((navItem, idx) => (
+						{finalNavItems.map((navItem, idx) => (
 							<div key={`link-${idx}`} className="relative group">
 								{navItem.subItems ? (
 									<div className="relative">
@@ -173,7 +205,7 @@ const Navbar = ({
 				{toggle && (
 					<div className="fixed right-0 top-20 z-20 bg-[#000626] w-full p-8 sm:p-12 flex flex-col justify-center items-center lg:hidden rounded-md">
 						<div className="py-5 flex flex-col items-center space-y-3 sm:space-y-5">
-							{navItems.map((navItem, idx) => (
+							{finalNavItems.map((navItem, idx) => (
 								<Link
 									key={`link=${idx}`}
 									href={navItem.link || '/'}

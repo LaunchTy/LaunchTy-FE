@@ -78,14 +78,14 @@ const LeftMenu: React.FC<LeftMenuProps> = ({ activeMenu, setActiveMenu }) => {
 			{/* Menu */}
 			<ul className="flex flex-col gap-7">
 				<li>
-					<a
-						href="/admin/launchpad"
+					<button
+						type="button"
 						onClick={() => setActiveMenu('launchpad')}
 						className={`flex items-center gap-3 text-sm transition duration-150 pt-2 ${
 							activeMenu === 'launchpad'
 								? 'text-[#F05550] font-semibold'
 								: 'hover:text-[#8132a2]'
-						}`}
+						} bg-transparent border-none p-0 m-0 text-left w-full`}
 					>
 						<Image
 							src={icon_rocket.src}
@@ -101,17 +101,17 @@ const LeftMenu: React.FC<LeftMenuProps> = ({ activeMenu, setActiveMenu }) => {
 						>
 							Launchpad
 						</span>
-					</a>
+					</button>
 				</li>
 				<li>
-					<a
-						href="/admin/charity"
+					<button
+						type="button"
 						onClick={() => setActiveMenu('charity')}
 						className={`flex items-center text-sm gap-3 transition duration-150 ${
 							activeMenu === 'charity'
 								? 'text-[#F05550] font-semibold'
 								: 'hover:text-[#8132a2]'
-						}`}
+						} bg-transparent border-none p-0 m-0 text-left w-full`}
 					>
 						<Image
 							src={icon_donate.src}
@@ -127,7 +127,7 @@ const LeftMenu: React.FC<LeftMenuProps> = ({ activeMenu, setActiveMenu }) => {
 						>
 							Charity
 						</span>
-					</a>
+					</button>
 				</li>
 			</ul>
 		</div>
