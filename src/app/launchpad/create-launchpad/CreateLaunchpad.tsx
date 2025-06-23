@@ -15,6 +15,7 @@ import ImageManager from '@/components/UI/shared/ImageManager'
 import { useRouter } from 'next/navigation'
 import { useAccount } from 'wagmi'
 import LockModal from '@/components/UI/modal/LockModal'
+import { chainConfig, anvilConfig } from '@/app/config'
 
 interface CreateLaunchpadProps {
 	isEditing?: boolean
@@ -59,6 +60,8 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 		setHardCap,
 		setImages,
 		removeImage,
+		selectedStakingToken,
+		setSelectedStakingToken,
 	} = useLaunchpadStore()
 
 	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,10 +101,62 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 		})
 	}
 
-	const onFinalStepCompleted = () => {
-		if (isEditing) {
-			// TODO: Call update API here
-			route.push(`/launchpad/${id}`)
+	// Helper function to safely convert date to ISO string for datetime-local input
+	const formatDateForInput = (date: Date | null): string => {
+		if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+			return ''
+		}
+		return date.toISOString().slice(0, 16)
+	}
+
+	const onFinalStepCompleted = async () => {
+		if (isEditing && id) {
+			try {
+				// Call update API
+				const response = await fetch(
+					`/api/launchpad/update?launchpad_id=${id}`,
+					{
+						method: 'PUT',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({
+							token_address: projectTokenAddress,
+							total_supply: tokenSupply,
+							launchpad_token: launchpadToken,
+							max_stake: maxStakePerInvestor,
+							min_stake: minStakePerInvestor,
+							soft_cap: softCap,
+							hard_cap: hardCap,
+							launchpad_name: projectName,
+							launchpad_logo: logo,
+							launchpad_short_des: shortDescription,
+							launchpad_long_des: longDescription,
+							launchpad_fb: socialLinks.facebook,
+							launchpad_x: socialLinks.twitter,
+							launchpad_ig: socialLinks.instagram,
+							launchpad_website: socialLinks.website,
+							launchpad_whitepaper: whitepaper,
+							launchpad_img: images,
+							launchpad_start_date: startDate?.toISOString(),
+							launchpad_end_date: endDate?.toISOString(),
+							wallet_address: account.address,
+						}),
+					}
+				)
+
+				const result = await response.json()
+
+				if (result.success) {
+					route.push(`/launchpad/launchpad-detail/${id}`)
+				} else {
+					console.error('Failed to update launchpad:', result.error)
+					// You might want to show an error message to the user here
+				}
+			} catch (error) {
+				console.error('Error updating launchpad:', error)
+				// You might want to show an error message to the user here
+			}
 		} else {
 			route.push('/launchpad/create-launchpad/preview')
 		}
@@ -116,7 +171,11 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 				<>
 					<div className=" text-center z-20">
 						<SplitText
-							text="Fill your project ‘s information"
+							text={
+								isEditing
+									? "Edit your project's information"
+									: "Fill your project's information"
+							}
 							className="text-[45px] font-bold text-white"
 							delay={50}
 							animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
@@ -127,7 +186,11 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 					</div>
 					<div className="mt-[30px] text-center max-w-5xl mx-auto z-20">
 						<SplitText
-							text="Enter detailed information about your project to help potential stakeholders understand your goals, timeline, and requirements. This comprehensive form is designed to gather all necessary details to showcase your project effectively on our platform "
+							text={
+								isEditing
+									? 'Update your project information to reflect any changes in your goals, timeline, or requirements. All updates will be reviewed by our team before being published.'
+									: 'Enter detailed information about your project to help potential stakeholders understand your goals, timeline, and requirements. This comprehensive form is designed to gather all necessary details to showcase your project effectively on our platform'
+							}
 							className="content-text text-gray-300"
 							delay={10}
 							animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
@@ -192,33 +255,29 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 
 												<div className="relative group">
 													<select
-														// value={poolData[poolId]?.vTokenAddress || ''}
-														// onChange={(e) => {
-														// 	const selectedOption =
-														// 		e.target.options[e.target.selectedIndex]
-														// 	const vTokenAddress = selectedOption.value
-														// 	console.log('vToken selected: ', vTokenAddress)
-														// 	handleChangePool(
-														// 		poolId,
-														// 		'vTokenAddress',
-														// 		vTokenAddress
-														// 	)
-														// 	handleChangePool(
-														// 		poolId,
-														// 		'vTokenSymbol',
-														// 		selectedOption.text
-														// 	)
-														// }}
+														value={selectedStakingToken}
+														onChange={(e) => {
+															const selectedOption =
+																e.target.options[e.target.selectedIndex]
+															const tokenAddress = selectedOption.value
+															const tokenSymbol = selectedOption.text
+															setSelectedStakingToken(tokenAddress, tokenSymbol)
+														}}
 														className="p-3 pr-10 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none cursor-pointer"
 													>
 														<option value="" disabled>
 															Select staking token
 														</option>
-														{/* {currentChainConfig?.tokens.map((token) => (
-														<option key={token.address} value={token.address}>
-															{token.symbol}
-														</option>
-													))} */}
+														{(anvilConfig as any)?.vAssets?.map(
+															(token: any) => (
+																<option
+																	key={token.address}
+																	value={token.address}
+																>
+																	{token.symbol}
+																</option>
+															)
+														)}
 													</select>
 
 													{/* Custom dropdown arrow */}
@@ -263,10 +322,6 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
     																[&::-webkit-inner-spin-button]:appearance-none 
     																[&::-webkit-outer-spin-button]:appearance-none"
 												/>
-
-												<Button className="glass-component-3 rounded-xl">
-													Check
-												</Button>
 											</div>
 										</div>
 
@@ -709,9 +764,7 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 											<span className=" text-base sm:text-lg">From</span>
 											<input
 												type="datetime-local"
-												value={
-													startDate ? startDate.toISOString().slice(0, 16) : ''
-												}
+												value={formatDateForInput(startDate)}
 												onChange={(e) => setStartDate(e.target.value)}
 												placeholder="Enter start date"
 												className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"
@@ -721,11 +774,9 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 											<span className=" text-base sm:text-lg">To</span>
 											<input
 												type="datetime-local"
-												value={
-													endDate ? endDate.toISOString().slice(0, 16) : ''
-												}
+												value={formatDateForInput(endDate)}
 												onChange={(e) => setEndDate(e.target.value)}
-												placeholder="Enter start date"
+												placeholder="Enter end date"
 												className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"
 											/>
 										</div>
