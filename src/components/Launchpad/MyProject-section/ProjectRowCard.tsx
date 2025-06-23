@@ -136,6 +136,81 @@ const ProjectSection = ({
 	// 	window.addEventListener('mousemove', handleMouseMove)
 	// 	return () => window.removeEventListener('mousemove', handleMouseMove)
 	// }, [mouseX, mouseY])
+	const filteredProjects = projects.filter((project) => {
+		const status =
+			projectType === 'launchpad'
+				? project.status_launchpad
+				: project.status_charity
+		return status !== 'deny'
+	})
+
+	const getButtonsForProject = (project: BaseProject) => {
+		const status =
+			projectType === 'launchpad'
+				? project.status_launchpad
+				: project.status_charity
+
+		const buttons = []
+
+		switch (status) {
+			case 'pending':
+				// Status pending: hiển thị button Edit
+				if (onEdit) {
+					buttons.push(
+						<Button
+							key="edit"
+							onClick={() => onEdit(project.id || '')}
+							className="bg-gradient text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 w-auto"
+						>
+							Edit
+						</Button>
+					)
+				}
+				break
+
+			case 'approve':
+				// Status approve: hiển thị button Publish
+				if (handlePublish) {
+					buttons.push(
+						<Button
+							key="publish"
+							onClick={() => handlePublish(project)}
+							className="bg-white transition-all duration-300 ease-in-out 
+							hover:opacity-80 hover:shadow-lg hover:scale-105 
+							active:scale-95 active:opacity-90 items-center px-3 py-2 h-auto border-border/50 hover:border-border"
+						>
+							<span className="text-gradient">Publish</span>
+						</Button>
+					)
+				}
+				break
+
+			case 'publish':
+				// Status publish: hiển thị button Withdraw
+				if (onWithdraw) {
+					buttons.push(
+						<Button
+							key="withdraw"
+							onClick={() => onWithdraw(project.id || '')}
+							className="relative bg-gradient text-white py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 w-auto"
+						>
+							Withdraw
+						</Button>
+					)
+				}
+				break
+
+			case 'deny':
+				// Status deny: không hiển thị project (đã filter ở trên)
+				break
+
+			default:
+				// Trường hợp không xác định status
+				break
+		}
+
+		return buttons
+	}
 
 	return (
 		<section
@@ -143,7 +218,7 @@ const ProjectSection = ({
 			className={`px-20 py-12 font-exo relative overflow-hidden min-h-auto ${className}`}
 		>
 			<div className="grid gap-6 z-20 relative">
-				{projects.map((project, index) => (
+				{filteredProjects.map((project, index) => (
 					<motion.div
 						key={project.id}
 						initial={{ opacity: 0, y: 20 }}
@@ -167,7 +242,6 @@ const ProjectSection = ({
 								/>
 							</div>
 							{/* Project info */}
-							{/* Cột 2: Tên + mô tả */}
 							<div className="flex-1 flex flex-col max-w-[300px]">
 								<h2 className="text-lg font-semibold text-white truncate whitespace-nowrap overflow-hidden text-ellipsis">
 									{project.name || 'Unnamed Project'}
@@ -178,11 +252,10 @@ const ProjectSection = ({
 							</div>
 						</div>
 
-						{/* Cột 3: Token */}
-						<div className="text-white text-sm flex gap-1 justify-center ">
-							<span className="font-medium">Token: </span>{' '}
+						{/* Token */}
+						<div className="text-white text-sm flex gap-1 justify-center">
+							<span className="font-medium">Token:</span>
 							<span>
-								{' '}
 								{projectType === 'launchpad' ? (
 									<>{project.launchpad_token || '--'}</>
 								) : (
@@ -190,7 +263,8 @@ const ProjectSection = ({
 								)}
 							</span>
 						</div>
-						{/* Cột 4: Total Invested/Donation */}
+
+						{/* Total Invested/Donation */}
 						<div className="text-white text-sm">
 							<span className="font-medium">
 								{projectType === 'launchpad'
@@ -201,59 +275,21 @@ const ProjectSection = ({
 								? `${convertNumToOffChainFormat(
 										(project.totalAmount ?? 0).toString(),
 										18
-									)}
-						${project.launchpad_token || ''}`
+									)} ${project.launchpad_token || ''}`
 								: `${(project.totalDonationAmount ?? 0).toFixed(2)} ${project.charity_token_symbol || ''}`}
 						</div>
 
-						{/* <div className="text-white text-sm">
-							<span className="font-medium">Total Invested:</span>{' '}
-							{typeof project.totalInvest === 'number'
-								? project.totalInvest.toLocaleString()
-								: '--'}
-							000 {''}
-							{project.launchpad_token}
-						</div> */}
-						{/* Cột 5: Ends In */}
+						{/* Ends In */}
 						<div className="text-white text-sm">
 							<span className="font-medium">Ends In:</span>{' '}
 							{showCountdown && countdowns[project.id || '']
 								? countdowns[project.id || '']
 								: '--'}
 						</div>
-						{/* Cột 6:  Button */}
+
+						{/* Buttons */}
 						<div className="flex justify-end gap-4">
-							{handlePublish &&
-								(projectType === 'launchpad'
-									? project.status_launchpad === 'approve'
-									: project.status_charity === 'approve') && (
-									<Button
-										onClick={() => handlePublish(project)}
-										className="bg-white transition-all duration-300 ease-in-out 
-					hover:opacity-80 hover:shadow-lg hover:scale-105 
-					active:scale-95 active:opacity-90 items-center px-3 py-2 h-auto border-border/50 hover:border-border"
-									>
-										<span className="text-gradient">Publish</span>
-									</Button>
-								)}
-							{onWithdraw /*&& project.status_launchpad === 'approve'*/ && (
-								<Button
-									onClick={() => onWithdraw(project.id || '')}
-									className="relative bg-gradient text-white py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 w-auto"
-								>
-									Withdraw
-								</Button>
-							)}
-							{onEdit &&
-								(project.status_launchpad === 'pending' ||
-									project.status_charity === 'pending') && (
-									<Button
-										onClick={() => onEdit(project.id || '')}
-										className=" bg-gradient text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300 w-auto"
-									>
-										Edit
-									</Button>
-								)}
+							{getButtonsForProject(project)}
 						</div>
 					</motion.div>
 				))}
