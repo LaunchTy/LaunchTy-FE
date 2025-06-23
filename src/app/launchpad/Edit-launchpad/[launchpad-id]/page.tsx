@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import CreateLaunchpad from '../../create-launchpad/CreateLaunchpad'
-import { useLaunchpadStore, LaunchpadState } from '@/store/launchpad/CreateLaunchpadStore'
+import {
+	useLaunchpadStore,
+	LaunchpadState,
+} from '@/store/launchpad/CreateLaunchpadStore'
 import axios from 'axios'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
 
@@ -14,6 +17,14 @@ const EditLaunchpadPage = () => {
 	const reset = useLaunchpadStore((state) => state.reset)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
+
+	const formatDateForInput = (dateStr: string) => {
+		if (!dateStr) return ''
+		const date = new Date(dateStr)
+		const offset = date.getTimezoneOffset()
+		const localDate = new Date(date.getTime() - offset * 60 * 1000)
+		return localDate.toISOString().slice(0, 16) // YYYY-MM-DDTHH:mm
+	}
 
 	useEffect(() => {
 		// Reset any previous state
@@ -33,7 +44,9 @@ const EditLaunchpadPage = () => {
 				)
 
 				if (!response.data.success) {
-					throw new Error(response.data.error || 'Failed to fetch launchpad data')
+					throw new Error(
+						response.data.error || 'Failed to fetch launchpad data'
+					)
 				}
 
 				const launchpadData = response.data.data
@@ -62,8 +75,8 @@ const EditLaunchpadPage = () => {
 					logo: launchpadData.launchpad_logo || null,
 					images: launchpadData.launchpad_img || [],
 					backgroundImage: '',
-					startDate: launchpadData.launchpad_start_date ? new Date(launchpadData.launchpad_start_date) : null,
-					endDate: launchpadData.launchpad_end_date ? new Date(launchpadData.launchpad_end_date) : null,
+					startDate: formatDateForInput(launchpadData.launchpad_start_date),
+					endDate: formatDateForInput(launchpadData.launchpad_end_date),
 					isTokenValidated: true, // Assuming if it exists in DB, it's validated
 					// Add all the setter functions (these will be provided by the store)
 					setProjectTokenAddress: () => {},
@@ -94,6 +107,7 @@ const EditLaunchpadPage = () => {
 
 				// Load the mapped data into the store
 				loadLaunchpad(mappedData)
+				console.log('Launchpad data loaded successfully:', mappedData)
 				setError(null)
 			} catch (error: any) {
 				console.error('Error fetching launchpad data:', error)
