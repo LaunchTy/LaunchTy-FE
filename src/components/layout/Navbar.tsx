@@ -1,17 +1,14 @@
 'use client'
+import { cn } from '@/lib/utils'
+import Logo from '@/public/Logo.png'
+import axios from 'axios'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, Menu, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
-import Logo from '@/public/Logo.png'
-import { cn } from '@/lib/utils'
-import Button from '../UI/button/Button'
-import ConnectWalletButton from '../UI/button/ConnectWalletButton'
+import { useEffect, useState, useRef } from 'react'
 import { useAccount } from 'wagmi'
-import axios from 'axios'
-
-import { ConnectButton } from '@rainbow-me/rainbowkit'
+import ConnectWalletButton from '../UI/button/ConnectWalletButton'
 
 const Navbar = ({
 	navItems,
@@ -37,6 +34,23 @@ const Navbar = ({
 	// const { scrollY } = useScroll()
 	const [visible, setVisible] = useState(true)
 	const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+	const dropdownRef = useRef<HTMLDivElement | null>(null)
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (
+				dropdownRef.current &&
+				!dropdownRef.current.contains(event.target as Node)
+			) {
+				setActiveDropdown(null) // Tắt dropdown
+			}
+		}
+
+		document.addEventListener('mousedown', handleClickOutside)
+
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside)
+		}
+	}, [])
 	useEffect(() => {
 		if (!address) return setFinalNavItems(navItems)
 
@@ -121,7 +135,11 @@ const Navbar = ({
 							</Link>
 						))} */}
 						{finalNavItems.map((navItem, idx) => (
-							<div key={`link-${idx}`} className="relative group">
+							<div
+								key={`link-${idx}`}
+								className="relative group"
+								ref={navItem.subItems ? dropdownRef : null}
+							>
 								{navItem.subItems ? (
 									<div className="relative">
 										<button
@@ -130,34 +148,81 @@ const Navbar = ({
 													activeDropdown === navItem.name ? null : navItem.name
 												)
 											}
-											className="flex items-center gap-1 text-sm text-white hover:text-[#8132a2] duration-150 hover:scale-105"
+											className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+												activeDropdown === navItem.name
+													? 'text-[#8132a2] bg-[#8132a2]/10'
+													: 'text-white hover:text-[#8132a2]'
+											}`}
 										>
 											{navItem.name}
-											<ChevronDown size={14} />
+											<ChevronDown
+												size={14}
+												className={`transition-all duration-300 ${
+													activeDropdown === navItem.name
+														? 'rotate-180 text-[#8132a2]'
+														: ''
+												}`}
+											/>
 										</button>
 
-										{activeDropdown === navItem.name && (
-											<div className="absolute mt-2 bg-[#0b0b1f] rounded-md shadow-lg py-2 w-48 z-50">
-												{navItem.subItems.map((subItem, subIdx) => (
-													<Link
-														key={`sublink-${subIdx}`}
-														href={subItem.link}
-														className="block px-4 py-2 text-sm text-white hover:bg-[#8132a2] hover:text-white"
-													>
-														{subItem.name}
-													</Link>
-												))}
+										<div
+											className={`absolute top-full left-0 mt-2 transition-all duration-300 ease-out ${
+												activeDropdown === navItem.name
+													? 'opacity-100 translate-y-0 scale-100'
+													: 'opacity-0 translate-y-[-20px] scale-95 pointer-events-none'
+											}`}
+										>
+											<div className="relative">
+												{/* Backdrop blur effect */}
+												<div className="absolute inset-0 bg-black/20 backdrop-blur-xl rounded-2xl"></div>
+
+												{/* Main dropdown container */}
+												<div className="relative bg-gradient-to-br from-[#0f0f23]/95 via-[#1a1a2e]/95 to-[#16213e]/95 border border-[#8132a2]/30 rounded-2xl shadow-2xl py-4 w-64 z-50 overflow-hidden">
+													{/* Animated background gradient */}
+													<div className="absolute inset-0 bg-gradient-to-br from-[#8132a2]/5 via-transparent to-[#a855f7]/5 animate-pulse"></div>
+
+													{/* Header */}
+													<div className="px-4 pb-2 mb-2 border-b border-[#8132a2]/20">
+														<p className="text-xs font-semibold text-[#8132a2] uppercase tracking-wider">
+															{navItem.name}
+														</p>
+													</div>
+
+													{navItem.subItems.map((subItem, subIdx) => (
+														<Link
+															key={`sublink-${subIdx}`}
+															href={subItem.link}
+															onClick={() => setActiveDropdown(null)}
+															className="relative flex items-center gap-3 px-4 py-3 text-sm text-gray-300 hover:text-white transition-all duration-200 group/item hover:bg-gradient-to-r hover:from-[#8132a2]/10 hover:to-transparent"
+														>
+															<div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-[#8132a2]/20 to-[#a855f7]/20 flex items-center justify-center group-hover/item:from-[#8132a2]/40 group-hover/item:to-[#a855f7]/40 transition-all duration-200">
+																<div className="w-2 h-2 rounded-full bg-[#8132a2] group-hover/item:scale-125 transition-transform duration-200"></div>
+															</div>
+
+															<span className="flex-1 group-hover/item:translate-x-1 transition-transform duration-200 font-medium">
+																{subItem.name}
+															</span>
+
+															<ChevronDown
+																size={12}
+																className="rotate-[-90deg] opacity-0 group-hover/item:opacity-100 group-hover/item:translate-x-1 transition-all duration-200 text-[#8132a2]"
+															/>
+
+															<div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-[#8132a2] to-[#a855f7] transform scale-y-0 group-hover/item:scale-y-100 transition-transform duration-200 origin-center rounded-r-full"></div>
+														</Link>
+													))}
+
+													<div className="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-[#8132a2]/50 to-transparent"></div>
+												</div>
 											</div>
-										)}
+										</div>
 									</div>
 								) : (
 									<Link
 										href={navItem.link || '/'}
-										className="text-sm sm:text-md text-white hover:text-[#8132a2] duration-150 transform transition-transform hover:scale-105 active:scale-95"
+										className="px-3 py-2 rounded-lg text-sm font-medium text-white hover:text-[#8132a2]  duration-300 transform transition-all hover:scale-105 active:scale-95"
 									>
-										<span className="hidden sm:block text-sm sm:text-md hover:text-[#8132a2] duration-150 text-white active:text-[#F05550] transform transition-transform hover:scale-105 active:scale-95">
-											{navItem.name}
-										</span>
+										<span className="hidden sm:block">{navItem.name}</span>
 									</Link>
 								)}
 							</div>
