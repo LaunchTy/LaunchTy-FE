@@ -892,7 +892,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 											onClick={onFinalStepCompleted}
 											className="glass-component-3 rounded-xl px-8 py-3 text-lg font-semibold hover:bg-opacity-80 transition-all duration-300"
 										>
-											{isEditing ? 'Update Charity' : 'Submit'}
+											{isEditing ? 'Update Charity' : 'Continue'}
 										</Button>
 									</div>
 								</motion.div>

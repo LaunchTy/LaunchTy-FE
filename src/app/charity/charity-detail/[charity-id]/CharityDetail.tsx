@@ -359,28 +359,10 @@ const CharityDetail = () => {
 
 	const handleSubmit = async () => {
 		try {
-			// Update charity status to published
-			const response = await fetch(
-				`/api/charity/update/${params['charity-id']}`,
-				{
-					method: 'PUT',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({
-						status: 'publish',
-					}),
-				}
-			)
-
-			if (!response.ok) {
-				throw new Error('Failed to publish charity')
-			}
-
-			// Refresh the page to show updated status
-			window.location.reload()
+			// Redirect to my-charity page instead of reloading
+			router.push('/charity/my-charity')
 		} catch (error: any) {
-			setErrorMessage(error.message || 'Failed to publish charity')
+			setErrorMessage(error.message || 'Failed to submit charity')
 			setErrorCode('500')
 			setErrorModalOpen(true)
 		}
@@ -396,9 +378,9 @@ const CharityDetail = () => {
 	)
 
 	const isOwner = charity?.project_owner?.wallet_address === userAddress
-	const canEdit =
-		isOwner && (charity?.status === 'pending' || charity?.status === 'approve')
-	const canSubmit = isOwner && charity?.status === 'approve'
+	// const canEdit =isOwner && (charity?.status === 'pending' || charity?.status === 'approve')
+	const canEdit = false
+	const canSubmit = isOwner && charity?.status === 'pending'
 
 	if (loading) {
 		return <LoadingModal open={loading} onOpenChange={setLoading} />
@@ -590,7 +572,7 @@ const CharityDetail = () => {
 								onClick={handleSubmit}
 								className="glass-component-3 px-8 py-3 rounded-xl text-white hover:bg-opacity-80 transition-all duration-300"
 							>
-								Publish Charity
+								Submit Charity
 							</Button>
 						)}
 					</div>
