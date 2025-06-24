@@ -13,6 +13,11 @@ import AnimatedBlobs from '@/components/UI/background/AnimatedBlobs'
 import ErrorModal from '@/components/UI/modal/ErrorModal'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
 import LockModal from '@/components/UI/modal/LockModal'
+import { readContract } from 'viem/actions'
+import { publicClient } from '@/app/launchpad/my-launchpad/MyLaunchpad'
+import { Address } from 'viem'
+import { LaunchpadABI } from '@/app/abi'
+import { Charity } from '@/interface/interface'
 
 const navItems = [
 	{ id: 'all', label: 'All Donations' },
@@ -35,29 +40,62 @@ const MyDonations = () => {
 
 	const handleSearchChange = (searchTerm: string) => {
 		setSearchTerm(searchTerm)
-		setVisibleCount(6) // Reset visible count when searching
+		setVisibleCount(6)
 	}
+	const account = useAccount()
+	const userAddress: Address = account.address as Address
 
 	const fetchDonations = async () => {
+		if (!address) return
+		setLoading(true)
 		try {
-			setLoading(true)
 			const response = await axios.post('/api/charity/my-donations', {
 				wallet_address: address,
 			})
-			const transformedDonations = response.data.data.map((donation: any) => ({
-				id: donation.charity_id,
-				name: donation.charity_name,
-				images: [donation.charity_logo],
-				shortDescription: donation.charity_short_des,
-				donationAmount: donation.donation_amount,
-				donationDate: donation.donation_date,
-				endDate: donation.charity_end_date,
-				status: donation.status, // This should be calculated based on dates like in ExploreCharity
-				charity_token_symbol: donation.charity_token_symbol,
-				totalDonationAmount:
-					donation.total_donation_amount || donation.donation_amount,
-			}))
-			setDonations(transformedDonations)
+			const charitiesData: Charity[] = response.data.data
+			const donationsWithContractData = await Promise.all(
+				charitiesData.map(async (charity) => {
+					const id = charity.charity_id
+					console.log('Fetching data for charity ID:', id)
+					try {
+						const totalDonateAmount = await readContract(publicClient, {
+							address: id as Address,
+							abi: LaunchpadABI,
+							functionName: 'getTotalDonatedAmount', // Đổi lại tên hàm
+							args: [userAddress],
+						})
+						console.log('Total donate amount:', totalDonateAmount)
+
+						return {
+							id: charity.charity_id,
+							name: charity.charity_name,
+							images: [charity.charity_logo],
+							shortDescription: charity.charity_short_des,
+							endDate: charity.charity_end_date,
+							status: charity.status,
+							charity_token_symbol: charity.charity_token_symbol,
+							totalDonationAmount: totalDonateAmount,
+							charityAddress: id as Address,
+						}
+					} catch (err) {
+						console.error(`Error fetching data for charity ID ${id}`, err)
+						return {
+							id: charity.charity_id,
+							name: charity.charity_name,
+							images: [charity.charity_logo],
+							shortDescription: charity.charity_short_des,
+
+							endDate: charity.charity_end_date,
+							status: charity.status,
+							charity_token_symbol: charity.charity_token_symbol,
+							totalDonationAmount: 0,
+							charityAddress: '0x0',
+							totalWithdraw: 0,
+						}
+					}
+				})
+			)
+			setDonations(donationsWithContractData)
 		} catch (error: any) {
 			setErrorCode(error?.response?.status?.toString() || '500')
 			setErrorMessage(
@@ -86,13 +124,17 @@ const MyDonations = () => {
 
 	const filteredDonations = donations.filter((donation) => {
 		// First filter by tab
-		const tabFiltered = activeTab === 'all' ? true : donation.status === activeTab
-		
+		const tabFiltered =
+			activeTab === 'all' ? true : donation.status === activeTab
+
 		// Then filter by search term
-		const searchFiltered = searchTerm === '' || 
+		const searchFiltered =
+			searchTerm === '' ||
 			donation.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			donation.shortDescription?.toLowerCase().includes(searchTerm.toLowerCase())
-		
+			donation.shortDescription
+				?.toLowerCase()
+				.includes(searchTerm.toLowerCase())
+
 		return tabFiltered && searchFiltered
 	})
 
