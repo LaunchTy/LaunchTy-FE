@@ -14,6 +14,10 @@ import axios from 'axios'
 import { BaseProject, Charity } from '@/interface/interface'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
 import ErrorModal from '@/components/UI/modal/ErrorModal'
+import { readContract } from 'viem/actions'
+import { Address } from 'viem'
+import { LaunchpadABI } from '@/app/abi'
+import { publicClient } from '@/app/launchpad/my-launchpad/MyLaunchpad'
 
 const navItems = [
 	{ id: 'all', label: 'All Projects' },
@@ -73,14 +77,18 @@ const ExploreCharity = () => {
 
 	const filteredProjects = charity.filter((project) => {
 		// First filter by tab
-		const tabFiltered = activeTab === 'all' ? true : project.status === activeTab
-		
+		const tabFiltered =
+			activeTab === 'all' ? true : project.status === activeTab
+
 		// Then filter by search term
-		const searchFiltered = searchTerm === '' || 
+		const searchFiltered =
+			searchTerm === '' ||
 			project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			project.shortDescription?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			project.shortDescription
+				?.toLowerCase()
+				.includes(searchTerm.toLowerCase()) ||
 			project.longDescription?.toLowerCase().includes(searchTerm.toLowerCase())
-		
+
 		return tabFiltered && searchFiltered
 	})
 
@@ -104,11 +112,40 @@ const ExploreCharity = () => {
 			try {
 				const response = await axios.get(`/api/charity/explore-charity`)
 				const charityData: Charity[] = response.data.data
-				const projectsData: BaseProject[] = charityData.map(
-					convertCharityToProject
+				// const projectsData: BaseProject[] = charityData.map(
+				// 	convertCharityToProject
+				// )
+				const donationsWithContractData = await Promise.all(
+					charityData.map(async (charity) => {
+						const id = charity.charity_id
+						console.log('Fetching data for charity ID:', id)
+						try {
+							const totalDonateAmount = await readContract(publicClient, {
+								address: id as Address,
+								abi: LaunchpadABI,
+								functionName: 'getTotalDonatedAmount',
+								// args: [userAddress],
+							})
+							console.log('Total donate amount:', totalDonateAmount)
+
+							return {
+								...convertCharityToProject(charity),
+								totalDonationAmount: Number(totalDonateAmount),
+								charityAddress: id as Address,
+							}
+						} catch (err) {
+							console.error(`Error fetching data for charity ID ${id}`, err)
+							return {
+								...convertCharityToProject(charity),
+								totalDonationAmount: 0,
+								charityAddress: '0x0',
+								totalWithdraw: 0,
+							}
+						}
+					})
 				)
-				setCharity(projectsData)
-				console.log('Fetched projects:', projectsData)
+				setCharity(donationsWithContractData)
+				console.log('Fetched projects:', donationsWithContractData)
 			} catch (err: any) {
 				console.error('Failed to load projects:', err)
 				setErrorCode(err?.response?.status?.toString() || '500')

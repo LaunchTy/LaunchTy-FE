@@ -1,3 +1,4 @@
+import { convertNumToOffChainFormat } from '@/app/utils/decimal'
 import { BaseProject } from '@/interface/interface'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -57,10 +58,10 @@ const CharityCard = ({ charityDetail }: CharityCardProps) => {
 			<div className=" flex justify-between">
 				<span className="text-sm font-semibold">Raised:</span>
 				<span>
-					$
-					{charity.totalDonationAmount
-						? charity.totalDonationAmount.toLocaleString()
-						: '0'}
+					{convertNumToOffChainFormat(
+						(charity.totalDonationAmount ?? 0).toString(),
+						18
+					)}
 				</span>
 			</div>
 		</div>

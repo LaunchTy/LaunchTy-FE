@@ -62,7 +62,7 @@ const MyDonations = () => {
 							address: id as Address,
 							abi: LaunchpadABI,
 							functionName: 'getTotalDonatedAmount',
-							args: [userAddress],
+							// args: [userAddress],
 						})
 						console.log('Total donate amount:', totalDonateAmount)
 
