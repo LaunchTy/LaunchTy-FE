@@ -23,6 +23,7 @@ import { useAccount, useReadContract, useWriteContract } from 'wagmi'
 import { publicClient } from '../../create-launchpad/preview/Preview'
 import { convertNumToOnChainFormat } from '@/app/utils/decimal'
 import SuccessModal from '@/components/UI/modal/SuccessModal'
+import CountdownTimer from '@/components/UI/countdown/CountdownTimer'
 interface ModalProjectProps {
 	projectDetail: {
 		socials: any[]
@@ -246,7 +247,7 @@ const LaunchpadDetail = () => {
 							)}
 						</AnimatePresence>
 						<SuccessModal open={successOpen} onOpenChange={setSuccessOpen} />
-						<div className="relative px-20 pt-48 pb-12 z-10">
+						<div className="relative px-20 pt-48 pb-12 z-10 flex justify-between">
 							<ProjectHeader
 								projectDetail={{
 									name: launchpad.launchpad_name || 'Unknown Project',
@@ -256,9 +257,10 @@ const LaunchpadDetail = () => {
 									endDate: launchpad.launchpad_end_date,
 								}}
 							/>
+							<CountdownTimer endTime={launchpad.launchpad_end_date} />
 						</div>
 
-						<div className="flex items-start justify-center gap-12 m-">
+						<div className="flex items-start justify-center gap-12 ">
 							<div className="w-7/12">
 								{/* <ThumbNailCarousel
 							fullWidthBackground={false}

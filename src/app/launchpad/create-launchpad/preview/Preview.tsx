@@ -33,6 +33,7 @@ import { BigNumber } from 'ethers'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
 import SuccessModal from '@/components/UI/modal/SuccessModal'
 import { stat } from 'fs'
+import CountdownTimer from '@/components/UI/countdown/CountdownTimer'
 
 // export const publicClient = createPublicClient({
 // 	chain: anvil,
@@ -287,8 +288,8 @@ const Preview = () => {
 				launchpad_whitepaper: whitepaper || null,
 				launchpad_img: images,
 				//
-				launchpad_start_date: startDate.toISOString(),
-				launchpad_end_date: endDate.toISOString(),
+				launchpad_start_date: startDate,
+				launchpad_end_date: endDate,
 				// launchpad_start_date: new Date().toISOString(),
 				// launchpad_end_date: new Date(
 				// 	Date.now() + 7 * 24 * 60 * 60 * 1000
@@ -382,7 +383,7 @@ const Preview = () => {
 				)}
 			</AnimatePresence>
 
-			<div className="relative px-20 pt-48 pb-12 z-10">
+			<div className="relative px-20 pt-48 pb-12 z-10 flex justify-between">
 				{/* Project Header */}
 				<ProjectHeader
 					projectDetail={{
@@ -393,6 +394,7 @@ const Preview = () => {
 						// endDate: endDate.toISOString(),
 					}}
 				/>
+				<CountdownTimer endTime={endDate} />
 			</div>
 
 			<div className="flex items-start justify-center gap-12">
