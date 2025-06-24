@@ -108,7 +108,7 @@ const MyProject = () => {
 							address: id as Address,
 							abi: LaunchpadABI,
 							functionName: 'getRaisedAmount',
-							args: [address],
+							// args: [address],
 						})
 						console.log('Total withdraw:', totalAmount)
 						return {
@@ -127,7 +127,17 @@ const MyProject = () => {
 				})
 			)
 			setProjects(projectsWithTotalAount)
-			console.log('Fetched projects:', projectsWithTotalAount)
+			console.log('Projects state updated:', projectsWithTotalAount)
+			projectsWithTotalAount.forEach((project) => {
+				console.log(
+					'startdate',
+					Math.floor(new Date(project.startDate ?? '').getTime() / 1000)
+				)
+				console.log(
+					'endate',
+					Math.floor(new Date(project.endDate ?? '').getTime() / 1000)
+				)
+			})
 		} catch (error: any) {
 			setErrorCode(error?.response?.status?.toString() || '500')
 			setErrorMessage(
