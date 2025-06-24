@@ -39,6 +39,9 @@ import { publicClient } from '@/app/launchpad/my-launchpad/MyLaunchpad'
 import { BigNumber } from 'ethers'
 import Button from '@/components/UI/button/Button'
 import { useCharityStore } from '@/store/charity/CreateCharityStore'
+import UploadHistoryEvidence from '@/components/charity/charity-detail-section/UploadHistoryEvidence'
+import Folder from '@/components/UI/shared/Folder'
+import Image from 'next/image'
 
 const CharityDetail = () => {
 	const account = useAccount()
@@ -53,6 +56,7 @@ const CharityDetail = () => {
 	const [errorCode, setErrorCode] = useState('')
 	const [lockOpen, setLockOpen] = useState(false)
 	const [successOpen, setSuccessOpen] = useState(false)
+	const [isOwner, setIsOwner] = useState(false)
 	const params = useParams()
 	const charityAddress = params['charity-id']
 	const { tokenAmount } = useCharityTokenAmountStore()
@@ -62,6 +66,28 @@ const CharityDetail = () => {
 		useWriteContract()
 
 	const { resetStore } = useCharityStore()
+	// const [historyEvidence, setHistoryEvidence] = useState<string[]>([])
+
+	// const convertToBase64 = (file: File): Promise<string> => {
+	// 	return new Promise((resolve, reject) => {
+	// 		const reader = new FileReader()
+	// 		reader.readAsDataURL(file)
+	// 		reader.onload = () => resolve(reader.result as string)
+	// 		reader.onerror = (error) => reject(error)
+	// 	})
+	// }
+
+	// const handleHistoryUpload = async (
+	// 	e: React.ChangeEvent<HTMLInputElement>
+	// ) => {
+	// 	if (e.target.files) {
+	// 		const files = Array.from(e.target.files)
+	// 		const base64Images = await Promise.all(
+	// 			files.map((file) => convertToBase64(file))
+	// 		)
+	// 		setHistoryEvidence([...historyEvidence, ...base64Images])
+	// 	}
+	// }
 
 	// Monitor contract errors
 	useEffect(() => {
@@ -81,7 +107,6 @@ const CharityDetail = () => {
 	useEffect(() => {
 		if (donateError) {
 			console.error('Donation contract error:', donateError)
-			// Only show error if it's not already being handled in the main function
 			if (!loading) {
 				setErrorMessage(
 					'Donation transaction failed. Please check your wallet and try again.'
@@ -97,30 +122,41 @@ const CharityDetail = () => {
 			try {
 				setLoading(true)
 
-				// Fetch charity details
 				const charityResponse = await fetch(
 					`/api/charity/get/${params['charity-id']}`
 				)
 				const charityData = await charityResponse.json()
 
-				// Fetch donations
-				const donationsResponse = await fetch(
-					`/api/donation/get/${params['charity-id']}`
-				)
-				const donationsData = await donationsResponse.json()
-
 				if (charityData.success) {
 					setCharity(charityData.data)
-					if (
-						charityData.data.charity_img &&
-						charityData.data.charity_img.length > 0
-					) {
+					if (charityData.data.charity_img?.length > 0) {
 						setBackgroundImage(charityData.data.charity_img[0])
+					}
+
+					if (userAddress) {
+						const checkOwnerRes = await fetch(
+							'/api/charity/check-project-owner',
+							{
+								method: 'POST',
+								headers: { 'Content-Type': 'application/json' },
+								body: JSON.stringify({
+									charity_id: charityData.data.charity_id,
+									wallet_address: userAddress,
+								}),
+							}
+						)
+						const checkOwnerJson = await checkOwnerRes.json()
+						setIsOwner(checkOwnerJson.isOwner || false)
 					}
 					console.log('Charity data fetched successfully:', charityData.data)
 				} else {
 					throw new Error('Failed to fetch charity data')
 				}
+
+				const donationsResponse = await fetch(
+					`/api/donation/get/${params['charity-id']}`
+				)
+				const donationsData = await donationsResponse.json()
 
 				if (donationsData.success) {
 					setDonations(donationsData.data)
@@ -138,7 +174,7 @@ const CharityDetail = () => {
 		}
 
 		fetchData()
-	}, [params['charity-id']])
+	}, [params['charity-id'], userAddress])
 
 	const handleDonate = async () => {
 		console.log('Handling donation...')
@@ -585,10 +621,44 @@ const CharityDetail = () => {
 							</div>
 						)}
 						<div className="h-[380px] flex flex-col gap-2 w-full">
-							<DonateArea
-								enabled={charity.status === 'publish'}
-								handleDonate={handleDonate}
-							/>
+							{isOwner ? (
+								<UploadHistoryEvidence charityId={charity.charity_id}>
+									{/* <input
+										type="file"
+										id="historyUpload"
+										accept="image/*"
+										multiple
+										onChange={handleHistoryUpload}
+										className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+									/> 
+									 <Folder
+										color="#00d8ff"
+										size={0.8}
+										items={historyEvidence.map(
+											(image: string, index: number) => (
+												<div
+													key={`history-image-${index}`}
+													className="w-full h-full flex items-center justify-center"
+												>
+													<Image
+														src={image}
+														alt={`History Evidence ${index + 1}`}
+														width={512}
+														height={512}
+														className="max-w-full max-h-full object-contain rounded"
+													/>
+												</div>
+											)
+										)}
+										maxItems={3}
+									/> */}
+								</UploadHistoryEvidence>
+							) : (
+								<DonateArea
+									enabled={charity.status === 'publish'}
+									handleDonate={handleDonate}
+								/>
+							)}
 						</div>
 						<div className="mt-20">
 							<AddressInfo
