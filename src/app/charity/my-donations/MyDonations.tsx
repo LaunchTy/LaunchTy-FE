@@ -61,7 +61,7 @@ const MyDonations = () => {
 						const totalDonateAmount = await readContract(publicClient, {
 							address: id as Address,
 							abi: LaunchpadABI,
-							functionName: 'getTotalDonatedAmount', // Đổi lại tên hàm
+							functionName: 'getTotalDonatedAmount',
 							args: [userAddress],
 						})
 						console.log('Total donate amount:', totalDonateAmount)

@@ -246,7 +246,7 @@ const ProjectSection = ({
 								<h2 className="text-lg font-semibold text-white truncate whitespace-nowrap overflow-hidden text-ellipsis">
 									{project.name || 'Unnamed Project'}
 								</h2>
-								<p className="text-white text-sm truncate whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
+								<p className="text-white text-sm line-clamp-2">
 									{project.shortDescription}
 								</p>
 							</div>
