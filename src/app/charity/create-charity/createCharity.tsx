@@ -93,9 +93,12 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 	const handleLicenseUpload = async (
 		e: React.ChangeEvent<HTMLInputElement>
 	) => {
-		if (e.target.files && e.target.files[0]) {
-			const base64Image = await convertToBase64(e.target.files[0])
-			addLicenseImage(base64Image)
+		if (e.target.files) {
+			const files = Array.from(e.target.files)
+			const base64Images = await Promise.all(
+				files.map((file) => convertToBase64(file))
+			)
+			base64Images.forEach((image) => addLicenseImage(image))
 		}
 	}
 
@@ -174,6 +177,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 			if (!phoneNumber) missingFields.push('Phone Number')
 			if (!faceId) missingFields.push('Face ID')
 			if (!personalId) missingFields.push('Personal ID')
+			if (!socialLinks.website) missingFields.push('Website')
 
 			if (missingFields.length > 0) {
 				throw new Error(
@@ -187,7 +191,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 				charity_name: projectName,
 				charity_short_des: shortDescription,
 				charity_long_des: longDescription,
-				charity_token_symbol: selectedToken || '',
+				charity_token_symbol: 'USDT',
 				charity_logo: logo,
 				charity_fb: socialLinks.facebook || '',
 				charity_x: socialLinks.twitter || '',
@@ -411,7 +415,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 													onChange={(e) =>
 														setSocialLink('website', e.target.value)
 													}
-													placeholder="Enter your website here"
+													placeholder="Enter your website here *"
 													className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
     															[&::-webkit-inner-spin-button]:appearance-none 
     															[&::-webkit-outer-spin-button]:appearance-none"
@@ -524,14 +528,9 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 									<div className="w-full flex items-center justify-between p-2 gap-3">
 										<div className="w-full flex flex-col gap-3 relative">
 											<span className="text-lg">Token</span>
-											<select
-												value={selectedToken}
-												onChange={(e) => setSelectedToken(e.target.value)}
-												className="p-3 rounded-xl font-comfortaa text-foreground glass-component-2 focus:outline-none w-full text-sm appearance-none [&>option]:bg-gray-800 [&>option]:text-white"
-											>
-												<option value="">Select a token</option>
-												<option value="USDT">USDT</option>
-											</select>
+											<div className="p-3 rounded-xl font-comfortaa text-white glass-component-2 w-full text-sm bg-gray-700">
+												USDT
+											</div>
 										</div>
 									</div>
 									<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -612,6 +611,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 													type="file"
 													id="licenseUpload"
 													accept="image/*"
+													multiple
 													onChange={handleLicenseUpload}
 													className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
 												/>
@@ -890,7 +890,11 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 									<div className="w-full flex justify-center mt-8">
 										<Button
 											onClick={onFinalStepCompleted}
-											className="glass-component-3 rounded-xl px-8 py-3 text-lg font-semibold hover:bg-opacity-80 transition-all duration-300"
+											className="min-w-[100px] flex items-center justify-center rounded-full 
+												bg-gradient py-1.5 px-3.5 
+												font-comfortaa font-bold tracking-tight text-white 
+												transition-all duration-300 hover:shadow-[0_0_15px_rgba(84,164,242,0.6)] 
+												hover:brightness-110 active:brightness-90"
 										>
 											{isEditing ? 'Update Charity' : 'Continue'}
 										</Button>

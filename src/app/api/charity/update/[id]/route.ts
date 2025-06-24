@@ -81,6 +81,14 @@ export async function PUT(
 
 		console.log("Charity found, proceeding with update...");
 
+		// Validate website if provided
+		if (charity_website !== undefined && !charity_website) {
+			return NextResponse.json(
+				{ success: false, error: "Website cannot be empty" },
+				{ status: 400 }
+			);
+		}
+
 		const charity = await prismaClient.charity.update({
 			where: {
 				charity_id: params.id,

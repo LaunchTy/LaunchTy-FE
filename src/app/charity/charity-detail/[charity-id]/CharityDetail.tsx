@@ -562,7 +562,11 @@ const CharityDetail = () => {
 						{canEdit && (
 							<Button
 								onClick={handleEdit}
-								className="glass-component-3 px-8 py-3 rounded-xl text-white hover:bg-opacity-80 transition-all duration-300"
+								className="min-w-[100px] flex items-center justify-center rounded-full 
+									bg-gradient py-1.5 px-3.5 
+									font-comfortaa font-bold tracking-tight text-white 
+									transition-all duration-300 hover:shadow-[0_0_15px_rgba(84,164,242,0.6)] 
+									hover:brightness-110 active:brightness-90"
 							>
 								Edit Information
 							</Button>
@@ -570,7 +574,11 @@ const CharityDetail = () => {
 						{canSubmit && (
 							<Button
 								onClick={handleSubmit}
-								className="glass-component-3 px-8 py-3 rounded-xl text-white hover:bg-opacity-80 transition-all duration-300"
+								className="min-w-[100px] flex items-center justify-center rounded-full 
+									bg-gradient py-1.5 px-3.5 
+									font-comfortaa font-bold tracking-tight text-white 
+									transition-all duration-300 hover:shadow-[0_0_15px_rgba(84,164,242,0.6)] 
+									hover:brightness-110 active:brightness-90"
 							>
 								Submit Charity
 							</Button>

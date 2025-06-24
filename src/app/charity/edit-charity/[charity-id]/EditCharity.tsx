@@ -67,7 +67,7 @@ const EditCharity = () => {
 					setLongDescription(charity.charity_long_des || '')
 					setRepresentativeName(charity.repre_name || '')
 					setPhoneNumber(charity.repre_phone || '')
-					setSelectedToken(charity.charity_token_symbol || '')
+					setSelectedToken('USDT')
 
 					// Convert dates to datetime-local format (YYYY-MM-DDTHH:MM)
 					const formatDateForInput = (dateString: string) => {

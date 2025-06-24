@@ -55,7 +55,8 @@ export async function POST(req: NextRequest) {
 			!repre_phone ||
 			!repre_faceid ||
 			!repre_personal_id ||
-			!wallet_address
+			!wallet_address ||
+			!charity_website
 		) {
 			const missingFields = [];
 			if (!charity_name) missingFields.push("Charity Name");
@@ -69,6 +70,7 @@ export async function POST(req: NextRequest) {
 			if (!repre_faceid) missingFields.push("Face ID");
 			if (!repre_personal_id) missingFields.push("Personal ID");
 			if (!wallet_address) missingFields.push("Wallet Address");
+			if (!charity_website) missingFields.push("Website");
 
 			return NextResponse.json(
 				{
