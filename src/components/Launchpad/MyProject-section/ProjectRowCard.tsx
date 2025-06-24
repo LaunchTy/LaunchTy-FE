@@ -276,7 +276,10 @@ const ProjectSection = ({
 										(project.totalAmount ?? 0).toString(),
 										18
 									)} ${project.launchpad_token || ''}`
-								: `${(project.totalDonationAmount ?? 0).toFixed(2)} ${project.charity_token_symbol || ''}`}
+								: `${convertNumToOffChainFormat(
+										(project.totalDonationAmount ?? 0).toString(),
+										18
+									)} ${project.charity_token_symbol || ''}`}
 						</div>
 
 						{/* Ends In */}

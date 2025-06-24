@@ -96,9 +96,9 @@ const MyCharity = () => {
 					try {
 						const totalDonate = await readContract(publicClient, {
 							address: id as Address,
-							abi: LaunchpadABI,
-							functionName: 'getDonatedAmount',
-							args: [userAddress],
+							abi: CharityABI,
+							functionName: 'getTotalDonatedAmount',
+							// args: [userAddress],
 						})
 						console.log('Total withdraw:', totalDonate)
 						return {
@@ -148,6 +148,7 @@ const MyCharity = () => {
 			abi: CharityFactoryABI,
 			functionName: 'createCharity',
 			args: [
+				userAddress,
 				acceptedTokenAddress,
 				Math.floor(Date.now() / 1000),
 				Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days from now
@@ -254,14 +255,18 @@ const MyCharity = () => {
 
 	const filteredProjects = projects.filter((project) => {
 		// First filter by tab
-		const tabFiltered = activeTab === 'all' ? true : project.status === activeTab
-		
+		const tabFiltered =
+			activeTab === 'all' ? true : project.status === activeTab
+
 		// Then filter by search term
-		const searchFiltered = searchTerm === '' || 
+		const searchFiltered =
+			searchTerm === '' ||
 			project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			project.shortDescription?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			project.shortDescription
+				?.toLowerCase()
+				.includes(searchTerm.toLowerCase()) ||
 			project.longDescription?.toLowerCase().includes(searchTerm.toLowerCase())
-		
+
 		return tabFiltered && searchFiltered
 	})
 

@@ -69,7 +69,9 @@ const CharityDetail = () => {
 			console.error('Token contract error:', tokenError)
 			// Only show error if it's not already being handled in the main function
 			if (!loading) {
-				setErrorMessage('Token approval failed. Please check your wallet and try again.')
+				setErrorMessage(
+					'Token approval failed. Please check your wallet and try again.'
+				)
 				setErrorCode('500')
 				setErrorModalOpen(true)
 			}
@@ -81,7 +83,9 @@ const CharityDetail = () => {
 			console.error('Donation contract error:', donateError)
 			// Only show error if it's not already being handled in the main function
 			if (!loading) {
-				setErrorMessage('Donation transaction failed. Please check your wallet and try again.')
+				setErrorMessage(
+					'Donation transaction failed. Please check your wallet and try again.'
+				)
 				setErrorCode('500')
 				setErrorModalOpen(true)
 			}
@@ -113,6 +117,7 @@ const CharityDetail = () => {
 					) {
 						setBackgroundImage(charityData.data.charity_img[0])
 					}
+					console.log('Charity data fetched successfully:', charityData.data)
 				} else {
 					throw new Error('Failed to fetch charity data')
 				}
@@ -136,34 +141,38 @@ const CharityDetail = () => {
 	}, [params['charity-id']])
 
 	const handleDonate = async () => {
+		console.log('Handling donation...')
 		if (!userAddress) {
 			setErrorMessage('Please connect your wallet to donate')
 			setErrorCode('401')
 			setErrorModalOpen(true)
 			return
 		}
+		console.log('User addressssssss:', userAddress)
 		if (tokenAmount <= 0) {
 			setErrorMessage('Please enter a valid donation amount')
 			setErrorCode('400')
 			setErrorModalOpen(true)
 			return
 		}
-		
+		console.log('Token amount:', tokenAmount)
+
 		// Clear any previous errors
 		setErrorModalOpen(false)
 		setErrorMessage('')
 		setErrorCode('')
-		
+
 		console.log('Starting donation process...')
 		console.log('User address:', userAddress)
 		console.log('Charity address:', charityAddress)
 		console.log('Token amount:', tokenAmount)
-		
+
 		setLoading(true)
-		
+
 		try {
 			const acceptedTokenAddress =
 				chainConfig.contracts.AcceptedMockERC20.address
+			console.log('Accepted token address:', acceptedTokenAddress)
 			const allowance = await readContract(publicClient, {
 				abi: MockERC20ABI,
 				address: acceptedTokenAddress as Address,
@@ -196,7 +205,9 @@ const CharityDetail = () => {
 					})
 
 					if (receipt.status !== 'success') {
-						setErrorMessage('Token approval transaction failed. Please try again.')
+						setErrorMessage(
+							'Token approval transaction failed. Please try again.'
+						)
 						setErrorCode('500')
 						setErrorModalOpen(true)
 						return
@@ -205,28 +216,44 @@ const CharityDetail = () => {
 					console.log('Token approval successful')
 				} catch (approvalError: any) {
 					console.error('Token approval error:', approvalError)
-					
+
 					// Handle specific MetaMask errors
-					if (approvalError.message?.includes('User rejected') || 
+					if (
+						approvalError.message?.includes('User rejected') ||
 						approvalError.message?.includes('user rejected') ||
 						approvalError.message?.includes('User denied') ||
-						approvalError.message?.includes('user denied')) {
+						approvalError.message?.includes('user denied')
+					) {
 						setErrorMessage('Token approval was cancelled by user.')
 						setErrorCode('USER_REJECTED')
-					} else if (approvalError.message?.includes('insufficient funds') ||
-							   approvalError.message?.includes('Insufficient funds')) {
-						setErrorMessage('Insufficient funds for token approval. Please check your balance.')
+					} else if (
+						approvalError.message?.includes('insufficient funds') ||
+						approvalError.message?.includes('Insufficient funds')
+					) {
+						setErrorMessage(
+							'Insufficient funds for token approval. Please check your balance.'
+						)
 						setErrorCode('INSUFFICIENT_FUNDS')
-					} else if (approvalError.message?.includes('network') ||
-							   approvalError.message?.includes('Network')) {
-						setErrorMessage('Network error. Please check your connection and try again.')
+					} else if (
+						approvalError.message?.includes('network') ||
+						approvalError.message?.includes('Network')
+					) {
+						setErrorMessage(
+							'Network error. Please check your connection and try again.'
+						)
 						setErrorCode('NETWORK_ERROR')
-					} else if (approvalError.message?.includes('gas') ||
-							   approvalError.message?.includes('Gas')) {
-						setErrorMessage('Gas estimation failed. Please try again with a different amount.')
+					} else if (
+						approvalError.message?.includes('gas') ||
+						approvalError.message?.includes('Gas')
+					) {
+						setErrorMessage(
+							'Gas estimation failed. Please try again with a different amount.'
+						)
 						setErrorCode('GAS_ERROR')
 					} else {
-						setErrorMessage('Token approval failed. Please check your wallet and try again.')
+						setErrorMessage(
+							'Token approval failed. Please check your wallet and try again.'
+						)
 						setErrorCode('500')
 					}
 					setErrorModalOpen(true)
@@ -256,7 +283,10 @@ const CharityDetail = () => {
 					setErrorMessage('Donation transaction failed. Please try again.')
 					setErrorCode('500')
 					setErrorModalOpen(true)
-					console.error('Donation transaction failed. Please try again.', donateError)
+					console.error(
+						'Donation transaction failed. Please try again.',
+						donateError
+					)
 					return
 				}
 
@@ -280,7 +310,9 @@ const CharityDetail = () => {
 
 					if (!donationResponse.ok) {
 						console.error('Failed to record donation in database')
-						setErrorMessage('Donation recorded on blockchain but failed to save to database')
+						setErrorMessage(
+							'Donation recorded on blockchain but failed to save to database'
+						)
 						setErrorCode('500')
 						setErrorModalOpen(true)
 						return
@@ -293,39 +325,61 @@ const CharityDetail = () => {
 					setSuccessOpen(true)
 				} catch (dbError) {
 					console.error('Database error:', dbError)
-					setErrorMessage('Donation recorded on blockchain but failed to save to database')
+					setErrorMessage(
+						'Donation recorded on blockchain but failed to save to database'
+					)
 					setErrorCode('500')
 					setErrorModalOpen(true)
 					return
 				}
 			} catch (donationError: any) {
 				console.error('Donation transaction error:', donationError)
-				
+
 				// Handle specific MetaMask errors
-				if (donationError.message?.includes('User rejected') || 
+				if (
+					donationError.message?.includes('User rejected') ||
 					donationError.message?.includes('user rejected') ||
 					donationError.message?.includes('User denied') ||
-					donationError.message?.includes('user denied')) {
+					donationError.message?.includes('user denied')
+				) {
 					setErrorMessage('Donation was cancelled by user.')
 					setErrorCode('USER_REJECTED')
-				} else if (donationError.message?.includes('insufficient funds') ||
-						   donationError.message?.includes('Insufficient funds')) {
-					setErrorMessage('Insufficient funds for donation. Please check your balance.')
+				} else if (
+					donationError.message?.includes('insufficient funds') ||
+					donationError.message?.includes('Insufficient funds')
+				) {
+					setErrorMessage(
+						'Insufficient funds for donation. Please check your balance.'
+					)
 					setErrorCode('INSUFFICIENT_FUNDS')
-				} else if (donationError.message?.includes('network') ||
-						   donationError.message?.includes('Network')) {
-					setErrorMessage('Network error. Please check your connection and try again.')
+				} else if (
+					donationError.message?.includes('network') ||
+					donationError.message?.includes('Network')
+				) {
+					setErrorMessage(
+						'Network error. Please check your connection and try again.'
+					)
 					setErrorCode('NETWORK_ERROR')
-				} else if (donationError.message?.includes('gas') ||
-						   donationError.message?.includes('Gas')) {
-					setErrorMessage('Gas estimation failed. Please try again with a different amount.')
+				} else if (
+					donationError.message?.includes('gas') ||
+					donationError.message?.includes('Gas')
+				) {
+					setErrorMessage(
+						'Gas estimation failed. Please try again with a different amount.'
+					)
 					setErrorCode('GAS_ERROR')
-				} else if (donationError.message?.includes('execution reverted') ||
-						   donationError.message?.includes('reverted')) {
-					setErrorMessage('Transaction reverted. Please check the charity contract and try again.')
+				} else if (
+					donationError.message?.includes('execution reverted') ||
+					donationError.message?.includes('reverted')
+				) {
+					setErrorMessage(
+						'Transaction reverted. Please check the charity contract and try again.'
+					)
 					setErrorCode('CONTRACT_ERROR')
 				} else {
-					setErrorMessage('Donation transaction failed. Please check your wallet and try again.')
+					setErrorMessage(
+						'Donation transaction failed. Please check your wallet and try again.'
+					)
 					setErrorCode('500')
 				}
 				setErrorModalOpen(true)
@@ -369,13 +423,13 @@ const CharityDetail = () => {
 	}
 
 	// Check if user is the owner of this charity
-	console.log('Charity data:', charity)
-	console.log('User address:', userAddress)
-	console.log('Project owner:', charity?.project_owner)
-	console.log(
-		'Is owner check:',
-		charity?.project_owner?.wallet_address === userAddress
-	)
+	// console.log('Charity data:', charity)
+	// console.log('User address:', userAddress)
+	// console.log('Project owner:', charity?.project_owner)
+	// console.log(
+	// 	'Is owner check:',
+	// 	charity?.project_owner?.wallet_address === userAddress
+	// )
 
 	const isOwner = charity?.project_owner?.wallet_address === userAddress
 	// const canEdit =isOwner && (charity?.status === 'pending' || charity?.status === 'approve')
@@ -430,7 +484,7 @@ const CharityDetail = () => {
 				</AnimatePresence>
 
 				<SuccessModal open={successOpen} onOpenChange={handleSuccessClose} />
-				
+
 				<div className="relative px-20 pt-48 pb-12 z-10">
 					<div className="flex justify-between items-center">
 						<ProjectHeader
@@ -511,7 +565,9 @@ const CharityDetail = () => {
 					</div>
 					<div className="w-4/12 h-fit top-12 flex flex-col gap-3">
 						{/* Social Links Section */}
-						{(charity.charity_website || charity.charity_fb || charity.charity_x) && (
+						{(charity.charity_website ||
+							charity.charity_fb ||
+							charity.charity_x) && (
 							<div className="border rounded-xl glass-component-1 text-white w-full p-6">
 								<div className="text-xl font-bold font-orbitron mb-4 bg-gradient-to-r bg-white bg-clip-text text-transparent">
 									Follow Us
