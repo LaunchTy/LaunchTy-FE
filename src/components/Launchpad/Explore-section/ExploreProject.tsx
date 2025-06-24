@@ -8,14 +8,18 @@ interface ExploreProjectProps {
 	searchPlaceholder?: string
 	onSearchChange?: (searchTerm: string) => void
 	initialSearchTerm?: string
+	projectCount?: number // Number of projects found
+	totalProjects?: number // Total number of projects
 }
 
 const ExploreProject = ({
 	title,
 	backgroundImage,
-	searchPlaceholder = 'Search projects...',
+	searchPlaceholder = 'Search by project name...',
 	onSearchChange,
 	initialSearchTerm = '',
+	projectCount = 0,
+	totalProjects = 0,
 }: ExploreProjectProps) => {
 	const [searchTerm, setSearchTerm] = useState(initialSearchTerm)
 
@@ -36,6 +40,14 @@ const ExploreProject = ({
 		},
 		[onSearchChange]
 	)
+
+	// Calculate display text for project count
+	const getProjectCountText = () => {
+		if (searchTerm.trim() === '') {
+			return null // Don't show anything when no search
+		}
+		return `Found ${projectCount} project${projectCount !== 1 ? 's' : ''} matching "${searchTerm}"`
+	}
 
 	return (
 		<div
@@ -83,6 +95,15 @@ const ExploreProject = ({
 								</svg>
 							</div>
 						</div>
+						
+						{/* Project count line - only show when searching */}
+						{getProjectCountText() && (
+							<div className="mt-3 text-center">
+								<span className="text-white/80 text-sm font-medium">
+									{getProjectCountText()}
+								</span>
+							</div>
+						)}
 					</div>
 				</div>
 			</div>

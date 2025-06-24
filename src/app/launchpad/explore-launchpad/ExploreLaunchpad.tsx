@@ -167,6 +167,8 @@ const ExploreProjectPage = () => {
 							searchPlaceholder="Search projects..."
 							onSearchChange={handleSearchChange}
 							initialSearchTerm={searchTerm}
+							projectCount={filteredProjects.length}
+							totalProjects={launchpads.length}
 						/>
 					</div>
 					<div className="w-full">

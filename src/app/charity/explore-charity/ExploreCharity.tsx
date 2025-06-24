@@ -138,6 +138,8 @@ const ExploreCharity = () => {
 							searchPlaceholder="Search projects..."
 							onSearchChange={handleSearchChange}
 							initialSearchTerm={searchTerm}
+							projectCount={filteredProjects.length}
+							totalProjects={charity.length}
 						/>
 					</div>
 					<div className="w-full">

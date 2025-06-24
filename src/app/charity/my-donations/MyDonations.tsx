@@ -161,6 +161,8 @@ const MyDonations = () => {
 						searchPlaceholder="Search donations..."
 						onSearchChange={handleSearchChange}
 						initialSearchTerm={searchTerm}
+						projectCount={filteredDonations.length}
+						totalProjects={donations.length}
 					/>
 					<Tab
 						navItems={navItems}

@@ -352,6 +352,8 @@ const ExploreProjectPage = () => {
 						searchPlaceholder="Search projects..."
 						onSearchChange={handleSearchChange}
 						initialSearchTerm={searchTerm}
+						projectCount={filteredProjects.length}
+						totalProjects={projects.length}
 					/>
 					<Tab
 						navItems={navItems}
