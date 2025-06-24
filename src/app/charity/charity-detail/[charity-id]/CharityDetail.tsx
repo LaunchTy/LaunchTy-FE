@@ -39,6 +39,9 @@ import { publicClient } from '@/app/launchpad/my-launchpad/MyLaunchpad'
 import { BigNumber } from 'ethers'
 import Button from '@/components/UI/button/Button'
 import { useCharityStore } from '@/store/charity/CreateCharityStore'
+import UploadHistoryEvidence from '@/components/charity/charity-detail-section/UploadHistoryEvidence'
+import Folder from '@/components/UI/shared/Folder'
+import Image from 'next/image'
 
 const CharityDetail = () => {
 	const account = useAccount()
@@ -53,6 +56,7 @@ const CharityDetail = () => {
 	const [errorCode, setErrorCode] = useState('')
 	const [lockOpen, setLockOpen] = useState(false)
 	const [successOpen, setSuccessOpen] = useState(false)
+	const [isOwner, setIsOwner] = useState(false)
 	const params = useParams()
 	const charityAddress = params['charity-id']
 	const { tokenAmount } = useCharityTokenAmountStore()
@@ -62,6 +66,28 @@ const CharityDetail = () => {
 		useWriteContract()
 
 	const { resetStore } = useCharityStore()
+	// const [historyEvidence, setHistoryEvidence] = useState<string[]>([])
+
+	// const convertToBase64 = (file: File): Promise<string> => {
+	// 	return new Promise((resolve, reject) => {
+	// 		const reader = new FileReader()
+	// 		reader.readAsDataURL(file)
+	// 		reader.onload = () => resolve(reader.result as string)
+	// 		reader.onerror = (error) => reject(error)
+	// 	})
+	// }
+
+	// const handleHistoryUpload = async (
+	// 	e: React.ChangeEvent<HTMLInputElement>
+	// ) => {
+	// 	if (e.target.files) {
+	// 		const files = Array.from(e.target.files)
+	// 		const base64Images = await Promise.all(
+	// 			files.map((file) => convertToBase64(file))
+	// 		)
+	// 		setHistoryEvidence([...historyEvidence, ...base64Images])
+	// 	}
+	// }
 
 	// Monitor contract errors
 	useEffect(() => {
@@ -69,7 +95,9 @@ const CharityDetail = () => {
 			console.error('Token contract error:', tokenError)
 			// Only show error if it's not already being handled in the main function
 			if (!loading) {
-				setErrorMessage('Token approval failed. Please check your wallet and try again.')
+				setErrorMessage(
+					'Token approval failed. Please check your wallet and try again.'
+				)
 				setErrorCode('500')
 				setErrorModalOpen(true)
 			}
@@ -79,9 +107,10 @@ const CharityDetail = () => {
 	useEffect(() => {
 		if (donateError) {
 			console.error('Donation contract error:', donateError)
-			// Only show error if it's not already being handled in the main function
 			if (!loading) {
-				setErrorMessage('Donation transaction failed. Please check your wallet and try again.')
+				setErrorMessage(
+					'Donation transaction failed. Please check your wallet and try again.'
+				)
 				setErrorCode('500')
 				setErrorModalOpen(true)
 			}
@@ -93,29 +122,38 @@ const CharityDetail = () => {
 			try {
 				setLoading(true)
 
-				// Fetch charity details
 				const charityResponse = await fetch(
 					`/api/charity/get/${params['charity-id']}`
 				)
 				const charityData = await charityResponse.json()
 
-				// Fetch donations
+				if (charityData.success) {
+					setCharity(charityData.data)
+					if (charityData.data.charity_img?.length > 0) {
+						setBackgroundImage(charityData.data.charity_img[0])
+					}
+
+					if (userAddress) {
+						const checkOwnerRes = await fetch(
+							'/api/charity/check-project-owner',
+							{
+								method: 'POST',
+								headers: { 'Content-Type': 'application/json' },
+								body: JSON.stringify({
+									charity_id: charityData.data.charity_id,
+									wallet_address: userAddress,
+								}),
+							}
+						)
+						const checkOwnerJson = await checkOwnerRes.json()
+						setIsOwner(checkOwnerJson.isOwner || false)
+					}
+				}
+
 				const donationsResponse = await fetch(
 					`/api/donation/get/${params['charity-id']}`
 				)
 				const donationsData = await donationsResponse.json()
-
-				if (charityData.success) {
-					setCharity(charityData.data)
-					if (
-						charityData.data.charity_img &&
-						charityData.data.charity_img.length > 0
-					) {
-						setBackgroundImage(charityData.data.charity_img[0])
-					}
-				} else {
-					throw new Error('Failed to fetch charity data')
-				}
 
 				if (donationsData.success) {
 					setDonations(donationsData.data)
@@ -133,7 +171,7 @@ const CharityDetail = () => {
 		}
 
 		fetchData()
-	}, [params['charity-id']])
+	}, [params['charity-id'], userAddress])
 
 	const handleDonate = async () => {
 		if (!userAddress) {
@@ -148,19 +186,19 @@ const CharityDetail = () => {
 			setErrorModalOpen(true)
 			return
 		}
-		
+
 		// Clear any previous errors
 		setErrorModalOpen(false)
 		setErrorMessage('')
 		setErrorCode('')
-		
+
 		console.log('Starting donation process...')
 		console.log('User address:', userAddress)
 		console.log('Charity address:', charityAddress)
 		console.log('Token amount:', tokenAmount)
-		
+
 		setLoading(true)
-		
+
 		try {
 			const acceptedTokenAddress =
 				chainConfig.contracts.AcceptedMockERC20.address
@@ -196,7 +234,9 @@ const CharityDetail = () => {
 					})
 
 					if (receipt.status !== 'success') {
-						setErrorMessage('Token approval transaction failed. Please try again.')
+						setErrorMessage(
+							'Token approval transaction failed. Please try again.'
+						)
 						setErrorCode('500')
 						setErrorModalOpen(true)
 						return
@@ -205,28 +245,44 @@ const CharityDetail = () => {
 					console.log('Token approval successful')
 				} catch (approvalError: any) {
 					console.error('Token approval error:', approvalError)
-					
+
 					// Handle specific MetaMask errors
-					if (approvalError.message?.includes('User rejected') || 
+					if (
+						approvalError.message?.includes('User rejected') ||
 						approvalError.message?.includes('user rejected') ||
 						approvalError.message?.includes('User denied') ||
-						approvalError.message?.includes('user denied')) {
+						approvalError.message?.includes('user denied')
+					) {
 						setErrorMessage('Token approval was cancelled by user.')
 						setErrorCode('USER_REJECTED')
-					} else if (approvalError.message?.includes('insufficient funds') ||
-							   approvalError.message?.includes('Insufficient funds')) {
-						setErrorMessage('Insufficient funds for token approval. Please check your balance.')
+					} else if (
+						approvalError.message?.includes('insufficient funds') ||
+						approvalError.message?.includes('Insufficient funds')
+					) {
+						setErrorMessage(
+							'Insufficient funds for token approval. Please check your balance.'
+						)
 						setErrorCode('INSUFFICIENT_FUNDS')
-					} else if (approvalError.message?.includes('network') ||
-							   approvalError.message?.includes('Network')) {
-						setErrorMessage('Network error. Please check your connection and try again.')
+					} else if (
+						approvalError.message?.includes('network') ||
+						approvalError.message?.includes('Network')
+					) {
+						setErrorMessage(
+							'Network error. Please check your connection and try again.'
+						)
 						setErrorCode('NETWORK_ERROR')
-					} else if (approvalError.message?.includes('gas') ||
-							   approvalError.message?.includes('Gas')) {
-						setErrorMessage('Gas estimation failed. Please try again with a different amount.')
+					} else if (
+						approvalError.message?.includes('gas') ||
+						approvalError.message?.includes('Gas')
+					) {
+						setErrorMessage(
+							'Gas estimation failed. Please try again with a different amount.'
+						)
 						setErrorCode('GAS_ERROR')
 					} else {
-						setErrorMessage('Token approval failed. Please check your wallet and try again.')
+						setErrorMessage(
+							'Token approval failed. Please check your wallet and try again.'
+						)
 						setErrorCode('500')
 					}
 					setErrorModalOpen(true)
@@ -256,7 +312,10 @@ const CharityDetail = () => {
 					setErrorMessage('Donation transaction failed. Please try again.')
 					setErrorCode('500')
 					setErrorModalOpen(true)
-					console.error('Donation transaction failed. Please try again.', donateError)
+					console.error(
+						'Donation transaction failed. Please try again.',
+						donateError
+					)
 					return
 				}
 
@@ -280,7 +339,9 @@ const CharityDetail = () => {
 
 					if (!donationResponse.ok) {
 						console.error('Failed to record donation in database')
-						setErrorMessage('Donation recorded on blockchain but failed to save to database')
+						setErrorMessage(
+							'Donation recorded on blockchain but failed to save to database'
+						)
 						setErrorCode('500')
 						setErrorModalOpen(true)
 						return
@@ -293,39 +354,61 @@ const CharityDetail = () => {
 					setSuccessOpen(true)
 				} catch (dbError) {
 					console.error('Database error:', dbError)
-					setErrorMessage('Donation recorded on blockchain but failed to save to database')
+					setErrorMessage(
+						'Donation recorded on blockchain but failed to save to database'
+					)
 					setErrorCode('500')
 					setErrorModalOpen(true)
 					return
 				}
 			} catch (donationError: any) {
 				console.error('Donation transaction error:', donationError)
-				
+
 				// Handle specific MetaMask errors
-				if (donationError.message?.includes('User rejected') || 
+				if (
+					donationError.message?.includes('User rejected') ||
 					donationError.message?.includes('user rejected') ||
 					donationError.message?.includes('User denied') ||
-					donationError.message?.includes('user denied')) {
+					donationError.message?.includes('user denied')
+				) {
 					setErrorMessage('Donation was cancelled by user.')
 					setErrorCode('USER_REJECTED')
-				} else if (donationError.message?.includes('insufficient funds') ||
-						   donationError.message?.includes('Insufficient funds')) {
-					setErrorMessage('Insufficient funds for donation. Please check your balance.')
+				} else if (
+					donationError.message?.includes('insufficient funds') ||
+					donationError.message?.includes('Insufficient funds')
+				) {
+					setErrorMessage(
+						'Insufficient funds for donation. Please check your balance.'
+					)
 					setErrorCode('INSUFFICIENT_FUNDS')
-				} else if (donationError.message?.includes('network') ||
-						   donationError.message?.includes('Network')) {
-					setErrorMessage('Network error. Please check your connection and try again.')
+				} else if (
+					donationError.message?.includes('network') ||
+					donationError.message?.includes('Network')
+				) {
+					setErrorMessage(
+						'Network error. Please check your connection and try again.'
+					)
 					setErrorCode('NETWORK_ERROR')
-				} else if (donationError.message?.includes('gas') ||
-						   donationError.message?.includes('Gas')) {
-					setErrorMessage('Gas estimation failed. Please try again with a different amount.')
+				} else if (
+					donationError.message?.includes('gas') ||
+					donationError.message?.includes('Gas')
+				) {
+					setErrorMessage(
+						'Gas estimation failed. Please try again with a different amount.'
+					)
 					setErrorCode('GAS_ERROR')
-				} else if (donationError.message?.includes('execution reverted') ||
-						   donationError.message?.includes('reverted')) {
-					setErrorMessage('Transaction reverted. Please check the charity contract and try again.')
+				} else if (
+					donationError.message?.includes('execution reverted') ||
+					donationError.message?.includes('reverted')
+				) {
+					setErrorMessage(
+						'Transaction reverted. Please check the charity contract and try again.'
+					)
 					setErrorCode('CONTRACT_ERROR')
 				} else {
-					setErrorMessage('Donation transaction failed. Please check your wallet and try again.')
+					setErrorMessage(
+						'Donation transaction failed. Please check your wallet and try again.'
+					)
 					setErrorCode('500')
 				}
 				setErrorModalOpen(true)
@@ -359,28 +442,10 @@ const CharityDetail = () => {
 
 	const handleSubmit = async () => {
 		try {
-			// Update charity status to published
-			const response = await fetch(
-				`/api/charity/update/${params['charity-id']}`,
-				{
-					method: 'PUT',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({
-						status: 'publish',
-					}),
-				}
-			)
-
-			if (!response.ok) {
-				throw new Error('Failed to publish charity')
-			}
-
-			// Refresh the page to show updated status
-			window.location.reload()
+			// Redirect to my-charity page instead of reloading
+			router.push('/charity/my-charity')
 		} catch (error: any) {
-			setErrorMessage(error.message || 'Failed to publish charity')
+			setErrorMessage(error.message || 'Failed to submit charity')
 			setErrorCode('500')
 			setErrorModalOpen(true)
 		}
@@ -395,10 +460,9 @@ const CharityDetail = () => {
 		charity?.project_owner?.wallet_address === userAddress
 	)
 
-	const isOwner = charity?.project_owner?.wallet_address === userAddress
-	const canEdit =
-		isOwner && (charity?.status === 'pending' || charity?.status === 'approve')
-	const canSubmit = isOwner && charity?.status === 'approve'
+	// const canEdit =isOwner && (charity?.status === 'pending' || charity?.status === 'approve')
+	const canEdit = false
+	const canSubmit = isOwner && charity?.status === 'pending'
 
 	if (loading) {
 		return <LoadingModal open={loading} onOpenChange={setLoading} />
@@ -448,7 +512,7 @@ const CharityDetail = () => {
 				</AnimatePresence>
 
 				<SuccessModal open={successOpen} onOpenChange={handleSuccessClose} />
-				
+
 				<div className="relative px-20 pt-48 pb-12 z-10">
 					<div className="flex justify-between items-center">
 						<ProjectHeader
@@ -529,7 +593,9 @@ const CharityDetail = () => {
 					</div>
 					<div className="w-4/12 h-fit top-12 flex flex-col gap-3">
 						{/* Social Links Section */}
-						{(charity.charity_website || charity.charity_fb || charity.charity_x) && (
+						{(charity.charity_website ||
+							charity.charity_fb ||
+							charity.charity_x) && (
 							<div className="border rounded-xl glass-component-1 text-white w-full p-6">
 								<div className="text-xl font-bold font-orbitron mb-4 bg-gradient-to-r bg-white bg-clip-text text-transparent">
 									Follow Us
@@ -539,6 +605,7 @@ const CharityDetail = () => {
 										website: charity.charity_website,
 										fb: charity.charity_fb,
 										x: charity.charity_x,
+										ig: charity.charity_ig,
 									}}
 									iconSize="medium"
 									align="start"
@@ -546,10 +613,44 @@ const CharityDetail = () => {
 							</div>
 						)}
 						<div className="h-[380px] flex flex-col gap-2 w-full">
-							<DonateArea
-								enabled={charity.status === 'publish'}
-								handleDonate={handleDonate}
-							/>
+							{isOwner ? (
+								<UploadHistoryEvidence charityId={charity.charity_id}>
+									{/* <input
+										type="file"
+										id="historyUpload"
+										accept="image/*"
+										multiple
+										onChange={handleHistoryUpload}
+										className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+									/> 
+									 <Folder
+										color="#00d8ff"
+										size={0.8}
+										items={historyEvidence.map(
+											(image: string, index: number) => (
+												<div
+													key={`history-image-${index}`}
+													className="w-full h-full flex items-center justify-center"
+												>
+													<Image
+														src={image}
+														alt={`History Evidence ${index + 1}`}
+														width={512}
+														height={512}
+														className="max-w-full max-h-full object-contain rounded"
+													/>
+												</div>
+											)
+										)}
+										maxItems={3}
+									/> */}
+								</UploadHistoryEvidence>
+							) : (
+								<DonateArea
+									enabled={charity.status === 'publish'}
+									handleDonate={handleDonate}
+								/>
+							)}
 						</div>
 						<div className="mt-20">
 							<AddressInfo
@@ -589,7 +690,7 @@ const CharityDetail = () => {
 								onClick={handleSubmit}
 								className="glass-component-3 px-8 py-3 rounded-xl text-white hover:bg-opacity-80 transition-all duration-300"
 							>
-								Publish Charity
+								Submit Charity
 							</Button>
 						)}
 					</div>
