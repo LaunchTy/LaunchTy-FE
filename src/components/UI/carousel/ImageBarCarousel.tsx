@@ -29,7 +29,10 @@ const ImageBarCarousel = ({
 	goToSlide,
 }: ImageBarCarouselProps) => {
 	const [imageSizes, setImageSizes] = useState<ImageSize[]>([])
-	const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({ width: 0, height: 0 })
+	const [containerSize, setContainerSize] = useState<{
+		width: number
+		height: number
+	}>({ width: 0, height: 0 })
 	const containerRef = useRef<HTMLDivElement>(null)
 
 	// Track container size changes
@@ -50,8 +53,12 @@ const ImageBarCarousel = ({
 		}
 	}, [])
 
-	const onLoadingComplete = (index: number, naturalWidth: number, naturalHeight: number) => {
-		setImageSizes(prev => {
+	const onLoadingComplete = (
+		index: number,
+		naturalWidth: number,
+		naturalHeight: number
+	) => {
+		setImageSizes((prev) => {
 			const newSizes = [...prev]
 			newSizes[index] = { width: naturalWidth, height: naturalHeight }
 			return newSizes
@@ -83,9 +90,12 @@ const ImageBarCarousel = ({
 						// Actual index in the full image list
 						const realIndex = image.indexOf(img)
 						const imageSize = imageSizes[realIndex]
-						const isLargeEnough = imageSize && containerSize.width > 0 && containerSize.height > 0 && 
-							(imageSize.width >= containerSize.width * UPSCALE_LIMIT || 
-							 imageSize.height >= containerSize.height * UPSCALE_LIMIT)
+						const isLargeEnough =
+							imageSize &&
+							containerSize.width > 0 &&
+							containerSize.height > 0 &&
+							(imageSize.width >= containerSize.width * UPSCALE_LIMIT ||
+								imageSize.height >= containerSize.height * UPSCALE_LIMIT)
 
 						return (
 							<div
@@ -114,7 +124,13 @@ const ImageBarCarousel = ({
 											alt={img.alt}
 											fill
 											className="object-cover filter blur-lg scale-110"
-											onLoadingComplete={(img) => onLoadingComplete(realIndex, img.naturalWidth, img.naturalHeight)}
+											onLoadingComplete={(img) =>
+												onLoadingComplete(
+													realIndex,
+													img.naturalWidth,
+													img.naturalHeight
+												)
+											}
 										/>
 									</div>
 								)}
@@ -127,12 +143,18 @@ const ImageBarCarousel = ({
 										alt={img.alt}
 										fill
 										className="object-cover relative"
-										onLoadingComplete={(img) => onLoadingComplete(realIndex, img.naturalWidth, img.naturalHeight)}
+										onLoadingComplete={(img) =>
+											onLoadingComplete(
+												realIndex,
+												img.naturalWidth,
+												img.naturalHeight
+											)
+										}
 									/>
 								) : (
 									// Too small image - render pixel-perfect at natural size
 									imageSize && (
-										<div 
+										<div
 											className="absolute"
 											style={{
 												left: `calc(50% - ${imageSize.width / 2}px)`,
@@ -145,7 +167,13 @@ const ImageBarCarousel = ({
 												width={imageSize.width}
 												height={imageSize.height}
 												className="object-contain relative"
-												onLoadingComplete={(img) => onLoadingComplete(realIndex, img.naturalWidth, img.naturalHeight)}
+												onLoadingComplete={(img) =>
+													onLoadingComplete(
+														realIndex,
+														img.naturalWidth,
+														img.naturalHeight
+													)
+												}
 											/>
 										</div>
 									)

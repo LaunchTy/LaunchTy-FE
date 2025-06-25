@@ -95,7 +95,7 @@ const ExploreProject = ({
 								</svg>
 							</div>
 						</div>
-						
+
 						{/* Project count line - only show when searching */}
 						{getProjectCountText() && (
 							<div className="mt-3 text-center">

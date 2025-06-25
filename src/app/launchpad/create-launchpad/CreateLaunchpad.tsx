@@ -995,7 +995,11 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 											</span>
 											<input
 												type="datetime-local"
-												value={startDate}
+												value={
+													typeof startDate === 'string'
+														? startDate
+														: formatDateForInput(startDate)
+												}
 												onChange={(e) => setStartDate(e.target.value)}
 												placeholder="Enter start date"
 												className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"
@@ -1007,7 +1011,11 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 											</span>
 											<input
 												type="datetime-local"
-												value={endDate}
+												value={
+													typeof endDate === 'string'
+														? endDate
+														: formatDateForInput(endDate)
+												}
 												onChange={(e) => setEndDate(e.target.value)}
 												placeholder="Enter end date"
 												className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"

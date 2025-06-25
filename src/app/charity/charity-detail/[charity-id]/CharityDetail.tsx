@@ -632,12 +632,11 @@ const CharityDetail = () => {
 						)}
 						<div className="h-[380px] flex flex-col gap-2 w-full">
 							{isOwner ? (
-								<UploadHistoryEvidence 
+								<UploadHistoryEvidence
 									charityId={charity.charity_id}
 									onUploadSuccess={handleUploadSuccess}
 									onError={handleUploadError}
-								>
-								</UploadHistoryEvidence>
+								></UploadHistoryEvidence>
 							) : (
 								<DonateArea
 									enabled={charity.status === 'publish'}

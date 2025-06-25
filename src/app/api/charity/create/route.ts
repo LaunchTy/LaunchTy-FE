@@ -34,9 +34,13 @@ export async function POST(req: NextRequest) {
 			charity_name,
 			charity_short_des: charity_short_des?.substring(0, 50) + "...",
 			charity_logo: charity_logo ? "Present" : "Missing",
-			charity_img: Array.isArray(charity_img) ? `${charity_img.length} images` : "Not array",
+			charity_img: Array.isArray(charity_img)
+				? `${charity_img.length} images`
+				: "Not array",
 			license_certificate: license_certificate ? "Present" : "Missing",
-			evidence: Array.isArray(evidence) ? `${evidence.length} images` : "Not array",
+			evidence: Array.isArray(evidence)
+				? `${evidence.length} images`
+				: "Not array",
 			repre_faceid: repre_faceid ? "Present" : "Missing",
 			repre_personal_id: repre_personal_id ? "Present" : "Missing",
 			charity_start_date: charity_start_date,
@@ -95,9 +99,17 @@ export async function POST(req: NextRequest) {
 		}
 
 		// Ensure image arrays are properly formatted
-		const charityImgArray = Array.isArray(charity_img) ? charity_img as string[] : [];
-		const licenseCertificateArray = Array.isArray(license_certificate) ? license_certificate as string[] : (license_certificate ? [license_certificate] : []);
-		const evidenceArray = Array.isArray(evidence) ? evidence as string[] : [];
+		const charityImgArray = Array.isArray(charity_img)
+			? (charity_img as string[])
+			: [];
+		const licenseCertificateArray = Array.isArray(license_certificate)
+			? (license_certificate as string[])
+			: license_certificate
+				? [license_certificate]
+				: [];
+		const evidenceArray = Array.isArray(evidence)
+			? (evidence as string[])
+			: [];
 
 		const charity = await prismaClient.charity.create({
 			data: {
@@ -135,13 +147,16 @@ export async function POST(req: NextRequest) {
 	} catch (error) {
 		console.error("Error creating charity:", error);
 		console.error("Error details:", {
-			message: error instanceof Error ? error.message : 'Unknown error',
-			stack: error instanceof Error ? error.stack : 'No stack trace',
+			message: error instanceof Error ? error.message : "Unknown error",
+			stack: error instanceof Error ? error.stack : "No stack trace",
 		});
 		return NextResponse.json(
-			{ 
-				success: false, 
-				error: error instanceof Error ? error.message : "Failed to create charity" 
+			{
+				success: false,
+				error:
+					error instanceof Error
+						? error.message
+						: "Failed to create charity",
 			},
 			{ status: 500 }
 		);

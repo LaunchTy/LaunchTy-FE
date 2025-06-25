@@ -1,22 +1,22 @@
-import { NextRequest, NextResponse } from 'next/server'
-import prismaClient from '@/prisma'
+import { NextRequest, NextResponse } from "next/server";
+import prismaClient from "@/prisma";
 
-const prisma = prismaClient
+const prisma = prismaClient;
 
 // GET all donations
 export async function GET(request: NextRequest) {
 	try {
-		const { searchParams } = new URL(request.url)
-		const charity_id = searchParams.get('charity_id')
+		const { searchParams } = new URL(request.url);
+		const charity_id = searchParams.get("charity_id");
 
 		if (!charity_id) {
 			return NextResponse.json(
 				{
 					success: false,
-					error: 'charity_id is required',
+					error: "charity_id is required",
 				},
 				{ status: 400 }
-			)
+			);
 		}
 
 		const donations = await prisma.donation.findMany({
@@ -28,9 +28,9 @@ export async function GET(request: NextRequest) {
 				charity: true,
 			},
 			orderBy: {
-				datetime: 'desc',
+				datetime: "desc",
 			},
-		})
+		});
 
 		return NextResponse.json(
 			{
@@ -38,55 +38,55 @@ export async function GET(request: NextRequest) {
 				data: donations,
 			},
 			{ status: 200 }
-		)
+		);
 	} catch (error) {
-		console.error('Error fetching donations:', error)
+		console.error("Error fetching donations:", error);
 		return NextResponse.json(
 			{
 				success: false,
-				error: 'Failed to fetch donations',
+				error: "Failed to fetch donations",
 			},
 			{ status: 500 }
-		)
+		);
 	}
 }
 
 // POST new donation
 export async function POST(request: NextRequest) {
 	try {
-		const body = await request.json()
-		const { charity_id, wallet_address, amount, tx_hash, datetime } = body
+		const body = await request.json();
+		const { charity_id, wallet_address, amount, tx_hash, datetime } = body;
 
 		// Validate required fields
 		if (!charity_id || !wallet_address || !amount || !tx_hash) {
 			return NextResponse.json(
 				{
 					success: false,
-					error: 'Missing required fields: charity_id, wallet_address, amount, tx_hash',
+					error: "Missing required fields: charity_id, wallet_address, amount, tx_hash",
 				},
 				{ status: 400 }
-			)
+			);
 		}
 
 		// Check if charity exists
 		const charity = await prisma.charity.findUnique({
 			where: { charity_id: charity_id },
-		})
+		});
 
 		if (!charity) {
 			return NextResponse.json(
 				{
 					success: false,
-					error: 'Charity not found',
+					error: "Charity not found",
 				},
 				{ status: 404 }
-			)
+			);
 		}
 
 		// Check if user exists, if not create one
 		let user = await prisma.user.findUnique({
 			where: { wallet_address: wallet_address },
-		})
+		});
 
 		if (!user) {
 			user = await prisma.user.create({
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
 					wallet_address: wallet_address,
 					user_name: `User_${wallet_address.slice(0, 8)}`,
 				},
-			})
+			});
 		}
 
 		// Create donation record
@@ -110,25 +110,25 @@ export async function POST(request: NextRequest) {
 				user: true,
 				charity: true,
 			},
-		})
+		});
 
 		return NextResponse.json(
 			{
 				success: true,
-				message: 'Donation recorded successfully',
+				message: "Donation recorded successfully",
 				data: donation,
 			},
 			{ status: 201 }
-		)
+		);
 	} catch (error) {
-		console.error('Error creating donation:', error)
+		console.error("Error creating donation:", error);
 		return NextResponse.json(
 			{
 				success: false,
-				error: 'Failed to record donation',
+				error: "Failed to record donation",
 			},
 			{ status: 500 }
-		)
+		);
 	}
 }
 

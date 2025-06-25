@@ -43,7 +43,7 @@ const UploadHistoryEvidence = ({
 			const base64Images = await Promise.all(
 				files.map((file) => convertToBase64(file))
 			)
-			setHistoryEvidence(prev => [...prev, ...base64Images])
+			setHistoryEvidence((prev) => [...prev, ...base64Images])
 		}
 	}
 
@@ -70,7 +70,7 @@ const UploadHistoryEvidence = ({
 				onError?.('Failed to fetch current charity data', '500')
 				return
 			}
-			
+
 			const charityData = await getResponse.json()
 			if (!charityData.success) {
 				onError?.('Failed to fetch current charity data', '500')
@@ -128,16 +128,16 @@ const UploadHistoryEvidence = ({
 				</span>
 
 				{/* Drop Zone */}
-				<div 
+				<div
 					className="w-full h-48 border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center p-4 hover:border-blue-400 transition-all duration-300 relative overflow-visible cursor-pointer"
 					onClick={() => {
 						// Prevent double opening
 						if (isOpeningFileExplorer) {
 							return
 						}
-						
+
 						setIsOpeningFileExplorer(true)
-						
+
 						// Only clear if there are already images selected
 						if (historyEvidence.length > 0) {
 							// Clear the file input first to ensure fresh selection
@@ -147,10 +147,10 @@ const UploadHistoryEvidence = ({
 							// Clear the current selection
 							setHistoryEvidence([])
 						}
-						
+
 						// Open file explorer
 						fileInputRef.current?.click()
-						
+
 						// Reset flag after a delay
 						setTimeout(() => {
 							setIsOpeningFileExplorer(false)
@@ -189,7 +189,8 @@ const UploadHistoryEvidence = ({
 								maxItems={3}
 							/>
 							<div className="mt-2 text-sm text-gray-300">
-								{historyEvidence.length} image{historyEvidence.length !== 1 ? 's' : ''} selected
+								{historyEvidence.length} image
+								{historyEvidence.length !== 1 ? 's' : ''} selected
 							</div>
 						</div>
 					) : (
@@ -197,7 +198,9 @@ const UploadHistoryEvidence = ({
 							<UploadCloud size={48} className="mb-2" />
 							<div className="text-center">
 								<div className="font-semibold">Click to upload images</div>
-								<div className="text-sm">or drag and drop multiple images here</div>
+								<div className="text-sm">
+									or drag and drop multiple images here
+								</div>
 							</div>
 						</div>
 					)}
@@ -213,7 +216,9 @@ const UploadHistoryEvidence = ({
 						: 'bg-gradient-to-r from-purple-500 to-blue-500 hover:opacity-80'
 				}`}
 			>
-				{isUploading ? 'Uploading...' : `Upload ${historyEvidence.length > 0 ? `(${historyEvidence.length} images)` : ''}`}
+				{isUploading
+					? 'Uploading...'
+					: `Upload ${historyEvidence.length > 0 ? `(${historyEvidence.length} images)` : ''}`}
 			</button>
 		</div>
 	)

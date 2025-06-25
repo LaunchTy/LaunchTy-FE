@@ -21,7 +21,10 @@ const UPSCALE_LIMIT = 1.0 // Only allow display at up to 100% of natural size
 const HistoryEvidence = ({ images }: HistoryEvidenceProps) => {
 	const [currentSlide, setCurrentSlide] = useState(0)
 	const [imageSizes, setImageSizes] = useState<ImageSize[]>([])
-	const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({ width: 0, height: 0 })
+	const [containerSize, setContainerSize] = useState<{
+		width: number
+		height: number
+	}>({ width: 0, height: 0 })
 	const containerRef = useRef<HTMLDivElement>(null)
 
 	const nextSlide = () => {
@@ -50,8 +53,12 @@ const HistoryEvidence = ({ images }: HistoryEvidenceProps) => {
 		}
 	}, [])
 
-	const onLoadingComplete = (index: number, naturalWidth: number, naturalHeight: number) => {
-		setImageSizes(prev => {
+	const onLoadingComplete = (
+		index: number,
+		naturalWidth: number,
+		naturalHeight: number
+	) => {
+		setImageSizes((prev) => {
 			const newSizes = [...prev]
 			newSizes[index] = { width: naturalWidth, height: naturalHeight }
 			return newSizes
@@ -67,19 +74,25 @@ const HistoryEvidence = ({ images }: HistoryEvidenceProps) => {
 	}
 
 	const currentImageSize = imageSizes[currentSlide]
-	const isLargeEnough = currentImageSize && containerSize.width > 0 && containerSize.height > 0 && 
-		(currentImageSize.width >= containerSize.width * UPSCALE_LIMIT || 
-		 currentImageSize.height >= containerSize.height * UPSCALE_LIMIT)
+	const isLargeEnough =
+		currentImageSize &&
+		containerSize.width > 0 &&
+		containerSize.height > 0 &&
+		(currentImageSize.width >= containerSize.width * UPSCALE_LIMIT ||
+			currentImageSize.height >= containerSize.height * UPSCALE_LIMIT)
 
-	const isMuchSmaller = currentImageSize && containerSize.width > 0 && containerSize.height > 0 &&
-		(currentImageSize.width < containerSize.width * 0.5 || 
-		 currentImageSize.height < containerSize.height * 0.5)
+	const isMuchSmaller =
+		currentImageSize &&
+		containerSize.width > 0 &&
+		containerSize.height > 0 &&
+		(currentImageSize.width < containerSize.width * 0.5 ||
+			currentImageSize.height < containerSize.height * 0.5)
 
 	return (
 		<div className="h-[525px] flex flex-col w-full rounded-xl glass-component-1 p-8">
 			<span className="text-[30px] font-bold">History Evidence</span>
 
-			<div 
+			<div
 				ref={containerRef}
 				className="relative flex-1 w-full rounded-lg overflow-hidden bg-gray-100"
 			>
@@ -91,7 +104,13 @@ const HistoryEvidence = ({ images }: HistoryEvidenceProps) => {
 							alt={images[currentSlide].alt}
 							fill
 							className="object-cover filter blur-lg scale-110"
-							onLoadingComplete={(img) => onLoadingComplete(currentSlide, img.naturalWidth, img.naturalHeight)}
+							onLoadingComplete={(img) =>
+								onLoadingComplete(
+									currentSlide,
+									img.naturalWidth,
+									img.naturalHeight
+								)
+							}
 						/>
 					</div>
 				)}
@@ -105,13 +124,19 @@ const HistoryEvidence = ({ images }: HistoryEvidenceProps) => {
 							alt={images[currentSlide].alt}
 							fill
 							className="object-cover"
-							onLoadingComplete={(img) => onLoadingComplete(currentSlide, img.naturalWidth, img.naturalHeight)}
+							onLoadingComplete={(img) =>
+								onLoadingComplete(
+									currentSlide,
+									img.naturalWidth,
+									img.naturalHeight
+								)
+							}
 						/>
 					</div>
 				) : (
 					// Too small image - render pixel-perfect at natural size
 					currentImageSize && (
-						<div 
+						<div
 							className="absolute"
 							style={{
 								left: `calc(50% - ${currentImageSize.width / 2}px)`,
@@ -124,7 +149,13 @@ const HistoryEvidence = ({ images }: HistoryEvidenceProps) => {
 								width={currentImageSize.width}
 								height={currentImageSize.height}
 								className="object-contain"
-								onLoadingComplete={(img) => onLoadingComplete(currentSlide, img.naturalWidth, img.naturalHeight)}
+								onLoadingComplete={(img) =>
+									onLoadingComplete(
+										currentSlide,
+										img.naturalWidth,
+										img.naturalHeight
+									)
+								}
 							/>
 						</div>
 					)

@@ -36,3 +36,5 @@ next-env.d.ts
 
 src/app/generated/prisma
 .env
+src/app/config/*
+src/app/abi/*

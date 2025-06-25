@@ -37,7 +37,9 @@ const EditLaunchpadPage = () => {
 				)
 
 				if (!response.data.success) {
-					throw new Error(response.data.error || 'Failed to fetch launchpad data')
+					throw new Error(
+						response.data.error || 'Failed to fetch launchpad data'
+					)
 				}
 
 				const launchpadData = response.data.data
@@ -66,8 +68,12 @@ const EditLaunchpadPage = () => {
 					logo: launchpadData.launchpad_logo || null,
 					images: launchpadData.launchpad_img || [],
 					backgroundImage: '',
-					startDate: launchpadData.launchpad_start_date ? new Date(launchpadData.launchpad_start_date) : null,
-					endDate: launchpadData.launchpad_end_date ? new Date(launchpadData.launchpad_end_date) : null,
+					startDate: launchpadData.launchpad_start_date
+						? new Date(launchpadData.launchpad_start_date)
+						: '',
+					endDate: launchpadData.launchpad_end_date
+						? new Date(launchpadData.launchpad_end_date)
+						: '',
 					isTokenValidated: true, // Assuming if it exists in DB, it's validated
 					// Add all the setter functions (these will be provided by the store)
 					setProjectTokenAddress: () => {},

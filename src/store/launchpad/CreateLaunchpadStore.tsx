@@ -62,8 +62,8 @@ export interface LaunchpadState {
 	backgroundImage: string // hình nền
 
 	// Time settings
-	startDate: string
-	endDate: string
+	startDate: string | Date
+	endDate: string | Date
 
 	// Validation status
 	isTokenValidated: boolean // token đã được xác thực hay chưa

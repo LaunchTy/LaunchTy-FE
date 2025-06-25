@@ -8,7 +8,8 @@
 		"start": "next start",
 		"lint": "next lint",
 		"prepare": "husky install",
-		"copy:abi": "ts-node src/scripts/copyABIs.ts"
+		"copy:abi": "ts-node src/scripts/copyABIs.ts",
+		"lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix"
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx}": [

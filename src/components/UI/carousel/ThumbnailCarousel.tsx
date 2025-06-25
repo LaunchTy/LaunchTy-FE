@@ -32,7 +32,10 @@ const ThumbNailCarousel: React.FC<ImageCarouselProps> = ({
 }) => {
 	const [index, setIndex] = useState(0)
 	const [imageSizes, setImageSizes] = useState<ImageSize[]>([])
-	const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({ width: 0, height: 0 })
+	const [containerSize, setContainerSize] = useState<{
+		width: number
+		height: number
+	}>({ width: 0, height: 0 })
 	const ref = useRef<Splide>(null)
 	const containerRef = useRef<HTMLDivElement>(null)
 
@@ -82,8 +85,12 @@ const ThumbNailCarousel: React.FC<ImageCarouselProps> = ({
 		}
 	}, [])
 
-	const onLoadingComplete = (index: number, naturalWidth: number, naturalHeight: number) => {
-		setImageSizes(prev => {
+	const onLoadingComplete = (
+		index: number,
+		naturalWidth: number,
+		naturalHeight: number
+	) => {
+		setImageSizes((prev) => {
 			const newSizes = [...prev]
 			newSizes[index] = { width: naturalWidth, height: naturalHeight }
 			return newSizes
@@ -160,13 +167,16 @@ const ThumbNailCarousel: React.FC<ImageCarouselProps> = ({
 					>
 						{images.map((image, i) => {
 							const imageSize = imageSizes[i]
-							const isLargeEnough = imageSize && containerSize.width > 0 && containerSize.height > 0 && 
-								(imageSize.width >= containerSize.width * UPSCALE_LIMIT || 
-								 imageSize.height >= containerSize.height * UPSCALE_LIMIT)
+							const isLargeEnough =
+								imageSize &&
+								containerSize.width > 0 &&
+								containerSize.height > 0 &&
+								(imageSize.width >= containerSize.width * UPSCALE_LIMIT ||
+									imageSize.height >= containerSize.height * UPSCALE_LIMIT)
 
 							return (
 								<SplideSlide key={i}>
-									<div 
+									<div
 										ref={containerRef}
 										className="relative w-full h-full bg-gray-100 rounded-lg shadow-md overflow-hidden"
 									>
@@ -178,7 +188,13 @@ const ThumbNailCarousel: React.FC<ImageCarouselProps> = ({
 													alt={image.alt}
 													fill
 													className="object-cover filter blur-lg scale-110"
-													onLoadingComplete={(img) => onLoadingComplete(i, img.naturalWidth, img.naturalHeight)}
+													onLoadingComplete={(img) =>
+														onLoadingComplete(
+															i,
+															img.naturalWidth,
+															img.naturalHeight
+														)
+													}
 												/>
 											</div>
 										)}
@@ -193,13 +209,19 @@ const ThumbNailCarousel: React.FC<ImageCarouselProps> = ({
 													width={956}
 													height={478}
 													className="w-full h-full object-cover rounded-lg"
-													onLoadingComplete={(img) => onLoadingComplete(i, img.naturalWidth, img.naturalHeight)}
+													onLoadingComplete={(img) =>
+														onLoadingComplete(
+															i,
+															img.naturalWidth,
+															img.naturalHeight
+														)
+													}
 												/>
 											</div>
 										) : (
 											// Too small image - render pixel-perfect at natural size
 											imageSize && (
-												<div 
+												<div
 													className="absolute"
 													style={{
 														left: `calc(50% - ${imageSize.width / 2}px)`,
@@ -212,7 +234,13 @@ const ThumbNailCarousel: React.FC<ImageCarouselProps> = ({
 														width={imageSize.width}
 														height={imageSize.height}
 														className="object-contain rounded-lg"
-														onLoadingComplete={(img) => onLoadingComplete(i, img.naturalWidth, img.naturalHeight)}
+														onLoadingComplete={(img) =>
+															onLoadingComplete(
+																i,
+																img.naturalWidth,
+																img.naturalHeight
+															)
+														}
 													/>
 												</div>
 											)
