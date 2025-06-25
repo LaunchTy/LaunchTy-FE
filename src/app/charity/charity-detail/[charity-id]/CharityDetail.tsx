@@ -438,7 +438,7 @@ const CharityDetail = () => {
 
 	const handleSuccessClose = () => {
 		setSuccessOpen(false)
-		// Refresh the page to show updated donation data
+		// Refresh the page to show updated donation data or new evidence
 		window.location.reload()
 	}
 
@@ -458,6 +458,17 @@ const CharityDetail = () => {
 		}
 	}
 
+	const handleUploadSuccess = () => {
+		// Show success modal and then refresh the charity data
+		setSuccessOpen(true)
+	}
+
+	const handleUploadError = (message: string, code: string) => {
+		setErrorMessage(message)
+		setErrorCode(code)
+		setErrorModalOpen(true)
+	}
+
 	// Check if user is the owner of this charity
 	// console.log('Charity data:', charity)
 	// console.log('User address:', userAddress)
@@ -467,7 +478,6 @@ const CharityDetail = () => {
 	// 	charity?.project_owner?.wallet_address === userAddress
 	// )
 
-	const isOwner = charity?.project_owner?.wallet_address === userAddress
 	// const canEdit =isOwner && (charity?.status === 'pending' || charity?.status === 'approve')
 	const canEdit = false
 	const canSubmit = isOwner && charity?.status === 'pending'
@@ -622,36 +632,11 @@ const CharityDetail = () => {
 						)}
 						<div className="h-[380px] flex flex-col gap-2 w-full">
 							{isOwner ? (
-								<UploadHistoryEvidence charityId={charity.charity_id}>
-									{/* <input
-										type="file"
-										id="historyUpload"
-										accept="image/*"
-										multiple
-										onChange={handleHistoryUpload}
-										className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-									/> 
-									 <Folder
-										color="#00d8ff"
-										size={0.8}
-										items={historyEvidence.map(
-											(image: string, index: number) => (
-												<div
-													key={`history-image-${index}`}
-													className="w-full h-full flex items-center justify-center"
-												>
-													<Image
-														src={image}
-														alt={`History Evidence ${index + 1}`}
-														width={512}
-														height={512}
-														className="max-w-full max-h-full object-contain rounded"
-													/>
-												</div>
-											)
-										)}
-										maxItems={3}
-									/> */}
+								<UploadHistoryEvidence 
+									charityId={charity.charity_id}
+									onUploadSuccess={handleUploadSuccess}
+									onError={handleUploadError}
+								>
 								</UploadHistoryEvidence>
 							) : (
 								<DonateArea
