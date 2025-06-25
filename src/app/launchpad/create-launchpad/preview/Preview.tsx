@@ -85,188 +85,188 @@ const Preview = () => {
 		setBackgroundImage(imageSrc)
 	}
 
-	// const { writeContractAsync } = useWriteContract()
-	// // useWatchContractEvent({
-	// // 	abi: LaunchpadFactoryABI,
-	// // 	address: chainConfig.contracts.LaunchpadFactory.address as Address,
-	// // 	eventName: 'LaunchpadCreated',
-	// // 	onLogs: (logs) => {
-	// // 		logs.forEach((log) => {
-	// // 			console.log('Event Launchpad created:', log)
-	// // 		})
-	// // 	},
-	// // })
-
-	// const {
-	// 	data: projectId,
-	// 	isSuccess: isSuccessProjectId,
-	// 	error: isErrorProjectId,
-	// } = useReadContract({
+	const { writeContractAsync } = useWriteContract()
+	// useWatchContractEvent({
 	// 	abi: LaunchpadFactoryABI,
 	// 	address: chainConfig.contracts.LaunchpadFactory.address as Address,
-	// 	functionName: 'getCurrentProjectId',
+	// 	eventName: 'LaunchpadCreated',
+	// 	onLogs: (logs) => {
+	// 		logs.forEach((log) => {
+	// 			console.log('Event Launchpad created:', log)
+	// 		})
+	// 	},
 	// })
 
-	// const {
-	// 	data: launchpadAddress,
-	// 	isSuccess: isSuccessLaunchpadAddress,
-	// 	error: isErrorLaunchpadAddress,
-	// } = useReadContract({
-	// 	abi: LaunchpadFactoryABI,
-	// 	address: chainConfig.contracts.LaunchpadFactory.address as Address,
-	// 	functionName: 'getLaunchpadAddress',
-	// 	args: [Number(projectId) - 1],
-	// })
+	const {
+		data: projectId,
+		isSuccess: isSuccessProjectId,
+		error: isErrorProjectId,
+	} = useReadContract({
+		abi: LaunchpadFactoryABI,
+		address: chainConfig.contracts.LaunchpadFactory.address as Address,
+		functionName: 'getCurrentProjectId',
+	})
 
-	// const { data: allowance, error: allowanceError } = useReadContract({
-	// 	abi: MockERC20ABI,
-	// 	address: launchpadAddress as Address,
-	// 	functionName: 'allowance',
-	// 	args: [userAddress, launchpadAddress as Address],
-	// })
+	const {
+		data: launchpadAddress,
+		isSuccess: isSuccessLaunchpadAddress,
+		error: isErrorLaunchpadAddress,
+	} = useReadContract({
+		abi: LaunchpadFactoryABI,
+		address: chainConfig.contracts.LaunchpadFactory.address as Address,
+		functionName: 'getLaunchpadAddress',
+		args: [Number(projectId) - 1],
+	})
 
-	// useEffect(() => {
-	// 	if (isSuccessProjectId) {
-	// 		console.log(
-	// 			'Upcoming Project id:',
-	// 			convertNumToOffChainFormat((projectId as bigint).toString(), 0)
-	// 		)
-	// 		console.log(
-	// 			'Launchpad deposit amount and address: ',
-	// 			allowance,
-	// 			'             ',
-	// 			launchpadAddress
-	// 		)
-	// 	}
-	// 	if (isErrorProjectId) {
-	// 		console.error('Error reading launchpad data:', isErrorProjectId)
-	// 	}
-	// }, [projectId, isSuccessProjectId, isErrorProjectId])
+	const { data: allowance, error: allowanceError } = useReadContract({
+		abi: MockERC20ABI,
+		address: launchpadAddress as Address,
+		functionName: 'allowance',
+		args: [userAddress, launchpadAddress as Address],
+	})
 
-	// useEffect(() => {
-	// 	if (isSuccessLaunchpadAddress) {
-	// 		console.log('Launchpad address:', launchpadAddress as Address)
-	// 	}
-	// 	if (isErrorLaunchpadAddress) {
-	// 		console.error('Error reading launchpad address:', isErrorLaunchpadAddress)
-	// 	}
-	// }, [
-	// 	launchpadAddress,
-	// 	projectId,
-	// 	isSuccessLaunchpadAddress,
-	// 	isErrorLaunchpadAddress,
-	// ])
+	useEffect(() => {
+		if (isSuccessProjectId) {
+			console.log(
+				'Upcoming Project id:',
+				convertNumToOffChainFormat((projectId as bigint).toString(), 0)
+			)
+			console.log(
+				'Launchpad deposit amount and address: ',
+				allowance,
+				'             ',
+				launchpadAddress
+			)
+		}
+		if (isErrorProjectId) {
+			console.error('Error reading launchpad data:', isErrorProjectId)
+		}
+	}, [projectId, isSuccessProjectId, isErrorProjectId])
+
+	useEffect(() => {
+		if (isSuccessLaunchpadAddress) {
+			console.log('Launchpad address:', launchpadAddress as Address)
+		}
+		if (isErrorLaunchpadAddress) {
+			console.error('Error reading launchpad address:', isErrorLaunchpadAddress)
+		}
+	}, [
+		launchpadAddress,
+		projectId,
+		isSuccessLaunchpadAddress,
+		isErrorLaunchpadAddress,
+	])
 
 	const handleSubmit = async () => {
-		// tokenSupply = 1000
-		// tokenAddress = chainConfig.contracts.MockERC20.address
-		// if (!userAddress) {
-		// 	console.log('account.address: ', account.address)
-		// 	alert('Please connect your wallet to create a launchpad.')
-		// 	return
-		// }
-		// if (!tokenSupply || !tokenAddress) {
-		// 	alert('Please provide a valid token supply and token address.')
-		// 	return
-		// }
-		// if (allowanceError) {
-		// 	console.error('Error reading allowance:', allowanceError)
-		// 	alert('Error reading allowance. Please try again later.')
-		// 	return
-		// }
+		tokenSupply = 1000
+		tokenAddress = chainConfig.contracts.MockERC20.address
+		if (!userAddress) {
+			console.log('account.address: ', account.address)
+			alert('Please connect your wallet to create a launchpad.')
+			return
+		}
+		if (!tokenSupply || !tokenAddress) {
+			alert('Please provide a valid token supply and token address.')
+			return
+		}
+		if (allowanceError) {
+			console.error('Error reading allowance:', allowanceError)
+			alert('Error reading allowance. Please try again later.')
+			return
+		}
 
-		// const projectOwnerDepositToken = async () => {
-		// 	try {
-		// 		// if (!allowance || (allowance as BigNumber).gte(tokenSupply)) {
-		// 		// 	console.log('Allowance is sufficient, no need to approve.')
-		// 		// } else {
-		// 		const MockERC20Address = chainConfig.contracts.MockERC20.address
-		// 		console.log('Mockerc20 addressss: ', MockERC20Address)
-		// 		console.log('Launchpad address: ', launchpadAddress)
-		// 		const approveHash = await writeContractAsync({
-		// 			abi: MockERC20ABI,
-		// 			address: MockERC20Address as Address,
-		// 			functionName: 'approve',
-		// 			args: [
-		// 				launchpadAddress as Address,
-		// 				convertNumToOnChainFormat(tokenSupply, 18),
-		// 			],
-		// 		})
-		// 		console.log('Approval transaction hash:', approveHash)
-		// 		console.log('Appoved')
-		// 		//get the allowance after approval
-		// 		const newAllowance = await readContract(publicClient, {
-		// 			abi: MockERC20ABI,
-		// 			address: MockERC20Address as Address,
-		// 			functionName: 'allowance',
-		// 			args: [userAddress, launchpadAddress as Address],
-		// 		})
-		// 		console.log(
-		// 			'New allowance after approval:',
-		// 			convertNumToOffChainFormat((newAllowance as bigint).toString(), 18)
-		// 		)
-		// 		// }
-		// 	} catch (someError) {
-		// 		console.error('Error approving tokenrgergrgerge:', someError)
-		// 		console.log('Error approving token:', allowanceError)
-		// 		alert('Error approving token. Please try again later.')
-		// 		return
-		// 	}
-		// }
+		const projectOwnerDepositToken = async () => {
+			try {
+				// if (!allowance || (allowance as BigNumber).gte(tokenSupply)) {
+				// 	console.log('Allowance is sufficient, no need to approve.')
+				// } else {
+				const MockERC20Address = chainConfig.contracts.MockERC20.address
+				console.log('Mockerc20 addressss: ', MockERC20Address)
+				console.log('Launchpad address: ', launchpadAddress)
+				const approveHash = await writeContractAsync({
+					abi: MockERC20ABI,
+					address: MockERC20Address as Address,
+					functionName: 'approve',
+					args: [
+						launchpadAddress as Address,
+						convertNumToOnChainFormat(tokenSupply, 18),
+					],
+				})
+				console.log('Approval transaction hash:', approveHash)
+				console.log('Appoved')
+				//get the allowance after approval
+				const newAllowance = await readContract(publicClient, {
+					abi: MockERC20ABI,
+					address: MockERC20Address as Address,
+					functionName: 'allowance',
+					args: [userAddress, launchpadAddress as Address],
+				})
+				console.log(
+					'New allowance after approval:',
+					convertNumToOffChainFormat((newAllowance as bigint).toString(), 18)
+				)
+				// }
+			} catch (someError) {
+				console.error('Error approving tokenrgergrgerge:', someError)
+				console.log('Error approving token:', allowanceError)
+				alert('Error approving token. Please try again later.')
+				return
+			}
+		}
 
-		// projectOwnerDepositToken()
+		projectOwnerDepositToken()
 
 		setLoadingOpen(true) // Show loading modal
 
 		try {
-			// const factoryAddress = chainConfig.contracts.LaunchpadFactory
-			// 	.address as Address
-			// const tokenAdd = chainConfig.contracts.MockERC20.address as Address
-			// const acceptedToken = chainConfig.contracts.AcceptedMockERC20
-			// 	.address as Address
+			const factoryAddress = chainConfig.contracts.LaunchpadFactory
+				.address as Address
+			const tokenAdd = chainConfig.contracts.MockERC20.address as Address
+			const acceptedToken = chainConfig.contracts.AcceptedMockERC20
+				.address as Address
 
-			// const hash = await writeContractAsync({
-			// 	abi: LaunchpadFactoryABI,
-			// 	address: factoryAddress,
-			// 	functionName: 'createLaunchpad',
-			// 	args: [
-			// 		tokenAdd,
-			// 		acceptedToken,
-			// 		userAddress,
-			// 		1, //Price per token, set to 1 for simplicity
-			// 		Math.floor(Date.now() / 1000), // Current time in seconds
-			// 		Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // End time in seconds (1 week later)
-			// 		BigInt(convertNumToOnChainFormat(10, 18)), // Soft cap in wei
-			// 		BigInt(convertNumToOnChainFormat(500, 18)), // Hard cap in wei
-			// 		BigInt(convertNumToOnChainFormat(1, 18)), // Min stake in wei
-			// 		BigInt(convertNumToOnChainFormat(500, 18)), // Max stake in wei
-			// 		BigInt(convertNumToOnChainFormat(500, 18)), // Total supply in wei
-			// 	],
-			// })
+			const hash = await writeContractAsync({
+				abi: LaunchpadFactoryABI,
+				address: factoryAddress,
+				functionName: 'createLaunchpad',
+				args: [
+					tokenAdd,
+					acceptedToken,
+					userAddress,
+					1, //Price per token, set to 1 for simplicity
+					Math.floor(Date.now() / 1000), // Current time in seconds
+					Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // End time in seconds (1 week later)
+					BigInt(convertNumToOnChainFormat(10, 18)), // Soft cap in wei
+					BigInt(convertNumToOnChainFormat(500, 18)), // Hard cap in wei
+					BigInt(convertNumToOnChainFormat(1, 18)), // Min stake in wei
+					BigInt(convertNumToOnChainFormat(500, 18)), // Max stake in wei
+					BigInt(convertNumToOnChainFormat(500, 18)), // Total supply in wei
+				],
+			})
 
-			// if (!hash) {
-			// 	console.error('Transaction hash is undefined')
-			// 	return
-			// }
-			// console.log('Transaction hash:', hash)
-			// const receipt = await waitForTransactionReceipt(publicClient, {
-			// 	hash,
-			// })
-			// console.log('Transaction receipt:', receipt)
+			if (!hash) {
+				console.error('Transaction hash is undefined')
+				return
+			}
+			console.log('Transaction hash:', hash)
+			const receipt = await waitForTransactionReceipt(publicClient, {
+				hash,
+			})
+			console.log('Transaction receipt:', receipt)
 
-			// if (!receipt || !receipt.status) {
-			// 	console.error('Transaction failed or receipt is undefined')
-			// 	alert('Transaction failed. Please try again later.')
-			// 	setLoadingOpen(false) // Hide loading modal
-			// 	return
-			// }
+			if (!receipt || !receipt.status) {
+				console.error('Transaction failed or receipt is undefined')
+				alert('Transaction failed. Please try again later.')
+				setLoadingOpen(false) // Hide loading modal
+				return
+			}
 
-			// const launchpadAddress = await readContract(publicClient, {
-			// 	abi: LaunchpadFactoryABI,
-			// 	address: chainConfig.contracts.LaunchpadFactory.address as Address,
-			// 	functionName: 'getLaunchpadAddress',
-			// 	args: [Number(projectId) - 1],
-			// })
+			const launchpadAddress = await readContract(publicClient, {
+				abi: LaunchpadFactoryABI,
+				address: chainConfig.contracts.LaunchpadFactory.address as Address,
+				functionName: 'getLaunchpadAddress',
+				args: [Number(projectId) - 1],
+			})
 
 			// console.log('Launchpad paijfoaifaoiejaofiej', launchpadAddress)
 			const response = await axios.post('/api/launchpad/create', {
@@ -394,7 +394,11 @@ const Preview = () => {
 						// endDate: endDate.toISOString(),
 					}}
 				/>
-				<CountdownTimer endTime={endDate} />
+				<CountdownTimer
+					endTime={
+						typeof endDate === 'string' ? endDate : endDate.toISOString()
+					}
+				/>
 			</div>
 
 			<div className="flex items-start justify-center gap-12">
