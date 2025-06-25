@@ -11,127 +11,94 @@ const Tutorial = () => {
 	const launchpadTutorials = [
 		{
 			id: 1,
-			title: 'Getting Started with BlockLaunch',
+			title: 'Connect Wallet',
 			description:
-				'Learn the basics of our launchpad platform and how to navigate the interface',
-			duration: '5:30',
-			difficulty: 'Beginner',
-			videoId: 'dQw4w9WgXcQ',
-			steps: [
-				'Create your BlockLaunch account',
-				'Complete KYC verification',
-				'Explore the dashboard',
-				'Understand project categories',
-			],
+				'Before interacting with the launchpad, users need to connect their cryptocurrency wallet. This video guides you through connecting a wallet securely and verifying the connection.',
+			duration: '0:22',
+			videoId: '0Fer1qx3CPM', // Replace with actual video ID
 		},
 		{
 			id: 2,
-			title: 'How to Participate in IDO',
+			title: 'Create Launchpad',
 			description:
-				'Step-by-step guide to participating in Initial DEX Offerings',
-			duration: '8:45',
-			difficulty: 'Intermediate',
-			videoId: 'dQw4w9WgXcQ',
-			steps: [
-				'Research project fundamentals',
-				'Check allocation requirements',
-				'Connect your wallet',
-				'Submit participation request',
-				'Claim your tokens',
-			],
+				'An end-to-end guide for creating a new launchpad project, from entering basic details to setting tokenomics and uploading media. Ideal for new project owners joining the platform.',
+			duration: '1:10',
+			videoId: 'g0Izb7HWRqs',
 		},
 		{
 			id: 3,
-			title: 'Launching Your Project',
+			title: 'Publish',
 			description:
-				'Complete guide for projects wanting to launch on our platform',
-			duration: '12:20',
-			difficulty: 'Advanced',
-			videoId: 'dQw4w9WgXcQ',
-			steps: [
-				'Prepare project documentation',
-				'Submit application',
-				'Complete technical audit',
-				'Set up tokenomics',
-				'Launch campaign',
-			],
+				'A complete guide for project owners on how to publish their launchpad project after filling in all required details. Includes validation checks, smart contract deployment, and project visibility.',
+			duration: '0:32',
+			videoId: 'LTexQSLvoxE',
 		},
 		{
 			id: 4,
-			title: 'Wallet Integration & Security',
-			description: 'How to safely connect and manage your crypto wallets',
-			duration: '6:15',
-			difficulty: 'Beginner',
-			videoId: 'dQw4w9WgXcQ',
-			steps: [
-				'Choose compatible wallets',
-				'Connect wallet securely',
-				'Manage multiple wallets',
-				'Security best practices',
-			],
+			title: 'Deposit',
+			description:
+				'Guide for project owners on how to deposit tokens into the launchpad contract. This is a mandatory step before the public sale begins and ensures availability of tokens for buyers.',
+			duration: '0:18',
+			videoId: 'FRgdHz0NkS4',
+		},
+		{
+			id: 5,
+			title: 'User Withdraw',
+			description:
+				'This tutorial shows how users can withdraw their tokens or funds from a launchpad project after a successful or failed sale. Learn the steps required to claim your assets safely and efficiently.',
+			duration: '0:18',
+			videoId: '-EDwVTpoZig',
+		},
+		{
+			id: 6,
+			title: 'Refund',
+			description:
+				'Learn how users can request and receive refunds for their contributions in cases where a launchpad project does not reach the required fundraising threshold. Ensures full transparency and user protection.',
+			duration: '0:18',
+			videoId: 'JNdHyIFtRy8',
+		},
+		{
+			id: 7,
+			title: 'PO Withdraw',
+			description:
+				'This video walks project owners through the process of withdrawing raised funds after a successful launchpad campaign. It includes gas fee handling and confirmation of transactions on-chain.',
+			duration: '0:23',
+			videoId: 'GmTkPKCXcdc',
 		},
 	]
 
 	const charityTutorials = [
 		{
-			id: 5,
-			title: 'Donating to Charity Campaigns',
-			description: 'Learn how to make transparent donations using blockchain',
-			duration: '4:45',
-			difficulty: 'Beginner',
-			videoId: 'dQw4w9WgXcQ',
-			steps: [
-				'Browse charity campaigns',
-				'Verify organization credentials',
-				'Choose donation amount',
-				'Track your donation impact',
-			],
-		},
-		{
-			id: 6,
-			title: 'Creating a Charity Campaign',
-			description:
-				'Guide for charity organizations to create funding campaigns',
-			duration: '10:30',
-			difficulty: 'Intermediate',
-			videoId: 'dQw4w9WgXcQ',
-			steps: [
-				'Register your organization',
-				'Complete verification process',
-				'Create campaign details',
-				'Set funding goals',
-				'Launch and promote',
-			],
-		},
-		{
-			id: 7,
-			title: 'Tracking Donation Impact',
-			description:
-				'How to monitor and verify where your donations are being used',
-			duration: '7:20',
-			difficulty: 'Beginner',
-			videoId: 'dQw4w9WgXcQ',
-			steps: [
-				'Access donation dashboard',
-				'View transaction history',
-				'Check impact reports',
-				'Verify fund usage',
-			],
-		},
-		{
 			id: 8,
-			title: 'Charity Reporting & Transparency',
+			title: 'Create Charity Campaign',
 			description:
-				'Understanding how charities report their activities on blockchain',
-			duration: '9:10',
-			difficulty: 'Intermediate',
-			videoId: 'dQw4w9WgXcQ',
-			steps: [
-				'Understanding blockchain records',
-				'Reading charity reports',
-				'Verifying fund allocation',
-				'Impact measurement metrics',
-			],
+				'This tutorial helps charity organizations set up a new fundraising campaign on the platform. It covers how to register, verify your organization, and configure campaign details with transparency in mind.',
+			duration: '10:30',
+			videoId: 'xy6sTswMtdk', // Replace with actual video ID
+		},
+		{
+			id: 9,
+			title: 'Donate to Charity',
+			description:
+				'Learn how individuals can contribute to verified charity campaigns using blockchain. This video walks through selecting a campaign, donating tokens, and tracking the donation process on-chain.',
+			duration: '0:28',
+			videoId: '6z1rZJWRQrI',
+		},
+		{
+			id: 10,
+			title: 'PO Upload History',
+			description:
+				'A step-by-step guide for project owners to upload proof-of-use or impact reports. This helps maintain donor trust and improves campaign transparency by recording verifiable history on-chain.',
+			duration: '0:24',
+			videoId: 'ku6whp6c8RY',
+		},
+		{
+			id: 11,
+			title: 'PO Withdraw',
+			description:
+				'In this tutorial, charity owners learn how to securely withdraw donated funds once campaign milestones are met. It includes on-chain verification and safe wallet interaction.',
+			duration: '0:25',
+			videoId: '1s9DOzMI2Vk',
 		},
 	]
 
@@ -251,7 +218,7 @@ const Tutorial = () => {
 										<h4 className="text-lg font-semibold text-white mb-3">
 											What you&apos;ll learn:
 										</h4>
-										<ul className="space-y-2">
+										{/* <ul className="space-y-2">
 											{tutorial.steps.map((step, index) => (
 												<li
 													key={index}
@@ -263,7 +230,7 @@ const Tutorial = () => {
 													{step}
 												</li>
 											))}
-										</ul>
+										</ul> */}
 									</div>
 
 									{/* Actions */}
