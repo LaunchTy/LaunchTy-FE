@@ -180,7 +180,6 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 					launchpad_end_date: endDate,
 					wallet_address: account.address,
 				}
-				console.log('Submitting launchpad data:', launchpadData)
 
 				const response = await fetch(
 					`/api/launchpad/update?launchpad_id=${id}`,
@@ -204,7 +203,6 @@ const CreateLaunchpad = ({ isEditing = false, id }: CreateLaunchpadProps) => {
 				}
 
 				const data = await response.json()
-
 				console.log('API Success Response:', data)
 
 				if (!data.success) {

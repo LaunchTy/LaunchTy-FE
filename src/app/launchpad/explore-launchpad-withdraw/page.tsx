@@ -135,14 +135,33 @@ const ExploreProjectPage = () => {
 						})
 						console.log('Total withdraw:', totalWithdraw)
 
-						const isSoftcapReached: boolean = (await readContract(
-							publicClient,
-							{
+						// const isSoftcapReached: boolean = (await readContract(
+						// 	publicClient,
+						// 	{
+						// 		address: id as Address,
+						// 		abi: LaunchpadABI,
+						// 		functionName: 'isSoftcapReached',
+						// 	}
+						// )) as boolean
+
+						// console.log(`Is softcap reached for ${id}: `, isSoftcapReached)
+						const [raisedAmount, softCap] = await Promise.all([
+							readContract(publicClient, {
 								address: id as Address,
 								abi: LaunchpadABI,
-								functionName: 'isSoftcapReached',
-							}
-						)) as boolean
+								functionName: 'getRaisedAmount',
+							}),
+							readContract(publicClient, {
+								address: id as Address,
+								abi: LaunchpadABI,
+								functionName: 'getSoftCap',
+							}),
+						])
+						console.log('Raised amount:', raisedAmount)
+						console.log('Soft cap:', softCap)
+
+						const isSoftcapReached =
+							BigInt(raisedAmount as bigint) >= BigInt(softCap as bigint)
 
 						console.log(`Is softcap reached for ${id}: `, isSoftcapReached)
 						return {
@@ -347,7 +366,7 @@ const ExploreProjectPage = () => {
 			) : (
 				<>
 					<ExploreProject
-						title="Explore Projects"
+						title="My Invesment"
 						backgroundImage={ExploreProjectWithdraw.src}
 						searchPlaceholder="Search projects..."
 						onSearchChange={handleSearchChange}

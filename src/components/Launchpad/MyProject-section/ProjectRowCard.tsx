@@ -143,6 +143,7 @@ const ProjectSection = ({
 				: project.status_charity
 		return status !== 'deny'
 	})
+	console.log('Filtered Projects:', filteredProjects)
 
 	const getButtonsForProject = (project: BaseProject) => {
 		const status =
@@ -273,9 +274,11 @@ const ProjectSection = ({
 							</span>{' '}
 							{projectType === 'launchpad'
 								? `${convertNumToOffChainFormat(
-										(project.totalAmount ?? 0).toString(),
+										BigInt(Number(project.totalAmount ?? 0)).toString(),
 										18
-									)} ${project.launchpad_token || ''}`
+									)}
+									
+									${project.launchpad_token || ''}`
 								: `${convertNumToOffChainFormat(
 										(project.totalDonationAmount ?? 0).toString(),
 										18

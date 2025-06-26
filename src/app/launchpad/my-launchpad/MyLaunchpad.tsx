@@ -19,7 +19,7 @@ import YourProject from '@/public/YourProject.svg' // Adjust the import path as 
 import axios from 'axios' // Adjust the import path as necessary
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react' // Adjust the import path as necessary
-import { Address, createPublicClient, http } from 'viem'
+import { Address, createPublicClient, http, isAddress } from 'viem'
 import { readContract, waitForTransactionReceipt } from 'viem/actions'
 import { sepolia } from 'viem/chains'
 import { useAccount, useReadContract, useWriteContract } from 'wagmi'
@@ -103,6 +103,14 @@ const MyProject = () => {
 				launchpadsData.map(async (launchpad) => {
 					const id = launchpad.launchpad_id
 					console.log('Fetching data for ID:', id)
+					// if (isAddress(id) === false) {
+					// 	console.error(`Invalid address for ID ${id}`)
+					// 	return {
+					// 		...convertLaunchpadToProject(launchpad),
+					// 		launchpadAddress: '0x0',
+					// 		totalAmount: 0,
+					// 	}
+					// }
 					try {
 						const totalAmount = await readContract(publicClient, {
 							address: id as Address,
