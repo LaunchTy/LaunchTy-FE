@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import prismaClient from "@/prisma";
 
+export const dynamic = "force-dynamic";
+
 const prisma = prismaClient;
 
 // GET all donations

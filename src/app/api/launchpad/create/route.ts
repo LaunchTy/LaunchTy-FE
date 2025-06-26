@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import prismaClient from "@/prisma";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
 	console.log("API route hit!");
 	try {

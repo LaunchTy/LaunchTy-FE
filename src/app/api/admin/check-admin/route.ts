@@ -1,5 +1,8 @@
 // /app/api/admin/check-admin/route.ts
 import { NextResponse } from "next/server";
+import prismaClient from "@/prisma";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
 	try {

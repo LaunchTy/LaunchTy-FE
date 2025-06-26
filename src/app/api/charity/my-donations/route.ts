@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import prismaClient from "@/prisma";
 
+export const dynamic = "force-dynamic";
+
 const prisma = prismaClient;
 
 export async function POST(request: Request) {
