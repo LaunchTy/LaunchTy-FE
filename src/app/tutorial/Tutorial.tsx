@@ -14,7 +14,7 @@ const Tutorial = () => {
 			title: 'Connect Wallet',
 			description:
 				'Before interacting with the launchpad, users need to connect their cryptocurrency wallet. This video guides you through connecting a wallet securely and verifying the connection.',
-			duration: '0:22',
+			duration: '0:19',
 			videoId: '0Fer1qx3CPM', // Replace with actual video ID
 		},
 		{
@@ -73,7 +73,7 @@ const Tutorial = () => {
 			title: 'Create Charity Campaign',
 			description:
 				'This tutorial helps charity organizations set up a new fundraising campaign on the platform. It covers how to register, verify your organization, and configure campaign details with transparency in mind.',
-			duration: '10:30',
+			duration: '0:58',
 			videoId: 'xy6sTswMtdk', // Replace with actual video ID
 		},
 		{
