@@ -85,6 +85,15 @@ model Charity {
   status                 String     @default("pending")
   project_owner          User?      @relation("OwnerUser", fields: [project_owner_id], references: [user_id])
   donations              Donation[]
+  Evidence               Evidence[]
+}
+
+model Evidence {
+  evidence_id     String   @id @default(uuid())
+  evidence_images String[]
+  charity_id      String
+  status          String
+  charity         Charity  @relation(fields: [charity_id], references: [charity_id])
 }
 
 model Donation {
