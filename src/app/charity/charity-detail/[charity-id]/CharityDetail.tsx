@@ -581,7 +581,7 @@ const CharityDetail = () => {
 				</div>
 				<div className="flex items-start justify-center gap-9">
 					<div className="w-6/12 h-fit top-12 flex flex-col">
-						<div className="h-[520px]">
+						<div className="h-[500px]">
 							<HistoryEvidence
 								images={charity.evidence.map((img, index) => ({
 									src: img,
@@ -589,7 +589,7 @@ const CharityDetail = () => {
 								}))}
 							/>
 						</div>
-						<div className="mt-20">
+						<div className="">
 							<AddressInfo
 								fields={[
 									{
@@ -603,6 +603,25 @@ const CharityDetail = () => {
 									{
 										label: 'Status',
 										value: status,
+									},
+								]}
+								className="h-[200px]"
+							/>
+						</div>
+						<div className="">
+							<AddressInfo
+								fields={[
+									{
+										label: 'Total charity raised',
+										value: charity.totalDonationAmount?.toString() || '0',
+									},
+									{
+										label: 'Total donors',
+										value: charity.donations?.length.toString() || '0',
+									},
+									{
+										label: 'Token Symbol',
+										value: charity.charity_token_symbol,
 									},
 								]}
 								className="h-[200px]"
@@ -630,7 +649,7 @@ const CharityDetail = () => {
 								/>
 							</div>
 						)}
-						<div className="h-[380px] flex flex-col gap-2 w-full">
+						<div className="flex flex-col gap-2 w-full">
 							{isOwner ? (
 								<UploadHistoryEvidence
 									charityId={charity.charity_id}
@@ -643,25 +662,6 @@ const CharityDetail = () => {
 									handleDonate={handleDonate}
 								/>
 							)}
-						</div>
-						<div className="mt-20">
-							<AddressInfo
-								fields={[
-									{
-										label: 'Total charity raised',
-										value: charity.totalDonationAmount?.toString() || '0',
-									},
-									{
-										label: 'Total donors',
-										value: charity.donations?.length.toString() || '0',
-									},
-									{
-										label: 'Token Symbol',
-										value: charity.charity_token_symbol,
-									},
-								]}
-								className="h-[200px]"
-							/>
 						</div>
 					</div>
 				</div>

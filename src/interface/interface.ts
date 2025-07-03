@@ -78,6 +78,7 @@ export interface Charity {
 	user?: User;
 	project_owner?: User;
 	donations?: Donation[];
+	Evidence?: Evidence[];
 	totalDonationAmount?: number; // Total amount donated to this charity
 }
 
@@ -90,6 +91,14 @@ export interface Donation {
 	charity_id: string;
 	charity?: Charity;
 	user?: User;
+}
+
+export interface Evidence {
+	evidence_id: string;
+	evidence_images: string[];
+	charity_id: string;
+	status: "pending" | "approve" | "deny";
+	charity?: Charity;
 }
 
 export interface BaseProject {

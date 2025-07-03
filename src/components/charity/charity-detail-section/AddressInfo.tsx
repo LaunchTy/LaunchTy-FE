@@ -14,7 +14,7 @@ interface AddressInfoProps {
 const AddressInfo = ({ title, fields, className = '' }: AddressInfoProps) => {
 	return (
 		<div
-			className={`mb-28 flex flex-col gap-5 h-auto w-full rounded-xl glass-component-1 p-8 ${className}`}
+			className={`mb-20 flex flex-col gap-5 h-auto w-full rounded-xl glass-component-1 p-8 ${className}`}
 		>
 			{title && <span className="text-[25px] font-bold">{title}</span>}
 			{fields.map((field, i) => (

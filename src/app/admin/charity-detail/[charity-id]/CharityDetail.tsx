@@ -7,6 +7,7 @@ import LoadingModal from '@/components/UI/modal/LoadingModal'
 import { Modal } from '@/components/UI/modal/AnimatedModal'
 import StakeArea from '@/components/UI/shared/StakeArea'
 import HistoryEvidence from '@/components/charity/charity-detail-section/HistoryEvidence'
+import PendingEvidence from '@/components/admin/PendingEvidence'
 import AddressInfo from '@/components/charity/charity-detail-section/AddressInfo'
 import { Charity } from '@/interface/interface'
 import Button from '@/components/UI/button/Button'
@@ -33,6 +34,7 @@ const CharityDetail = () => {
 	const [loading, setLoading] = useState(true)
 	const [backgroundImage, setBackgroundImage] = useState<string>('')
 	const [steps, setSteps] = useState(2)
+	const [hasPendingEvidence, setHasPendingEvidence] = useState(false)
 	const handleImageChange = (imageSrc: string) => {
 		setBackgroundImage(imageSrc)
 	}
@@ -95,6 +97,11 @@ const CharityDetail = () => {
 			console.error(error)
 			alert('Failed to update project status')
 		}
+	}
+
+	const handleEvidenceAction = () => {
+		// Refresh the page to show updated evidence
+		window.location.reload()
 	}
 
 	return (
@@ -160,6 +167,12 @@ const CharityDetail = () => {
 						<div className="flex items-start justify-center gap-9">
 							<div className="w-6/12">
 								<div className="h-[500px]">
+									<PendingEvidence
+										charityId={charity.charity_id}
+										onEvidenceAction={handleEvidenceAction}
+									/>
+								</div>
+								<div className="mt-4 h-[500px]">
 									<HistoryEvidence
 										images={
 											charity.evidence?.map((src, idx) => ({

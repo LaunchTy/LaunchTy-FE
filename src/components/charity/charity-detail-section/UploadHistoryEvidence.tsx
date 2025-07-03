@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
-import { UploadCloud } from 'lucide-react'
+import { UploadCloud, Clock, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
 import Folder from '@/components/UI/shared/Folder'
 
 type Props = {
@@ -11,6 +11,13 @@ type Props = {
 	charityId: string
 	onUploadSuccess?: () => void
 	onError?: (message: string, code: string) => void
+}
+
+interface Evidence {
+	evidence_id: string
+	evidence_images: string[]
+	charity_id: string
+	status: 'pending' | 'approve' | 'deny'
 }
 
 const UploadHistoryEvidence = ({
@@ -25,6 +32,50 @@ const UploadHistoryEvidence = ({
 	const [historyEvidence, setHistoryEvidence] = useState<string[]>([])
 	const [isUploading, setIsUploading] = useState(false)
 	const [isOpeningFileExplorer, setIsOpeningFileExplorer] = useState(false)
+	const [pendingEvidence, setPendingEvidence] = useState<Evidence[]>([])
+	const [deniedEvidence, setDeniedEvidence] = useState<Evidence[]>([])
+	const [isRefreshing, setIsRefreshing] = useState(false)
+	const [previousPendingCount, setPreviousPendingCount] = useState(0)
+
+	// Fetch existing evidence submissions
+	const fetchEvidenceSubmissions = async () => {
+		setIsRefreshing(true)
+		try {
+			const response = await fetch(`/api/evidence/get/${charityId}`)
+			if (response.ok) {
+				const result = await response.json()
+				if (result.success) {
+					const pending = result.data.filter((evidence: Evidence) => evidence.status === 'pending')
+					const denied = result.data.filter((evidence: Evidence) => evidence.status === 'deny')
+					
+					// Check if pending count decreased (evidence was approved/denied)
+					if (pending.length < previousPendingCount && previousPendingCount > 0) {
+						const approvedCount = previousPendingCount - pending.length
+						alert(`Great news! ${approvedCount} evidence submission${approvedCount !== 1 ? 's' : ''} ${approvedCount === 1 ? 'has been' : 'have been'} processed.`)
+					}
+					
+					setPendingEvidence(pending)
+					setDeniedEvidence(denied)
+					setPreviousPendingCount(pending.length)
+				}
+			}
+		} catch (error) {
+			console.error('Failed to fetch evidence submissions:', error)
+		} finally {
+			setIsRefreshing(false)
+		}
+	}
+
+	useEffect(() => {
+		fetchEvidenceSubmissions()
+		
+		// Set up periodic refresh every 30 seconds
+		const interval = setInterval(() => {
+			fetchEvidenceSubmissions()
+		}, 30000)
+		
+		return () => clearInterval(interval)
+	}, [charityId])
 
 	const convertToBase64 = (file: File): Promise<string> => {
 		return new Promise((resolve, reject) => {
@@ -64,31 +115,15 @@ const UploadHistoryEvidence = ({
 
 		setIsUploading(true)
 		try {
-			// First, fetch the current charity data to get existing evidence
-			const getResponse = await fetch(`/api/charity/get/${charityId}`)
-			if (!getResponse.ok) {
-				onError?.('Failed to fetch current charity data', '500')
-				return
-			}
-
-			const charityData = await getResponse.json()
-			if (!charityData.success) {
-				onError?.('Failed to fetch current charity data', '500')
-				return
-			}
-
-			// Combine existing evidence with new evidence
-			const existingEvidence = charityData.data.evidence || []
-			const updatedEvidence = [...existingEvidence, ...historyEvidence]
-
-			// Update the charity with combined evidence
-			const response = await fetch(`/api/charity/update/${charityId}`, {
-				method: 'PUT',
+			// Create evidence entry with pending status for admin approval
+			const response = await fetch('/api/evidence/create', {
+				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({
-					evidence: updatedEvidence,
+					evidence_images: historyEvidence,
+					charity_id: charityId,
 				}),
 			})
 
@@ -102,7 +137,11 @@ const UploadHistoryEvidence = ({
 					}
 					// Reset the file explorer flag
 					setIsOpeningFileExplorer(false)
+					// Refresh evidence submissions to show the new pending one
+					await fetchEvidenceSubmissions()
 					onUploadSuccess?.()
+					// Show success message
+					alert('Evidence submitted successfully! Waiting for admin approval.')
 				} else {
 					onError?.('Failed to upload history evidence: ' + result.error, '500')
 				}
@@ -120,12 +159,170 @@ const UploadHistoryEvidence = ({
 	}
 
 	return (
-		<div className="h-[520px] flex flex-col gap-4 w-full">
-			{/* Phần Upload */}
-			<div className="border rounded-xl glass-component-1 text-white w-full p-6 flex flex-col gap-5">
-				<span className="text-lg font-semibold text-white">
-					Upload History Evidence (for project owner)
-				</span>
+		<div className="h-auto flex flex-col gap-4 w-full">
+			{/* Summary Section */}
+			{(pendingEvidence.length > 0 || deniedEvidence.length > 0) && (
+				<div className="border rounded-xl glass-component-1 text-white w-full p-4">
+					<div className="flex items-center justify-between">
+						<div className="flex items-center gap-4">
+							{pendingEvidence.length > 0 && (
+								<div className="flex items-center gap-2">
+									<Clock className="text-yellow-400" size={16} />
+									<span className="text-sm">
+										{pendingEvidence.length} pending submission{pendingEvidence.length !== 1 ? 's' : ''}
+									</span>
+								</div>
+							)}
+							{deniedEvidence.length > 0 && (
+								<div className="flex items-center gap-2">
+									<XCircle className="text-red-400" size={16} />
+									<span className="text-sm">
+										{deniedEvidence.length} denied submission{deniedEvidence.length !== 1 ? 's' : ''}
+									</span>
+								</div>
+							)}
+						</div>
+						<button
+							onClick={fetchEvidenceSubmissions}
+							disabled={isRefreshing}
+							className="flex items-center gap-2 text-xs text-gray-300 hover:text-white transition-colors disabled:opacity-50"
+						>
+							<RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
+							Check for updates
+						</button>
+					</div>
+				</div>
+			)}
+
+			{/* Pending Evidence Section */}
+			{pendingEvidence.length > 0 && (
+				<div className="border rounded-xl glass-component-1 text-white w-full p-6 flex flex-col gap-4">
+					<div className="flex items-center justify-between">
+						<div className="flex items-center gap-2">
+							<Clock className="text-yellow-400" size={20} />
+							<span className="text-lg font-semibold text-white">
+								Pending Evidence ({pendingEvidence.length})
+							</span>
+						</div>
+						<button
+							onClick={fetchEvidenceSubmissions}
+							disabled={isRefreshing}
+							className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors disabled:opacity-50"
+						>
+							<RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
+							Refresh
+						</button>
+					</div>
+					<div className="text-sm text-gray-300">
+						Your evidence submissions are waiting for admin approval
+					</div>
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+						{pendingEvidence.map((evidence, index) => (
+							<div key={evidence.evidence_id} className="border border-yellow-500/30 rounded-lg p-3">
+								<div className="flex items-center gap-2 mb-2">
+									<Clock className="text-yellow-400" size={16} />
+									<span className="text-sm font-medium">Submission {index + 1}</span>
+								</div>
+								<div className="grid grid-cols-2 gap-2">
+									{evidence.evidence_images.slice(0, 4).map((image, imgIndex) => (
+										<div key={imgIndex} className="relative aspect-square">
+											<Image
+												src={image}
+												alt={`Evidence ${imgIndex + 1}`}
+												fill
+												className="object-cover rounded"
+											/>
+										</div>
+									))}
+									{evidence.evidence_images.length > 4 && (
+										<div className="relative aspect-square bg-gray-700 rounded flex items-center justify-center">
+											<span className="text-xs text-gray-300">
+												+{evidence.evidence_images.length - 4} more
+											</span>
+										</div>
+									)}
+								</div>
+								<div className="text-xs text-yellow-400 mt-2">
+									{evidence.evidence_images.length} image{evidence.evidence_images.length !== 1 ? 's' : ''} • Awaiting review
+								</div>
+							</div>
+						))}
+					</div>
+				</div>
+			)}
+
+			{/* Denied Evidence Section */}
+			{deniedEvidence.length > 0 && (
+				<div className="border rounded-xl glass-component-1 text-white w-full p-6 flex flex-col gap-4">
+					<div className="flex items-center justify-between">
+						<div className="flex items-center gap-2">
+							<XCircle className="text-red-400" size={20} />
+							<span className="text-lg font-semibold text-white">
+								Denied Evidence ({deniedEvidence.length})
+							</span>
+						</div>
+						<button
+							onClick={fetchEvidenceSubmissions}
+							disabled={isRefreshing}
+							className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors disabled:opacity-50"
+						>
+							<RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
+							Refresh
+						</button>
+					</div>
+					<div className="text-sm text-gray-300">
+						These submissions were not approved. You can submit new evidence.
+					</div>
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+						{deniedEvidence.map((evidence, index) => (
+							<div key={evidence.evidence_id} className="border border-red-500/30 rounded-lg p-3">
+								<div className="flex items-center gap-2 mb-2">
+									<XCircle className="text-red-400" size={16} />
+									<span className="text-sm font-medium">Submission {index + 1}</span>
+								</div>
+								<div className="grid grid-cols-2 gap-2">
+									{evidence.evidence_images.slice(0, 4).map((image, imgIndex) => (
+										<div key={imgIndex} className="relative aspect-square">
+											<Image
+												src={image}
+												alt={`Evidence ${imgIndex + 1}`}
+												fill
+												className="object-cover rounded opacity-50"
+											/>
+										</div>
+									))}
+									{evidence.evidence_images.length > 4 && (
+										<div className="relative aspect-square bg-gray-700 rounded flex items-center justify-center">
+											<span className="text-xs text-gray-300">
+												+{evidence.evidence_images.length - 4} more
+											</span>
+										</div>
+									)}
+								</div>
+								<div className="text-xs text-red-400 mt-2">
+									{evidence.evidence_images.length} image{evidence.evidence_images.length !== 1 ? 's' : ''} • Not approved
+								</div>
+							</div>
+						))}
+					</div>
+				</div>
+			)}
+
+			{/* Upload Section */}
+			<div className={`border rounded-xl glass-component-1 text-white w-full p-6 flex flex-col gap-5 ${
+				pendingEvidence.length > 0 ? 'border-blue-500/50 bg-blue-500/5' : ''
+			}`}>
+				<div className="flex items-center gap-2">
+					<UploadCloud className="text-blue-400" size={20} />
+					<span className="text-lg font-semibold text-white">
+						Upload New History Evidence
+					</span>
+					{pendingEvidence.length > 0 && (
+						<span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
+							{pendingEvidence.length} pending
+						</span>
+					)}
+				</div>
 
 				{/* Drop Zone */}
 				<div
@@ -201,6 +398,11 @@ const UploadHistoryEvidence = ({
 								<div className="text-sm">
 									or drag and drop multiple images here
 								</div>
+								{pendingEvidence.length > 0 && (
+									<div className="text-xs text-yellow-400 mt-2">
+										You can continue submitting while waiting for approval
+									</div>
+								)}
 							</div>
 						</div>
 					)}
@@ -217,8 +419,8 @@ const UploadHistoryEvidence = ({
 				}`}
 			>
 				{isUploading
-					? 'Uploading...'
-					: `Upload ${historyEvidence.length > 0 ? `(${historyEvidence.length} images)` : ''}`}
+					? 'Uploading for Admin Review...'
+					: `Submit for Review ${historyEvidence.length > 0 ? `(${historyEvidence.length} images)` : ''}`}
 			</button>
 		</div>
 	)
