@@ -16,8 +16,13 @@ export async function GET(req: Request) {
 			);
 		}
 
-		const adminAddress = "0x0dB79A1EF3623586431DcE50a6173cf157550b21"; // hardcode admin wallet
-		const isAdmin = address.toLowerCase() === adminAddress.toLowerCase();
+		const adminAddresses = [
+			"0x0dB79A1EF3623586431DcE50a6173cf157550b21",
+			"0x03eA53511cB61e3A3b7402BEdF494Bd74a322523",
+		];
+		const isAdmin = adminAddresses.some(
+			(admin) => admin.toLowerCase() === address.toLowerCase()
+		);
 
 		return NextResponse.json({ success: true, isAdmin }, { status: 200 });
 	} catch (err) {
