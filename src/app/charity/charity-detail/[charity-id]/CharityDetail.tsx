@@ -438,8 +438,7 @@ const CharityDetail = () => {
 
 	const handleSuccessClose = () => {
 		setSuccessOpen(false)
-		// Refresh the page to show updated donation data or new evidence
-		window.location.reload()
+		// Just close the modal without reloading the page
 	}
 
 	const handleEdit = () => {

@@ -51,7 +51,8 @@ const UploadHistoryEvidence = ({
 					// Check if pending count decreased (evidence was approved/denied)
 					if (pending.length < previousPendingCount && previousPendingCount > 0) {
 						const approvedCount = previousPendingCount - pending.length
-						alert(`Great news! ${approvedCount} evidence submission${approvedCount !== 1 ? 's' : ''} ${approvedCount === 1 ? 'has been' : 'have been'} processed.`)
+						// Use a more subtle notification instead of alert
+						console.log(`Great news! ${approvedCount} evidence submission${approvedCount !== 1 ? 's' : ''} ${approvedCount === 1 ? 'has been' : 'have been'} processed.`)
 					}
 					
 					setPendingEvidence(pending)
@@ -140,8 +141,7 @@ const UploadHistoryEvidence = ({
 					// Refresh evidence submissions to show the new pending one
 					await fetchEvidenceSubmissions()
 					onUploadSuccess?.()
-					// Show success message
-					alert('Evidence submitted successfully! Waiting for admin approval.')
+					// Success message is handled by the parent component's success modal
 				} else {
 					onError?.('Failed to upload history evidence: ' + result.error, '500')
 				}

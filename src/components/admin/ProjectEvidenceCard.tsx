@@ -26,6 +26,7 @@ interface ProjectEvidenceCardProps {
 	adminprojects: Project[]
 	className?: string
 	onEdit?: (projectId: string) => void
+	onView?: (projectId: string) => void
 	showCountdown?: boolean
 	countdownDuration?: number
 	path?: string
@@ -37,6 +38,7 @@ const ProjectEvidenceCard = ({
 	showCountdown = true,
 	countdownDuration = 12,
 	onEdit,
+	onView,
 	path,
 }: ProjectEvidenceCardProps) => {
 	const sectionRef = useRef<HTMLElement>(null)
@@ -122,8 +124,7 @@ const ProjectEvidenceCard = ({
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.4, ease: 'easeOut' }}
-						className="relative z-20 px-6 py-[7px] border border-gray-300 shadow-md glass-component-2 rounded-[40px] flex items-center gap-4 cursor-pointer"
-						onClick={() => router.push(`${path}/${project.id}`)}
+						className="relative z-20 px-6 py-[7px] border border-gray-300 shadow-md glass-component-2 rounded-[40px] flex items-center gap-4"
 					>
 						{/* Project Image */}
 						<div className="w-[60px] h-[60px] flex-shrink-0 rounded-full overflow-hidden">
@@ -151,7 +152,7 @@ const ProjectEvidenceCard = ({
 								</p>
 							</div>
 
-							<div className="grid grid-cols-3 gap-6 items-center">
+							<div className="grid grid-cols-4 gap-6 items-center">
 								{/* Token */}
 								<div className="text-white text-sm">
 									<span className="font-medium">Token:</span>{' '}
@@ -169,6 +170,19 @@ const ProjectEvidenceCard = ({
 								<div className="text-white text-sm">
 									{project.newEvidences ?? 0}{' '}
 									<span className="font-medium">new evidence</span>
+								</div>
+								
+								{/* View Button */}
+								<div className="flex justify-end">
+									<Button
+										onClick={(e) => {
+											e.stopPropagation()
+											onView?.(project.id)
+										}}
+										className="bg-gradient text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300"
+									>
+										View Evidence
+									</Button>
 								</div>
 							</div>
 						</div>

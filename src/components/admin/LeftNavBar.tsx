@@ -80,6 +80,41 @@ const LeftMenu: React.FC<LeftMenuProps> = ({ activeMenu, setActiveMenu }) => {
 				<li>
 					<button
 						type="button"
+						onClick={() => setActiveMenu('dashboard')}
+						className={`flex items-center gap-3 text-sm transition duration-150 pt-2 ${
+							activeMenu === 'dashboard'
+								? 'text-[#F05550] font-semibold'
+								: 'hover:text-[#8132a2]'
+						} bg-transparent border-none p-0 m-0 text-left w-full`}
+					>
+						<svg
+							width="28"
+							height="28"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="2"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							className="w-7 h-7"
+						>
+							<rect x="3" y="3" width="7" height="7" />
+							<rect x="14" y="3" width="7" height="7" />
+							<rect x="14" y="14" width="7" height="7" />
+							<rect x="3" y="14" width="7" height="7" />
+						</svg>
+						<span
+							className={`transition-all duration-300 ${
+								isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto pl-2'
+							}`}
+						>
+							Dashboard
+						</span>
+					</button>
+				</li>
+				<li>
+					<button
+						type="button"
 						onClick={() => setActiveMenu('launchpad')}
 						className={`flex items-center gap-3 text-sm transition duration-150 pt-2 ${
 							activeMenu === 'launchpad'

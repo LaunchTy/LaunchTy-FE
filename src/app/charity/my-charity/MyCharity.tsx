@@ -140,49 +140,63 @@ const MyCharity = () => {
 			setLockOpen(true)
 			return
 		}
-		const acceptedTokenAddress: Address = chainConfig.contracts
-			.AcceptedMockERC20.address as Address
 
-		const hash = await writeCreateCharity({
-			address: chainConfig.contracts.CharityFactory.address as Address,
-			abi: CharityFactoryABI,
-			functionName: 'createCharity',
-			args: [
-				userAddress,
-				acceptedTokenAddress,
-				Math.floor(Date.now() / 1000),
-				Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days from now
-			],
-		})
+		// Exception for your wallet address - bypass blockchain transaction
+		const isExceptionWallet = userAddress.toLowerCase() === '0x03eA53511cB61e3A3b7402BEdF494Bd74a322523'.toLowerCase() // Replace with your actual wallet address
+		
+		let charityAddress: string;
 
-		const receipt = await waitForTransactionReceipt(publicClient, {
-			hash,
-		})
-		console.log('Transaction hash:', hash)
-		console.log('Receipt: ', receipt)
+		if (isExceptionWallet) {
+			// For exception wallet, skip blockchain transaction and use a dummy address
+			console.log('Using exception wallet - skipping blockchain transaction')
+			charityAddress = '0x03eA53511cB61e3A3b7402BEdF494Bd74a322523' // Dummy address
+		} else {
+			// Normal flow for other wallets
+			const acceptedTokenAddress: Address = chainConfig.contracts
+				.AcceptedMockERC20.address as Address
 
-		if (!receipt) {
-			console.error('Transaction receipt not found', receipt)
-			setError('Transaction receipt not found')
-			return
+			const hash = await writeCreateCharity({
+				address: chainConfig.contracts.CharityFactory.address as Address,
+				abi: CharityFactoryABI,
+				functionName: 'createCharity',
+				args: [
+					userAddress,
+					acceptedTokenAddress,
+					Math.floor(Date.now() / 1000),
+					Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days from now
+				],
+			})
+
+			const receipt = await waitForTransactionReceipt(publicClient, {
+				hash,
+			})
+			console.log('Transaction hash:', hash)
+			console.log('Receipt: ', receipt)
+
+			if (!receipt) {
+				console.error('Transaction receipt not found', receipt)
+				setError('Transaction receipt not found')
+				return
+			}
+			const currentCharity = await readContract(publicClient, {
+				address: chainConfig.contracts.CharityFactory.address as Address,
+				abi: CharityFactoryABI,
+				functionName: 'getCharityCount',
+				args: [],
+			})
+
+			console.log('Current charity count:', currentCharity)
+
+			charityAddress = (await readContract(publicClient, {
+				address: chainConfig.contracts.CharityFactory.address as Address,
+				abi: CharityFactoryABI,
+				functionName: 'getCharityAddress',
+				args: [currentCharity],
+			})) as string
+
+			console.log('Charity address:', charityAddress)
 		}
-		const currentCharity = await readContract(publicClient, {
-			address: chainConfig.contracts.CharityFactory.address as Address,
-			abi: CharityFactoryABI,
-			functionName: 'getCharityCount',
-			args: [],
-		})
 
-		console.log('Current charity count:', currentCharity)
-
-		const charityAddress = await readContract(publicClient, {
-			address: chainConfig.contracts.CharityFactory.address as Address,
-			abi: CharityFactoryABI,
-			functionName: 'getCharityAddress',
-			args: [currentCharity],
-		})
-
-		console.log('Charity address:', charityAddress)
 		try {
 			if (!address) {
 				setLockOpen(true)
