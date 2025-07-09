@@ -9,7 +9,7 @@ import { useAccount } from 'wagmi'
 import axios from 'axios'
 import { useEffect } from 'react'
 import CardWithChart from '@/components/admin/CardWithChart'
-import UserCard from '@/components/admin/UserCard'
+import NumberCard from '@/components/admin/CardWithNumber'
 import ProjectEvidenceCard from '@/components/admin/ProjectEvidenceCard'
 import EvidenceDetailModal from '@/components/admin/EvidenceDetailModal'
 import Button from '@/components/UI/button/Button'
@@ -30,14 +30,24 @@ const AdminDashboard = () => {
 	const [visibleCountProfit, setVisibleCountProfit] = useState(initialVisible)
 
 	const [profitProjects, setProfitProjects] = useState<Project[]>([])
-	const [selectedCharityId, setSelectedCharityId] = useState<string | null>(null)
+	const [selectedCharityId, setSelectedCharityId] = useState<string | null>(
+		null
+	)
 	const [isEvidenceModalOpen, setIsEvidenceModalOpen] = useState(false)
 	const [isLoadingData, setIsLoadingData] = useState(false)
 	const [dashboardStats, setDashboardStats] = useState({
 		launchpads: { pending: 0, approved: 0, denied: 0, published: 0, total: 0 },
 		charities: { pending: 0, approved: 0, denied: 0, published: 0, total: 0 },
-		users: { total: 0, launchpadUsers: 0, charityUsers: 0 }
+		users: { total: 0, launchpadUsers: 0, charityUsers: 0 },
 	})
+	const [totalLaunchpad, setTotalLaunchpad] = useState(0)
+	const [seriesLaunchpad, setSeriesLaunchpad] = useState<number[]>([])
+	const [labelLaunchpad, setLabelLaunchpad] = useState<string[]>([])
+	const [totalCharity, setTotalCharity] = useState(0)
+	const [seriesCharity, setSeriesCharity] = useState<number[]>([])
+	const [labelCharity, setLabelCharity] = useState<string[]>([])
+	const [totalUser, setTotalUser] = useState(0)
+	const [totalProfit, setTotalProfit] = useState(0)
 
 	const visibleEvidenceProjects = evidenceProjects.slice(
 		0,
@@ -78,14 +88,17 @@ const AdminDashboard = () => {
 			const statsResponse = await axios.get('/api/admin/dashboard/statistics')
 			console.log('Dashboard statistics response:', statsResponse.data)
 			setDashboardStats(statsResponse.data.data)
-			
+
 			// Fetch evidence projects
 			const evidenceResponse = await axios.get(
 				'/api/admin/dashboard/project-evidence'
 			)
-			console.log('Dashboard evidence projects response:', evidenceResponse.data)
+			console.log(
+				'Dashboard evidence projects response:',
+				evidenceResponse.data
+			)
 			setEvidenceProjects(evidenceResponse.data.projects)
-			
+
 			// Fetch profit projects
 			const profitResponse = await axios.get(
 				'/api/admin/dashboard/project-profit'
@@ -161,6 +174,62 @@ const AdminDashboard = () => {
 	}, [address, isConnected])
 
 	useEffect(() => {
+		const fetchLaunchpadNumber = async () => {
+			try {
+				const response = await axios.get('/api/admin/dashboard/launchpad-chart')
+				console.log('Launchpad number:', response.data)
+				setTotalLaunchpad(response.data.total)
+				setSeriesLaunchpad(response.data.series)
+				setLabelLaunchpad(response.data.labels)
+			} catch (error) {
+				console.error('Error fetching launchpad number:', error)
+			}
+		}
+		fetchLaunchpadNumber()
+	}, [address, isConnected, loading])
+
+	useEffect(() => {
+		const fetchCharityNumber = async () => {
+			try {
+				const response = await axios.get('/api/admin/dashboard/charity-chart')
+				console.log('Charity number:', response.data)
+				setTotalCharity(response.data.total)
+				setSeriesCharity(response.data.series)
+				setLabelCharity(response.data.labels)
+			} catch (error) {
+				console.error('Error fetching charity number:', error)
+			}
+		}
+		fetchCharityNumber()
+	}, [address, isConnected, loading])
+
+	useEffect(() => {
+		const fetchUserCount = async () => {
+			try {
+				const response = await axios.get('/api/admin/dashboard/user-count')
+				setTotalUser(response.data.total)
+			} catch (error) {
+				console.error('Failed to fetch user count:', error)
+			}
+		}
+
+		fetchUserCount()
+	}, [])
+
+	useEffect(() => {
+		const fetchProfitCount = async () => {
+			try {
+				const response = await axios.get('/api/admin/dashboard/profit-count')
+				setTotalProfit(response.data.totalProfit)
+			} catch (error) {
+				console.error('Failed to fetch user count:', error)
+			}
+		}
+
+		fetchProfitCount()
+	}, [])
+
+	useEffect(() => {
 		const fetchEvidenceProjects = async () => {
 			setIsLoadingData(true)
 			try {
@@ -171,6 +240,23 @@ const AdminDashboard = () => {
 				setEvidenceProjects(response.data.projects)
 			} catch (error) {
 				console.error('Error loading evidence projects:', error)
+			} finally {
+				setIsLoadingData(false)
+			}
+		}
+
+		fetchEvidenceProjects()
+	}, [])
+
+	useEffect(() => {
+		const fetchEvidenceProjects = async () => {
+			try {
+				const response = await axios.get(
+					'/api/admin/dashboard/project-evidence'
+				)
+				setEvidenceProjects(response.data.projects)
+			} catch (error) {
+				console.error('Error loading profit projects:', error)
 			} finally {
 				setIsLoadingData(false)
 			}
@@ -267,24 +353,16 @@ const AdminDashboard = () => {
 						}}
 					/>
 				</div>
-				
+
 				{/* Content Area */}
 				<div className="flex flex-col gap-6 w-full pr-20">
 					{activeMenu === 'launchpad' && (
 						<div className="flex flex-col gap-6">
-							<div className="text-center">
-								<h2 className="text-2xl font-bold text-white mb-4">Launchpad Management</h2>
-								<p className="text-gray-300">Manage launchpad projects and approvals</p>
-							</div>
 							<LaunchpadList />
 						</div>
 					)}
 					{activeMenu === 'charity' && (
 						<div className="flex flex-col gap-6">
-							<div className="text-center">
-								<h2 className="text-2xl font-bold text-white mb-4">Charity Management</h2>
-								<p className="text-gray-300">Manage charity projects and approvals</p>
-							</div>
 							<CharityList />
 						</div>
 					)}
@@ -295,35 +373,36 @@ const AdminDashboard = () => {
 								<div className="flex gap-6 w-2/3">
 									<CardWithChart
 										title="Launchpads"
-										count={dashboardStats.launchpads.total}
-										chartColors={['#FF9800', '#4CAF50', '#FFA726', '#2196F3']}
+										count={totalLaunchpad}
+										series={seriesLaunchpad}
 										legend={[
-											{ label: 'Pending', color: '#FF9800', value: dashboardStats.launchpads.pending },
-											{ label: 'Approved', color: '#4CAF50', value: dashboardStats.launchpads.approved },
-											{ label: 'Denied', color: '#FFA726', value: dashboardStats.launchpads.denied },
-											{ label: 'Published', color: '#2196F3', value: dashboardStats.launchpads.published },
+											{ label: 'Pending', color: '#EF88AD' },
+											{ label: 'Approved', color: '#A53860' },
+											{ label: 'Denied', color: '#670D2F' },
+											{ label: 'Published', color: '#3A0519' },
 										]}
 									/>
+
 									<CardWithChart
-										title="Charities"
-										count={dashboardStats.charities.total}
-										chartColors={['#D946EF', '#10B981', '#F0ABFC', '#3B82F6']}
+										title="Charity"
+										count={totalCharity}
+										series={seriesCharity}
 										legend={[
-											{ label: 'Pending', color: '#D946EF', value: dashboardStats.charities.pending },
-											{ label: 'Approved', color: '#10B981', value: dashboardStats.charities.approved },
-											{ label: 'Denied', color: '#F0ABFC', value: dashboardStats.charities.denied },
-											{ label: 'Published', color: '#3B82F6', value: dashboardStats.charities.published },
+											{ label: 'Pending', color: '#D2D0A0' },
+											{ label: 'Approved', color: '#9EBC8A' },
+											{ label: 'Denied', color: '#73946B' },
+											{ label: 'Published', color: '#537D5D' },
 										]}
 									/>
 								</div>
 
-								{/* User cards */}
+								{/* User + Profit cards */}
 								<div className="flex flex-col gap-3 w-1/3 pr-20">
-									<UserCard title="Launchpad users" count={dashboardStats.users.launchpadUsers} />
-									<UserCard title="Charity users" count={dashboardStats.users.charityUsers} />
+									<NumberCard title="Total users" count={totalUser} />
+									<NumberCard title="Total profit" count={totalProfit} />
 								</div>
 							</div>
-
+							{/* Evidence cards */}
 							<div className="flex flex-1 gap-6 w-full pr-20">
 								<div className="flex flex-col border border-gray-300 shadow-md glass-component-2 rounded-[40px] w-full h-full gap-3">
 									<div className="flex flex-col">
@@ -333,7 +412,7 @@ const AdminDashboard = () => {
 											</h2>
 											{hasMoreEvidence && (
 												<Button
-													className="bg-gradient text-white px-9 py-2.5 text-sm hover:shadow-[...]"
+													className="bg-gradient text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300"
 													onClick={() =>
 														setVisibleCountEvidence((prev) => prev + 5)
 													}
@@ -343,41 +422,58 @@ const AdminDashboard = () => {
 											)}
 										</div>
 										<div className="flex flex-col w-full px-6">
-											<ProjectEvidenceCard
-												adminprojects={visibleEvidenceProjects}
-												showCountdown={true}
-												path="/charity/"
-												onEdit={(projectId) => {
-													console.log(`Edit project ${projectId}`)
-												}}
-												onView={handleViewEvidence}
-											/>
+											{visibleEvidenceProjects.length > 0 ? (
+												<ProjectEvidenceCard
+													adminprojects={visibleEvidenceProjects}
+													showCountdown={true}
+													path="/charity/"
+													onEdit={(projectId) => {
+														console.log(`Edit project ${projectId}`)
+													}}
+													onView={handleViewEvidence}
+												/>
+											) : (
+												<div className="text-white text-center py-6 text-sm">
+													No evidence projects available.
+												</div>
+											)}
 										</div>
 									</div>
 								</div>
 							</div>
+							{/* Profit cards */}
 							<div className="flex flex-1 gap-6 w-full pr-20">
 								<div className="flex flex-col border border-gray-300 shadow-md glass-component-2 rounded-[40px] w-full h-full gap-3">
 									<div className="flex flex-col">
 										<div className="flex flex-row justify-between items-center p-3 px-6">
-											<h2 className="text-lg font-semibold text-white">Profit</h2>
+											<h2 className="text-lg font-semibold text-white">
+												Profit
+											</h2>
 											{hasMoreProfit && (
 												<Button
-													className="bg-gradient text-white px-9 py-2.5 text-sm hover:shadow-[...]"
-													onClick={() => setVisibleCountProfit((prev) => prev + 5)}
+													className="bg-gradient text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300"
+													onClick={() =>
+														setVisibleCountProfit((prev) => prev + 5)
+													}
 												>
 													More
 												</Button>
 											)}
 										</div>
 										<div className="flex flex-col w-full px-6">
-											<ProjectProfitCard
-												adminprojects={visibleProfitProjects}
-												path="/admin/project"
-												onEdit={(projectId, action) => {
-													console.log(`${action} project ${projectId}`)
-												}}
-											/>
+											{visibleProfitProjects.length > 0 ? (
+												<ProjectProfitCard
+													adminprojects={visibleProfitProjects}
+													path="/admin/project"
+													onEdit={(projectId, action) => {
+														console.log(`${action} project ${projectId}`)
+													}}
+												/>
+											) : (
+												<div className="text-white text-center py-6 text-sm">
+													No profit projects available.
+												</div>
+											)}
 										</div>
 									</div>
 								</div>
@@ -386,7 +482,7 @@ const AdminDashboard = () => {
 					)}
 				</div>
 			</div>
-			
+
 			{/* Evidence Detail Modal */}
 			{selectedCharityId && (
 				<EvidenceDetailModal

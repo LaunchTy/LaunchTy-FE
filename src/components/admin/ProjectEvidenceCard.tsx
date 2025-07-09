@@ -171,7 +171,7 @@ const ProjectEvidenceCard = ({
 									{project.newEvidences ?? 0}{' '}
 									<span className="font-medium">new evidence</span>
 								</div>
-								
+
 								{/* View Button */}
 								<div className="flex justify-end">
 									<Button
@@ -179,7 +179,7 @@ const ProjectEvidenceCard = ({
 											e.stopPropagation()
 											onView?.(project.id)
 										}}
-										className="bg-gradient text-white px-9 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300"
+										className="bg-gradient text-white px-2 py-2.5 text-sm hover:shadow-[0_0_15px_rgba(192,74,241,0.8),0_0_25px_rgba(39,159,232,0.6)] transition-shadow duration-300"
 									>
 										View Evidence
 									</Button>

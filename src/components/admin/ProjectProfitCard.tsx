@@ -169,9 +169,7 @@ const ProjectProfitCard = ({
 								{/* Profit */}
 								<div className="text-white text-sm">
 									<span className="font-medium">Profit:</span>{' '}
-									{showCountdown && countdowns[project.id]
-										? countdowns[project.id]
-										: '--'}
+									{project.profit ?? 0}{' '}
 								</div>
 
 								{/* Approve & Deny Buttons */}
