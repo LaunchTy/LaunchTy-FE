@@ -19,6 +19,7 @@ export async function GET(req: Request) {
 		const adminAddresses = [
 			"0x0dB79A1EF3623586431DcE50a6173cf157550b21",
 			"0x03eA53511cB61e3A3b7402BEdF494Bd74a322523",
+			"0xB93B321b734812fE459F22e5bdE5d5F3b165D192",
 		];
 		const isAdmin = adminAddresses.some(
 			(admin) => admin.toLowerCase() === address.toLowerCase()
