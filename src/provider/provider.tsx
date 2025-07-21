@@ -8,7 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 export const config = getDefaultConfig({
 	appName: 'LaunchTy',
-	projectId: 'YOUR_WALLETCONNECT_PROJECT_ID',
+	projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '',
 	chains: [mainnet, sepolia, polygon, anvil],
 	transports: {
 		[mainnet.id]: http(),

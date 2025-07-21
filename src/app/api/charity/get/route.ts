@@ -1,7 +1,7 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import prismaClient from "@/prisma";
-
-export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
 	console.log("=== Charity Fetch API Call Started ===");
