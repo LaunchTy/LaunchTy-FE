@@ -150,3 +150,10 @@ export interface BaseProject {
 	donations?: Donation[];
 	user?: User;
 }
+
+export interface Transaction {
+	tx_hash: string | null;
+	amount: number;
+	datetime: string;
+	name: string; // Launchpad name hoặc Charity name
+}

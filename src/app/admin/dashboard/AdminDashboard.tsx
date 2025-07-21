@@ -8,7 +8,6 @@ import LockModal from '@/components/UI/modal/LockModal'
 import { useAccount } from 'wagmi'
 import axios from 'axios'
 import { useEffect } from 'react'
-import CardWithChart from '@/components/admin/CardWithChart'
 import NumberCard from '@/components/admin/CardWithNumber'
 import ProjectEvidenceCard from '@/components/admin/ProjectEvidenceCard'
 import EvidenceDetailModal from '@/components/admin/EvidenceDetailModal'
@@ -16,6 +15,19 @@ import Button from '@/components/UI/button/Button'
 import ProjectProfitCard from '@/components/admin/ProjectProfitCard'
 import { useRouter } from 'next/navigation'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
+import { Transaction } from '@/interface/interface'
+import dynamic from 'next/dynamic'
+
+// Dynamic import to avoid SSR issues with ApexCharts
+const DynamicCardWithChart = dynamic(
+	() => import('@/components/admin/CardWithChart'),
+	{
+		ssr: false,
+		loading: () => (
+			<div className="animate-pulse bg-gray-700 rounded-lg h-32" />
+		),
+	}
+)
 
 const AdminDashboard = () => {
 	const [activeMenu, setActiveMenu] = useState('dashboard')
@@ -48,6 +60,7 @@ const AdminDashboard = () => {
 	const [labelCharity, setLabelCharity] = useState<string[]>([])
 	const [totalUser, setTotalUser] = useState(0)
 	const [totalProfit, setTotalProfit] = useState(0)
+	const [transactionData, setTransactionData] = useState<Transaction[]>([])
 
 	const visibleEvidenceProjects = evidenceProjects.slice(
 		0,
@@ -299,6 +312,102 @@ const AdminDashboard = () => {
 		fetchDashboardStats()
 	}, [])
 
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				const res = await fetch('/api/admin/transaction')
+				const data = await res.json()
+
+				if (data.success) {
+					// Chuyển deposits & donations thành format chung
+					const deposits = data.deposits.map((d: any) => ({
+						tx_hash: d.tx_hash,
+						amount: d.amount,
+						datetime: d.datetime,
+						name: d.launchpad.launchpad_name,
+					}))
+
+					const donations = data.donations.map((d: any) => ({
+						tx_hash: d.tx_hash,
+						amount: d.amount,
+						datetime: d.datetime,
+						name: d.charity.charity_name,
+					}))
+
+					// Gộp & sắp xếp theo date mới nhất trước
+					const all = [...deposits, ...donations].sort(
+						(a, b) =>
+							new Date(b.datetime).getTime() - new Date(a.datetime).getTime()
+					)
+
+					setTransactionData(all)
+				}
+			} catch (error) {
+				console.error('Failed to fetch transaction data:', error)
+			}
+		}
+
+		fetchData()
+	}, [])
+
+	// useEffect(() => {
+	// 	const fetchData = async () => {
+	// 		// 🚩 MOCK DATA
+	// 		const mockDeposits = [
+	// 			{
+	// 				tx_hash: '0xabc123def4567890',
+	// 				amount: 100,
+	// 				datetime: '2024-07-21T10:00:00Z',
+	// 				launchpad: { launchpad_name: 'Launchpad Alpha' },
+	// 			},
+	// 			{
+	// 				tx_hash: '0xdef987abc6543210',
+	// 				amount: 250,
+	// 				datetime: '2024-07-20T12:30:00Z',
+	// 				launchpad: { launchpad_name: 'Launchpad Beta' },
+	// 			},
+	// 		]
+
+	// 		const mockDonations = [
+	// 			{
+	// 				tx_hash: '0xaaa111bbb222ccc3',
+	// 				amount: 50,
+	// 				datetime: '2024-07-19T09:15:00Z',
+	// 				charity: { charity_name: 'Charity A' },
+	// 			},
+	// 			{
+	// 				tx_hash: '0xddd444eee555fff6',
+	// 				amount: 75,
+	// 				datetime: '2024-07-18T14:45:00Z',
+	// 				charity: { charity_name: 'Charity B' },
+	// 			},
+	// 		]
+
+	// 		const deposits = mockDeposits.map((d) => ({
+	// 			tx_hash: d.tx_hash,
+	// 			amount: d.amount,
+	// 			datetime: d.datetime,
+	// 			name: d.launchpad.launchpad_name,
+	// 		}))
+
+	// 		const donations = mockDonations.map((d) => ({
+	// 			tx_hash: d.tx_hash,
+	// 			amount: d.amount,
+	// 			datetime: d.datetime,
+	// 			name: d.charity.charity_name,
+	// 		}))
+
+	// 		const all = [...deposits, ...donations].sort(
+	// 			(a, b) =>
+	// 				new Date(b.datetime).getTime() - new Date(a.datetime).getTime()
+	// 		)
+
+	// 		setTransactionData(all)
+	// 	}
+
+	// 	fetchData()
+	// }, [])
+
 	if (loading) return <LoadingModal open={loading} onOpenChange={setLoading} />
 
 	if (!isConnected || !isAdmin) {
@@ -371,7 +480,7 @@ const AdminDashboard = () => {
 							<div className="flex flex-1 gap-6">
 								{/* Launchpad & Charity cards */}
 								<div className="flex gap-6 w-2/3">
-									<CardWithChart
+									<DynamicCardWithChart
 										title="Launchpads"
 										count={totalLaunchpad}
 										series={seriesLaunchpad}
@@ -383,7 +492,7 @@ const AdminDashboard = () => {
 										]}
 									/>
 
-									<CardWithChart
+									<DynamicCardWithChart
 										title="Charity"
 										count={totalCharity}
 										series={seriesCharity}
@@ -474,6 +583,119 @@ const AdminDashboard = () => {
 													No profit projects available.
 												</div>
 											)}
+										</div>
+									</div>
+								</div>
+							</div>
+							{/* Total Transaction cards */}
+							<div className="flex flex-1 gap-6 w-full pr-20">
+								<div className="flex flex-col border border-gray-300 shadow-md glass-component-2 rounded-[40px] w-full h-full gap-3">
+									<div className="flex flex-col">
+										<div className="flex flex-row justify-between items-center p-3 px-6">
+											<h2 className="text-lg font-semibold text-white">
+												Total Transaction
+											</h2>
+										</div>
+										<div className="flex flex-col w-full px-6 pb-6">
+											<div className="overflow-x-auto">
+												<table className="w-full text-white text-sm">
+													<thead>
+														<tr className="border-b border-gray-600">
+															<th className="text-left py-3 px-2 font-semibold">
+																Transaction Hash
+															</th>
+															<th className="text-left py-3 px-2 font-semibold">
+																Amount
+															</th>
+															<th className="text-left py-3 px-2 font-semibold">
+																Name
+															</th>
+															<th className="text-left py-3 px-2 font-semibold">
+																Date
+															</th>
+														</tr>
+													</thead>
+													<tbody>
+														{transactionData
+															.slice(0, 10)
+															.map((transaction, index) => (
+																<tr
+																	key={index}
+																	className="border-b border-gray-700 hover:bg-gray-800/30"
+																>
+																	<td className="py-3 px-2">
+																		<div className="flex items-center gap-2">
+																			<span className="font-mono text-xs">
+																				{transaction.tx_hash
+																					? `${transaction.tx_hash.slice(
+																							0,
+																							6
+																						)}...${transaction.tx_hash.slice(-4)}`
+																					: 'N/A'}
+																			</span>
+																			{transaction.tx_hash && (
+																				<button
+																					onClick={() => {
+																						if (
+																							typeof navigator !==
+																								'undefined' &&
+																							navigator.clipboard
+																						) {
+																							navigator.clipboard.writeText(
+																								transaction.tx_hash || ''
+																							)
+																						}
+																					}}
+																					className="p-1 hover:bg-gray-700 rounded transition-colors"
+																					title="Copy transaction hash"
+																				>
+																					<svg
+																						className="w-3 h-3"
+																						fill="none"
+																						stroke="currentColor"
+																						viewBox="0 0 24 24"
+																					>
+																						<path
+																							strokeLinecap="round"
+																							strokeLinejoin="round"
+																							strokeWidth={2}
+																							d="M8 5H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 012 2v2M8 5l8 0v0a2 2 0 012 2m0 0v8a2 2 0 01-2 2H10a2 2 0 01-2-2V9a2 2 0 012-2h4z"
+																						/>
+																					</svg>
+																				</button>
+																			)}
+																		</div>
+																	</td>
+																	<td className="py-3 px-2 font-semibold text-green-400">
+																		{transaction.amount.toLocaleString()} USDT
+																	</td>
+																	<td className="py-3 px-2 truncate max-w-32">
+																		{transaction.name}
+																	</td>
+																	<td className="py-3 px-2 text-gray-300">
+																		{new Date(
+																			transaction.datetime
+																		).toLocaleDateString('en-US', {
+																			month: 'short',
+																			day: 'numeric',
+																			year: 'numeric',
+																		})}
+																	</td>
+																</tr>
+															))}
+														{transactionData.length === 0 && (
+															<tr>
+																<td
+																	colSpan={4}
+																	className="text-center py-6 text-gray-400"
+																>
+																	No transactions available.
+																</td>
+															</tr>
+														)}
+													</tbody>
+												</table>
+											</div>
 										</div>
 									</div>
 								</div>
