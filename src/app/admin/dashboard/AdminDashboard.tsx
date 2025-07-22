@@ -17,6 +17,9 @@ import { useRouter } from 'next/navigation'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
 import { Transaction } from '@/interface/interface'
 import dynamic from 'next/dynamic'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import TransactionTable from '@/components/admin/TransactionTable'
 
 // Dynamic import to avoid SSR issues with ApexCharts
 const DynamicCardWithChart = dynamic(
@@ -61,6 +64,8 @@ const AdminDashboard = () => {
 	const [totalUser, setTotalUser] = useState(0)
 	const [totalProfit, setTotalProfit] = useState(0)
 	const [transactionData, setTransactionData] = useState<Transaction[]>([])
+	const [currentTransactionPage, setCurrentTransactionPage] = useState(1)
+	const transactionsPerPage = 10
 
 	const visibleEvidenceProjects = evidenceProjects.slice(
 		0,
@@ -589,114 +594,19 @@ const AdminDashboard = () => {
 							</div>
 							{/* Total Transaction cards */}
 							<div className="flex flex-1 gap-6 w-full pr-20">
-								<div className="flex flex-col border border-gray-300 shadow-md glass-component-2 rounded-[40px] w-full h-full gap-3">
+								<div className="flex flex-col border border-gray-300 shadow-md glass-component-2 rounded-[40px] w-full h-full gap-3 overflow-hidden">
 									<div className="flex flex-col">
 										<div className="flex flex-row justify-between items-center p-3 px-6">
 											<h2 className="text-lg font-semibold text-white">
 												Total Transaction
 											</h2>
 										</div>
-										<div className="flex flex-col w-full px-6 pb-6">
-											<div className="overflow-x-auto">
-												<table className="w-full text-white text-sm">
-													<thead>
-														<tr className="border-b border-gray-600">
-															<th className="text-left py-3 px-2 font-semibold">
-																Transaction Hash
-															</th>
-															<th className="text-left py-3 px-2 font-semibold">
-																Amount
-															</th>
-															<th className="text-left py-3 px-2 font-semibold">
-																Name
-															</th>
-															<th className="text-left py-3 px-2 font-semibold">
-																Date
-															</th>
-														</tr>
-													</thead>
-													<tbody>
-														{transactionData
-															.slice(0, 10)
-															.map((transaction, index) => (
-																<tr
-																	key={index}
-																	className="border-b border-gray-700 hover:bg-gray-800/30"
-																>
-																	<td className="py-3 px-2">
-																		<div className="flex items-center gap-2">
-																			<span className="font-mono text-xs">
-																				{transaction.tx_hash
-																					? `${transaction.tx_hash.slice(
-																							0,
-																							6
-																						)}...${transaction.tx_hash.slice(-4)}`
-																					: 'N/A'}
-																			</span>
-																			{transaction.tx_hash && (
-																				<button
-																					onClick={() => {
-																						if (
-																							typeof navigator !==
-																								'undefined' &&
-																							navigator.clipboard
-																						) {
-																							navigator.clipboard.writeText(
-																								transaction.tx_hash || ''
-																							)
-																						}
-																					}}
-																					className="p-1 hover:bg-gray-700 rounded transition-colors"
-																					title="Copy transaction hash"
-																				>
-																					<svg
-																						className="w-3 h-3"
-																						fill="none"
-																						stroke="currentColor"
-																						viewBox="0 0 24 24"
-																					>
-																						<path
-																							strokeLinecap="round"
-																							strokeLinejoin="round"
-																							strokeWidth={2}
-																							d="M8 5H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 012 2v2M8 5l8 0v0a2 2 0 012 2m0 0v8a2 2 0 01-2 2H10a2 2 0 01-2-2V9a2 2 0 012-2h4z"
-																						/>
-																					</svg>
-																				</button>
-																			)}
-																		</div>
-																	</td>
-																	<td className="py-3 px-2 font-semibold text-green-400">
-																		{transaction.amount.toLocaleString()} USDT
-																	</td>
-																	<td className="py-3 px-2 truncate max-w-32">
-																		{transaction.name}
-																	</td>
-																	<td className="py-3 px-2 text-gray-300">
-																		{new Date(
-																			transaction.datetime
-																		).toLocaleDateString('en-US', {
-																			month: 'short',
-																			day: 'numeric',
-																			year: 'numeric',
-																		})}
-																	</td>
-																</tr>
-															))}
-														{transactionData.length === 0 && (
-															<tr>
-																<td
-																	colSpan={4}
-																	className="text-center py-6 text-gray-400"
-																>
-																	No transactions available.
-																</td>
-															</tr>
-														)}
-													</tbody>
-												</table>
-											</div>
-										</div>
+										<TransactionTable
+											transactionData={transactionData}
+											currentTransactionPage={currentTransactionPage}
+											setCurrentTransactionPage={setCurrentTransactionPage}
+											transactionsPerPage={transactionsPerPage}
+										/>
 									</div>
 								</div>
 							</div>
