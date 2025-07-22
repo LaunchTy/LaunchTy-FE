@@ -19,7 +19,8 @@ interface ContractData {
 }
 
 const contractDir =
-	"../Launchty-Contracts/broadcast/LaunchpadFactory.s.sol/11155111/run-latest.json";
+	// "../Launchty-Contracts/broadcast/LaunchpadFactory.s.sol/11155111/run-latest.json";
+	"../LaunchTy-Contract/broadcast/LaunchpadFactory.s.sol/11155111/run-latest.json";
 let outputDir = "src/app/config/chainConfig.json";
 let chainConfig = Config;
 const contractData: ContractData = JSON.parse(

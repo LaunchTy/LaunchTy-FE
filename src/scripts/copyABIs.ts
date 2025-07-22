@@ -2,7 +2,8 @@
 import * as fs from "fs";
 import * as path from "path";
 // Adjust path to Foundry's output ABI JSON
-const contractsDir = path.resolve(__dirname, "../../../Launchty-Contracts/out");
+// const contractsDir = path.resolve(__dirname, "../../../Launchty-Contracts/out");
+const contractsDir = path.resolve(__dirname, "../../../LaunchTy-Contract/out");
 const outputDir = path.resolve(__dirname, "../app/abi");
 
 // Manually list the contracts

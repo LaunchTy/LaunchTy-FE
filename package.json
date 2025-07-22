@@ -4,7 +4,8 @@
 	"private": true,
 	"scripts": {
 		"dev": "next dev",
-		"build": "next build",
+		"generate": "prisma generate --schema=./src/prisma/schema.prisma",
+		"build": "pnpm run generate && next build",
 		"start": "next start",
 		"lint": "next lint",
 		"prepare": "husky install",

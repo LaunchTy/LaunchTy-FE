@@ -1,0 +1,83 @@
+
+> launchty-ui@0.1.0 build /home/nguyenkhanh/Documents/LaunchTY/launchty-ui
+> next build
+
+   Creating an optimized production build ...
+Warning: For production Image Optimization with Next.js, the optional 'sharp' package is strongly recommended. Run 'npm i sharp', and Next.js will use it automatically for Image Optimization.
+Read more: https://nextjs.org/docs/messages/sharp-missing-in-production
+ ✓ Compiled successfully
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/20) ...
+   Generating static pages (5/20) 
+   Generating static pages (10/20) 
+   Generating static pages (15/20) 
+ ✓ Generating static pages (20/20) 
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                     Size     First Load JS
+┌ ○ /                                           6.97 kB         135 kB
+├ ○ /_not-found                                 884 B          84.4 kB
+├ ○ /about-us                                   3.77 kB         133 kB
+├ λ /admin/charity-detail/[charity-id]          5.89 kB         177 kB
+├ ○ /admin/dashboard                            21.2 kB         206 kB
+├ λ /admin/launchpad-detail/[launchpad-id]      6.73 kB         178 kB
+├ λ /api/admin/charity                          0 B                0 B
+├ λ /api/admin/charity-detail                   0 B                0 B
+├ λ /api/admin/charity-detail/action            0 B                0 B
+├ λ /api/admin/charity/action                   0 B                0 B
+├ λ /api/admin/check-admin                      0 B                0 B
+├ λ /api/admin/launchpad                        0 B                0 B
+├ λ /api/admin/launchpad-detail                 0 B                0 B
+├ λ /api/admin/launchpad-detail/action          0 B                0 B
+├ λ /api/admin/launchpad/action                 0 B                0 B
+├ λ /api/charity/check-project-owner            0 B                0 B
+├ λ /api/charity/create                         0 B                0 B
+├ λ /api/charity/delete/[id]                    0 B                0 B
+├ λ /api/charity/donate                         0 B                0 B
+├ λ /api/charity/explore-charity                0 B                0 B
+├ λ /api/charity/get                            0 B                0 B
+├ λ /api/charity/get/[id]                       0 B                0 B
+├ λ /api/charity/my-charity                     0 B                0 B
+├ λ /api/charity/my-charity/publish             0 B                0 B
+├ λ /api/charity/my-donations                   0 B                0 B
+├ λ /api/charity/update/[id]                    0 B                0 B
+├ λ /api/donation                               0 B                0 B
+├ λ /api/donation/get/[charity-id]              0 B                0 B
+├ λ /api/launchpad/check-user                   0 B                0 B
+├ λ /api/launchpad/create                       0 B                0 B
+├ λ /api/launchpad/deposit                      0 B                0 B
+├ λ /api/launchpad/explore-launchpad            0 B                0 B
+├ λ /api/launchpad/explore-launchpad-withdraw   0 B                0 B
+├ λ /api/launchpad/launchpad-detail             0 B                0 B
+├ λ /api/launchpad/my-launchpad                 0 B                0 B
+├ λ /api/launchpad/my-launchpad/publish         0 B                0 B
+├ λ /api/launchpad/update                       0 B                0 B
+├ λ /charity/charity-detail/[charity-id]        8.8 kB          308 kB
+├ ○ /charity/charity-homepage                   7.74 kB         179 kB
+├ ○ /charity/create-charity                     346 B           169 kB
+├ λ /charity/edit-charity/[charity-id]          1.44 kB         170 kB
+├ ○ /charity/explore-charity                    4.79 kB         281 kB
+├ ○ /charity/my-charity                         2.56 kB         302 kB
+├ ○ /charity/my-donations                       2.75 kB         279 kB
+├ ○ /launchpad/create-launchpad                 3.4 kB          170 kB
+├ ○ /launchpad/create-launchpad/preview         2.34 kB         292 kB
+├ λ /launchpad/Edit-launchpad/[launchpad-id]    3 kB            193 kB
+├ ○ /launchpad/explore-launchpad                4.94 kB         381 kB
+├ ○ /launchpad/explore-launchpad-withdraw       8.59 kB         303 kB
+├ λ /launchpad/launchpad-detail/[launchpad-id]  4.74 kB         294 kB
+├ ○ /launchpad/my-launchpad                     1.38 kB         278 kB
+├ ○ /launchpad/testt                            6.54 kB         132 kB
+└ ○ /tutorial                                   3.53 kB         135 kB
++ First Load JS shared by all                   83.5 kB
+  ├ chunks/7222-d0484c8ec32bd308.js             27.6 kB
+  ├ chunks/e4732e5f-b9cda7d44b9074a4.js         51.1 kB
+  ├ chunks/main-app-d7cab8687dba4f37.js         237 B
+  └ chunks/webpack-14aab05c7feac99a.js          4.54 kB
+
+
+λ  (Server)  server-side renders at runtime (uses getInitialProps or getServerSideProps)
+○  (Static)  automatically rendered as static HTML (uses no initial props)
+

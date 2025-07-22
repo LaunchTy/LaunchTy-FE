@@ -123,22 +123,22 @@
 				"decimals": "18"
 			},
 			"MockERC20": {
-				"address": "0x000d905565e4df9194a5f2f297f30f898b6a0b69"
+				"address": "0x20b7cd15918aed700ac8d4cd691607ca24270c07"
 			},
 			"AcceptedMockERC20": {
-				"address": "0x9461011b4ebc22723d748f6a50b9c247576019b5"
+				"address": "0x2cebdc8f9ef167673d1b9ee913e641a10a533776"
 			},
 			"LaunchpadFactory": {
-				"address": "0x219a6bd4d7f116821783782c01eabf2d61888d49"
+				"address": "0xe84bf66c0d409e7d609ccb1999b202a56e3b858a"
 			},
 			"Launchpad": {
-				"address": "0xd6bde7130f24fbb564b7ad8d5bf8b80e9a6b0998"
+				"address": "0xa77d3b2439a8a70a2aacc933055344197d96ee4a"
 			},
 			"CharityFactory": {
-				"address": ""
+				"address": "0x8e8e845844ebe5896a10888a8b13ba77e9ff852f"
 			},
 			"Charity": {
-				"address": ""
+				"address": "0x8f27544e7fec3405e031eca3616a7cc3038a862b"
 			}
 		}
 	}
