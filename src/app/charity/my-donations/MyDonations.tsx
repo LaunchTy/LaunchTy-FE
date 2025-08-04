@@ -16,7 +16,7 @@ import LockModal from '@/components/UI/modal/LockModal'
 import { readContract } from 'viem/actions'
 import { publicClient } from '@/app/launchpad/my-launchpad/MyLaunchpad'
 import { Address } from 'viem'
-import { LaunchpadABI } from '@/app/abi'
+import { CharityABI, LaunchpadABI } from '@/app/abi'
 import { Charity } from '@/interface/interface'
 
 const navItems = [
@@ -60,7 +60,7 @@ const MyDonations = () => {
 					try {
 						const totalDonateAmount = await readContract(publicClient, {
 							address: id as Address,
-							abi: LaunchpadABI,
+							abi: CharityABI,
 							functionName: 'getTotalDonatedAmount',
 							// args: [userAddress],
 						})

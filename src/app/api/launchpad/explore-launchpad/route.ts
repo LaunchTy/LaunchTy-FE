@@ -6,8 +6,14 @@ export const dynamic = "force-dynamic";
 export async function GET() {
 	try {
 		const launchpads = await prismaClient.launchpad.findMany({
-			where: { status: "publish" },
+			// where: { status: "publish" },
 		});
+		if (!launchpads || launchpads.length === 0) {
+			return NextResponse.json(
+				{ success: false, error: "No launchpads found" },
+				{ status: 404 }
+			);
+		}
 
 		const deposits = await prismaClient.deposit.findMany({
 			select: {
@@ -36,6 +42,7 @@ export async function GET() {
 				price: depositMap.get(lp.launchpad_id) || 0,
 			};
 		});
+		console.log("Fetched launchpads:", projects);
 
 		return NextResponse.json(
 			{ success: true, data: projects },

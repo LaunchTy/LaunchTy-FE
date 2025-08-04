@@ -107,7 +107,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
 											</div>
 										</td>
 										<td className="py-3 px-2 font-semibold text-green-400">
-											{transaction.amount.toLocaleString()} USDT
+											{transaction.amount.toLocaleString()} GLMR
 										</td>
 										<td className="py-3 px-2 truncate max-w-32">
 											{transaction.name}

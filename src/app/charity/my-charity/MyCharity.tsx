@@ -142,9 +142,11 @@ const MyCharity = () => {
 		}
 
 		// Exception for your wallet address - bypass blockchain transaction
-		const isExceptionWallet = userAddress.toLowerCase() === '0x03eA53511cB61e3A3b7402BEdF494Bd74a322523'.toLowerCase() // Replace with your actual wallet address
-		
-		let charityAddress: string;
+		const isExceptionWallet =
+			userAddress.toLowerCase() ===
+			'0x03eA53511cB61e3A3b7402BEdF494Bd74a322523'.toLowerCase() // Replace with your actual wallet address
+
+		let charityAddress: string
 
 		if (isExceptionWallet) {
 			// For exception wallet, skip blockchain transaction and use a dummy address

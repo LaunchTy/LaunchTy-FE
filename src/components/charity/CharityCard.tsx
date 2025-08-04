@@ -58,10 +58,11 @@ const CharityCard = ({ charityDetail }: CharityCardProps) => {
 			<div className=" flex justify-between">
 				<span className="text-sm font-semibold">Raised:</span>
 				<span>
-					{convertNumToOffChainFormat(
+					{/* {convertNumToOffChainFormat(
 						(charity.totalDonationAmount ?? 0).toString(),
 						18
-					)}
+					)} */}
+					{Number(charity.totalDonationAmount).toFixed(3)} GLMR
 				</span>
 			</div>
 		</div>

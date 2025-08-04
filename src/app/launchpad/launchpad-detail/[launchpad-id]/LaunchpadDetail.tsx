@@ -181,14 +181,14 @@ const LaunchpadDetail = () => {
 				return
 			}
 
-			const userDepositAmount = await readContract(publicClient, {
-				abi: LaunchpadABI,
-				address: launchpad_id as Address,
-				functionName: 'getUserDeposits',
-				args: [userAddress],
-			})
-			console.log('User deposit amount:', userDepositAmount)
-			console.log('Deposit transaction hash:', hash)
+			// const userDepositAmount = await readContract(publicClient, {
+			// 	abi: LaunchpadABI,
+			// 	address: launchpad_id as Address,
+			// 	functionName: 'getUserDeposits',
+			// 	args: [userAddress],
+			// })
+			// console.log('User deposit amount:', userDepositAmount)
+			// console.log('Deposit transaction hash:', hash)
 			// const receipt = await waitForTransactionReceipt(publicClient, {
 			// 	hash: hash,
 			// })

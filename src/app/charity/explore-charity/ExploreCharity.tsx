@@ -16,7 +16,7 @@ import LoadingModal from '@/components/UI/modal/LoadingModal'
 import ErrorModal from '@/components/UI/modal/ErrorModal'
 import { readContract } from 'viem/actions'
 import { Address } from 'viem'
-import { LaunchpadABI } from '@/app/abi'
+import { CharityABI, LaunchpadABI } from '@/app/abi'
 import { publicClient } from '@/app/launchpad/my-launchpad/MyLaunchpad'
 
 const navItems = [
@@ -115,37 +115,40 @@ const ExploreCharity = () => {
 				// const projectsData: BaseProject[] = charityData.map(
 				// 	convertCharityToProject
 				// )
-				const donationsWithContractData = await Promise.all(
-					charityData.map(async (charity) => {
-						const id = charity.charity_id
-						console.log('Fetching data for charity ID:', id)
-						try {
-							const totalDonateAmount = await readContract(publicClient, {
-								address: id as Address,
-								abi: LaunchpadABI,
-								functionName: 'getTotalDonatedAmount',
-								// args: [userAddress],
-							})
-							console.log('Total donate amount:', totalDonateAmount)
+				// const donationsWithContractData = await Promise.all(
+				// 	charityData.map(async (charity) => {
+				// 		const id = charity.charity_id
+				// 		console.log('Fetching data for charity ID:', id)
+				// 		try {
+				// 			const totalDonateAmounts = await readContract(publicClient, {
+				// 				address: id as Address,
+				// 				abi: CharityABI,
+				// 				functionName: 'getTotalDonatedAmount',
+				// 				// args: [userAddress],
+				// 			})
+				// 			console.log('Total donate amount:', totalDonateAmounts)
 
-							return {
-								...convertCharityToProject(charity),
-								totalDonationAmount: Number(totalDonateAmount),
-								charityAddress: id as Address,
-							}
-						} catch (err) {
-							console.error(`Error fetching data for charity ID ${id}`, err)
-							return {
-								...convertCharityToProject(charity),
-								totalDonationAmount: 0,
-								charityAddress: '0x0',
-								totalWithdraw: 0,
-							}
-						}
-					})
+				// 			return {
+				// 				...convertCharityToProject(charity),
+				// 				totalDonationAmount: Number(totalDonateAmounts),
+				// 				charityAddress: id as Address,
+				// 			}
+				// 		} catch (err) {
+				// 			console.error(`Error fetching data for charity ID ${id}`, err)
+				// 			return {
+				// 				...convertCharityToProject(charity),
+				// 				totalDonationAmount: 0,
+				// 				charityAddress: '0x0',
+				// 				totalWithdraw: 0,
+				// 			}
+				// 		}
+				// 	})
+				// )
+				setCharity(charityData.map(convertCharityToProject))
+				console.log(
+					'Fetched projects:',
+					charityData.map(convertCharityToProject)
 				)
-				setCharity(donationsWithContractData)
-				console.log('Fetched projects:', donationsWithContractData)
 			} catch (err: any) {
 				console.error('Failed to load projects:', err)
 				setErrorCode(err?.response?.status?.toString() || '500')

@@ -67,6 +67,16 @@ const AdminDashboard = () => {
 	const [currentTransactionPage, setCurrentTransactionPage] = useState(1)
 	const transactionsPerPage = 10
 
+	// Hàm shuffle để xáo trộn mảng
+	const shuffleArray = <T,>(array: T[]): T[] => {
+		const shuffled = [...array]
+		for (let i = shuffled.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1))
+			;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+		}
+		return shuffled
+	}
+
 	const visibleEvidenceProjects = evidenceProjects.slice(
 		0,
 		visibleCountEvidence
@@ -339,13 +349,11 @@ const AdminDashboard = () => {
 						name: d.charity.charity_name,
 					}))
 
-					// Gộp & sắp xếp theo date mới nhất trước
-					const all = [...deposits, ...donations].sort(
-						(a, b) =>
-							new Date(b.datetime).getTime() - new Date(a.datetime).getTime()
-					)
+					// Gộp & xáo trộn ngẫu nhiên
+					const all = [...deposits, ...donations]
+					const shuffledTransactions = shuffleArray(all)
 
-					setTransactionData(all)
+					setTransactionData(shuffledTransactions)
 				}
 			} catch (error) {
 				console.error('Failed to fetch transaction data:', error)
@@ -513,7 +521,19 @@ const AdminDashboard = () => {
 								{/* User + Profit cards */}
 								<div className="flex flex-col gap-3 w-1/3 pr-20">
 									<NumberCard title="Total users" count={totalUser} />
-									<NumberCard title="Total profit" count={totalProfit} />
+									{/* <NumberCard title="Total profit" count={totalProfit} /> */}
+									<div className="flex flex-col border border-gray-300 shadow-md glass-component-2 rounded-[30px]  max-h-[250px]">
+										<div className="py-3 px-6 gap-3">
+											<div className="text-lg font-semibold text-white">
+												Total profit
+											</div>
+											<div className="flex h-full w-full items-center justify-center">
+												<h1 className="text-3xl font-bold text-white">
+													{totalProfit} GLMR
+												</h1>
+											</div>
+										</div>
+									</div>
 								</div>
 							</div>
 							{/* Evidence cards */}

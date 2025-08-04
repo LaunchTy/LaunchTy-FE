@@ -9,7 +9,7 @@ export async function GET() {
 			include: {
 				donations: true,
 			},
-			where: { status: "publish" },
+			// where: { status: "publish" },
 		});
 
 		const charityWithTotal = charity.map((c) => ({
