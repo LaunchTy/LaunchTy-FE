@@ -9,19 +9,19 @@ export const FOOTER_LINKS = [
 			},
 		],
 	},
-	{
-		title: "Explore",
-		links: [
-			{
-				name: "Docs",
-				url: "http://localhost:3000/tutorial",
-			},
-			// {
-			// 	name: "Github",
-			// 	url: "https://github.com/your-org/your-repo",
-			// },
-		],
-	},
+	// {
+	// 	title: "Explore",
+	// 	links: [
+	// 		{
+	// 			name: "Docs",
+	// 			url: "http://localhost:3000/tutorial",
+	// 		},
+	// 		// {
+	// 		// 	name: "Github",
+	// 		// 	url: "https://github.com/your-org/your-repo",
+	// 		// },
+	// 	],
+	// },
 	{
 		title: "Community",
 		links: [
