@@ -24,7 +24,7 @@ const StakeArea: React.FC<CharityAreaProps> = ({ enabled, handleDonate }) => {
 							className="ml-6 text-white text-2xl font-bold bg-transparent outline-none w-2/3
 							[&::-webkit-inner-spin-button]:appearance-none 
     						[&::-webkit-outer-spin-button]:appearance-none"
-							placeholder="--USDT"
+							placeholder="--GLMR"
 							onChange={(e) => {
 								setTokenAmount(parseInt(e.target.value) || 0)
 							}}

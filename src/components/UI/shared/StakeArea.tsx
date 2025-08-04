@@ -2,12 +2,17 @@ import { useState } from 'react'
 import Button from '../button/Button'
 import useLaunchpadTokenAmountStore from '@/store/launchpad/LaunchpadDetailStore'
 import Image from 'next/image'
+import { useAccount } from 'wagmi'
 
 interface StakeAreaProps {
 	handleDeposit: () => void
 }
 const StakeArea: React.FC<StakeAreaProps> = ({ handleDeposit }) => {
 	const { tokenAmount, setTokenAmount } = useLaunchpadTokenAmountStore()
+	const { isConnected } = useAccount()
+
+	const isButtonDisabled = tokenAmount <= 0 || !tokenAmount || !isConnected
+
 	return (
 		<div className="mt-6">
 			<div className="glass-component-1 p-4 text-white rounded-xl">
@@ -22,7 +27,7 @@ const StakeArea: React.FC<StakeAreaProps> = ({ handleDeposit }) => {
 							className="ml-6 text-white text-2xl font-bold bg-transparent outline-none w-2/3
 							[&::-webkit-inner-spin-button]:appearance-none 
     						[&::-webkit-outer-spin-button]:appearance-none"
-							placeholder="--USDT"
+							placeholder="--GLMR"
 							onChange={(e) => {
 								setTokenAmount(parseInt(e.target.value))
 							}}
@@ -44,11 +49,15 @@ const StakeArea: React.FC<StakeAreaProps> = ({ handleDeposit }) => {
 					{/* stake button */}
 
 					<Button
-						className="w-full bg-gradient font-extrabold glass-component-1"
+						className={`w-full font-extrabold glass-component-1 ${
+							isButtonDisabled
+								? 'bg-gray-500 cursor-not-allowed'
+								: 'bg-gradient'
+						}`}
 						onClick={handleDeposit}
-						disabled={tokenAmount <= 0 || !tokenAmount}
+						disabled={isButtonDisabled}
 					>
-						Deposit
+						{!isConnected ? 'Connect Wallet' : 'Deposit'}
 					</Button>
 				</div>
 			</div>

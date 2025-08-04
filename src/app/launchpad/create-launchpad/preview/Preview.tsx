@@ -28,7 +28,7 @@ import {
 } from '@/app/utils/decimal'
 import { to } from '@react-spring/web'
 import { readContract, reset, waitForTransactionReceipt } from 'viem/actions'
-import { anvil, sepolia } from 'viem/chains'
+import { anvil, moonbaseAlpha, sepolia } from 'viem/chains'
 import { BigNumber } from 'ethers'
 import LoadingModal from '@/components/UI/modal/LoadingModal'
 import SuccessModal from '@/components/UI/modal/SuccessModal'
@@ -40,8 +40,8 @@ import CountdownTimer from '@/components/UI/countdown/CountdownTimer'
 // 	transport: http('http://127.0.0.1:8545'),
 // })
 export const publicClient = createPublicClient({
-	chain: sepolia,
-	transport: http('https://ethereum-sepolia-rpc.publicnode.com'),
+	chain: moonbaseAlpha,
+	transport: http('https://rpc.api.moonbase.moonbeam.network'),
 })
 // interface SocialLink {
 // 	platform: string

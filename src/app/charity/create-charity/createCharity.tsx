@@ -191,7 +191,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 				charity_name: projectName,
 				charity_short_des: shortDescription,
 				charity_long_des: longDescription,
-				charity_token_symbol: 'USDT',
+				charity_token_symbol: 'GLMR',
 				charity_logo: logo,
 				charity_fb: socialLinks.facebook || '',
 				charity_x: socialLinks.twitter || '',
@@ -529,7 +529,7 @@ const CreateCharity = ({ isEditing = false, id }: CreateCharityProps) => {
 										<div className="w-full flex flex-col gap-3 relative">
 											<span className="text-lg">Token</span>
 											<div className="p-3 rounded-xl font-comfortaa text-white glass-component-2 w-full text-sm bg-gray-700">
-												USDT
+												GLMR
 											</div>
 										</div>
 									</div>

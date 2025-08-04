@@ -40,7 +40,7 @@ export interface LaunchpadState {
 
 	launchpadToken: string
 
-	selectedStakingToken: string // token staking (ví dụ: USDT)
+	selectedStakingToken: string // token staking (ví dụ: GLMR)
 	selectedStakingTokenSymbol: string // ký hiệu của token staking
 
 	// Investment limits

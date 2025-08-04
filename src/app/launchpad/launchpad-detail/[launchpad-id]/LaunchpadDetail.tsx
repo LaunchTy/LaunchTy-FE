@@ -105,6 +105,12 @@ const LaunchpadDetail = () => {
 	}, [errorDeposit])
 
 	const handleDeposit = async () => {
+		// Kiểm tra xem người dùng đã connect ví chưa
+		// if (!user.isConnected || !userAddress) {
+		// 	alert('Please connect your wallet first to make a deposit.')
+		// 	return
+		// }
+
 		try {
 			if (!launchpad_id || !tokenAmount) return
 			console.log('Deposit function called with launchpad_id', launchpad_id)
@@ -145,7 +151,10 @@ const LaunchpadDetail = () => {
 
 				const receipt = await waitForTransactionReceipt(publicClient, {
 					hash: approveHash,
+					timeout: 60000,
 				})
+
+				console.log('Approval transaction receipt:', receipt)
 
 				const newAllowance = await readContract(publicClient, {
 					abi: MockERC20ABI,
@@ -210,12 +219,12 @@ const LaunchpadDetail = () => {
 				alert('Failed to create deposit record in database. Please try again.')
 				return
 			}
+			setSuccessOpen(true)
 		} catch (error) {
 			console.error('Error during deposit:', error)
 			alert('Error during deposit. Please try again later.')
 			// setLoadingOpen(false) // Hide loading modal
 		}
-		setSuccessOpen(true)
 	}
 
 	// Handler for image changes from the carousel

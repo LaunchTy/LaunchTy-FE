@@ -21,12 +21,12 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react' // Adjust the import path as necessary
 import { Address, createPublicClient, http, isAddress } from 'viem'
 import { readContract, waitForTransactionReceipt } from 'viem/actions'
-import { sepolia } from 'viem/chains'
+import { moonbaseAlpha, sepolia } from 'viem/chains'
 import { useAccount, useReadContract, useWriteContract } from 'wagmi'
 
 export const publicClient = createPublicClient({
-	chain: sepolia,
-	transport: http('https://ethereum-sepolia-rpc.publicnode.com'),
+	chain: moonbaseAlpha,
+	transport: http('https://rpc.api.moonbase.moonbeam.network'),
 })
 
 const navItems = [
