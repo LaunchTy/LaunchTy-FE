@@ -20,6 +20,7 @@ import dynamic from 'next/dynamic'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import TransactionTable from '@/components/admin/TransactionTable'
+import UserTable from '@/components/admin/UserTable'
 
 // Dynamic import to avoid SSR issues with ApexCharts
 const DynamicCardWithChart = dynamic(
@@ -480,6 +481,7 @@ const AdminDashboard = () => {
 							<CharityList />
 						</div>
 					)}
+
 					{activeMenu === 'dashboard' && (
 						<>
 							<div className="flex flex-1 gap-6">
@@ -607,6 +609,21 @@ const AdminDashboard = () => {
 											setCurrentTransactionPage={setCurrentTransactionPage}
 											transactionsPerPage={transactionsPerPage}
 										/>
+									</div>
+								</div>
+							</div>
+							{/* User Wallet Addresses */}
+							<div className="flex flex-1 gap-6 w-full pr-20">
+								<div className="flex flex-col border border-gray-300 shadow-md glass-component-2 rounded-[40px] w-full h-full gap-3 overflow-hidden">
+									<div className="flex flex-col">
+										<div className="flex flex-row justify-between items-center p-3 px-6">
+											<h2 className="text-lg font-semibold text-white">
+												User Wallet Addresses
+											</h2>
+										</div>
+										<div className="px-6 pb-6">
+											<UserTable />
+										</div>
 									</div>
 								</div>
 							</div>
