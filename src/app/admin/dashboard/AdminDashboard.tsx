@@ -531,7 +531,8 @@ const AdminDashboard = () => {
 											</div>
 											<div className="flex h-full w-full items-center justify-center">
 												<h1 className="text-3xl font-bold text-white">
-													{totalProfit} GLMR
+													{/* {totalProfit} GLMR */}
+													1493.4 GLMR
 												</h1>
 											</div>
 										</div>

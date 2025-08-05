@@ -116,7 +116,10 @@ const UserTable: React.FC = () => {
 										<td className="py-3 px-2">
 											<div className="flex items-center justify-center gap-2">
 												<span className="font-mono text-xs">
-													{truncateAddress(user.wallet_address)}
+													{/* {truncateAddress(user.wallet_address)} */}
+													{user.wallet_address === 'N/A'
+														? 'N/A'
+														: user.wallet_address}
 												</span>
 												{user.wallet_address !== 'N/A' && (
 													<motion.button
